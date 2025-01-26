@@ -1,0 +1,5 @@
+site_name: Electric demand data
+theme:
+  name: material
+  palette:
+    scheme: slate
