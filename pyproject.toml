@@ -5,7 +5,10 @@ description = "Electricity demand data"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "entsoe-py>=0.6.18",
     "mkdocs-material>=9.5.50",
+    "pandas>=2.2.3",
+    "pytz>=2024.2",
 ]
 
 [dependency-groups]
