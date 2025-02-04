@@ -221,11 +221,11 @@ def save_time_series(time_series, full_file_name, variable_name, local_time_zone
 
     Parameters
     ----------
-    time_series : pandas.Series
+    time_series : pandas.Series or pandas.DataFrame
         The time series in the local time zone. If the time zone is not specified, the time series is assumed to be in UTC time
     full_file_name : str
         The file name where the data will be saved
-    variable_name : str
+    variable_name : str or list of str
         The name of the variable in the time series
     local_time_zone : str, optional
         The local time zone of the time series
@@ -255,7 +255,11 @@ def save_time_series(time_series, full_file_name, variable_name, local_time_zone
     time_series.index = time_series.index.tz_convert("UTC").tz_localize(None)
 
     # Add the time series to the DataFrame.
-    time_series_data[variable_name] = time_series
+    if isinstance(time_series, pd.Series):
+        time_series_data[variable_name] = time_series
+    elif isinstance(time_series, pd.DataFrame):
+        for variable in variable_name:
+            time_series_data[variable] = time_series[variable]
 
     # Save the time series.
     if full_file_name.endswith(".parquet"):
