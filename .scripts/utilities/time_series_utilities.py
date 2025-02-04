@@ -1,50 +1,10 @@
-import os
-from datetime import datetime
-
 import pandas as pd
-import pytz
+import utilities.general_utilities as general_utilities
 
 
-def write_to_log_file(filename, message, new_file=False, write_time=False):
+def get_time_series_range(year, country_code):
     """
-    Write a message to a log file.
-
-    Parameters
-    ----------
-    filename : str
-        Name of the log file without the extension
-    message : str
-        Message to write to the log file
-    new_file : bool, optional
-        If True, the log file is created
-    write_time : bool, optional
-        If True, the current time is written before the message
-    """
-
-    # Get the working directory.
-    working_directory = os.getcwd()
-
-    # Create the log file if it does not exist.
-    if not os.path.exists(working_directory + "/log_files"):
-        os.makedirs(working_directory + "/log_files")
-
-    # Determine whether to append or overwrite the log file.
-    mode = "w" if new_file else "a"
-
-    # Write the message to the log file.
-    with open(working_directory + "/log_files/" + filename, mode) as output_file:
-        if write_time:
-            # Write the current time to the log file.
-            now = datetime.now()
-            prefix_time = now.strftime("%H:%M:%S") + " - "
-            output_file.write(prefix_time + message)
-        else:
-            output_file.write(message)
-
-
-def get_time_information(year, country_code):
-    """
-    Get the timezone, start date, and end date of the data retrieval for a specific country and year.
+    Get start and end date of the data retrieval for a specific country and year in the local time zone.
 
     Parameters
     ----------
@@ -55,22 +15,20 @@ def get_time_information(year, country_code):
 
     Returns
     -------
-    country_timezone : pytz.timezone
-        The timezone of the country
     start_date_and_time : pandas.Timestamp
         The start date and time of the data retrieval
     end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
     """
 
-    # Get the timezone of the country.
-    country_timezone = pytz.timezone(pytz.country_timezones[country_code][0])
+    # Get the time zone of the country.
+    country_time_zone = general_utilities.get_time_zone(country_code)
 
     # Define the start and end dates for the data retrieval.
-    start_date_and_time = pd.Timestamp(str(year), tz=country_timezone)
-    end_date_and_time = pd.Timestamp(str(year + 1), tz=country_timezone)
+    start_date_and_time = pd.Timestamp(str(year), tz=country_time_zone)
+    end_date_and_time = pd.Timestamp(str(year + 1), tz=country_time_zone)
 
-    return country_timezone, start_date_and_time, end_date_and_time
+    return start_date_and_time, end_date_and_time
 
 
 def add_missing_time_steps(log_file_name, country_code, time_series):
@@ -108,23 +66,26 @@ def add_missing_time_steps(log_file_name, country_code, time_series):
 
     # Check if there are less time steps than expected.
     if number_of_time_steps < expected_number_of_time_steps:
-        # Get the timezone, start date, and end date of the data retrieval for the country and year.
-        country_timezone, start_date_and_time, end_date_and_time = get_time_information(
+        # Get the start and end date of the data retrieval for the country and year.
+        start_date_and_time, end_date_and_time = get_time_series_range(
             year, country_code
         )
 
-        # Define the full time index for the time series in the local timezone.
+        # Get the time zone of the country.
+        country_time_zone = general_utilities.get_time_zone(country_code)
+
+        # Define the full time index for the time series in the local time zone.
         full_local_time_index = pd.date_range(
             start=start_date_and_time,
             end=end_date_and_time,
             freq=time_resolution,
-            tz=country_timezone,
+            tz=country_time_zone,
         )[:-1]
 
         # Reindex the time series to include the missing time steps.
         time_series = time_series.reindex(full_local_time_index)
 
-        write_to_log_file(
+        general_utilities.write_to_log_file(
             log_file_name,
             f"Added {expected_number_of_time_steps-number_of_time_steps} missing time steps out of {expected_number_of_time_steps}.\n",
         )
@@ -160,7 +121,7 @@ def resample_time_resolution(log_file_name, time_series, target_time_resolution=
         time_series = time_series.resample(target_time_resolution).mean()
 
         # Write the resampling information to the log file.
-        write_to_log_file(
+        general_utilities.write_to_log_file(
             log_file_name,
             f"Resampled the time series from {time_resolution.total_seconds()/3600}h to {target_time_resolution}.\n",
         )
@@ -198,7 +159,7 @@ def linearly_interpolate(log_file_name, time_series):
 
     if interpolated_values > 0:
         # Write the number of interpolated values to the log file.
-        write_to_log_file(
+        general_utilities.write_to_log_file(
             log_file_name,
             f"Interpolated {interpolated_values} isolated missing values.\n",
         )
@@ -230,7 +191,7 @@ def harmonize_time_series(
     target_time_resolution : str, optional
         Target time resolution of the time series
     interpolate_missing_values : bool, optional
-        If True, interpolate the missing values in the time series
+        If True, interpolate isolated missing values in the time series
 
     Returns
     -------
@@ -254,20 +215,30 @@ def harmonize_time_series(
     return time_series
 
 
-def save_time_series(time_series, full_file_name, variable_name):
+def save_time_series(time_series, full_file_name, variable_name, local_time_zone=None):
     """
     Save the time series to a parquet or csv file.
 
     Parameters
     ----------
     time_series : pandas.Series
-        The time series to save.
+        The time series in the local time zone. If the time zone is not specified, the time series is assumed to be in UTC time
     full_file_name : str
-        The file name where the data will be saved.
+        The file name where the data will be saved
+    variable_name : str
+        The name of the variable in the time series
+    local_time_zone : str, optional
+        The local time zone of the time series
     """
 
-    # Get the year of the time series.
-    year = time_series.index.year[0]
+    if time_series.index.tz is None:
+        if local_time_zone is not None:
+            # Assume the time series is in UTC time and convert it to the local time zone.
+            time_series.index = time_series.index.tz_localize("UTC").tz_convert(
+                local_time_zone
+            )
+        else:
+            raise ValueError("The time zone of the time series must be specified.")
 
     # Create an empty DataFrame to store the time series and set the index to UTC time.
     time_series_data = pd.DataFrame(
@@ -278,9 +249,9 @@ def save_time_series(time_series, full_file_name, variable_name):
     time_series_data["Local hour of the day"] = time_series.index.hour
     time_series_data["Local day of the week"] = time_series.index.dayofweek
     time_series_data["Local month of the year"] = time_series.index.month
-    time_series_data["Local year"] = year
+    time_series_data["Local year"] = time_series.index.year
 
-    # Convert the time to UTC time and remove the timezone information.
+    # Convert the time to UTC time and remove the time zone information.
     time_series.index = time_series.index.tz_convert("UTC").tz_localize(None)
 
     # Add the time series to the DataFrame.

@@ -1,8 +1,9 @@
 import os
 
 import pandas as pd
-import utilities
-import utilities_for_Cyprus_website as cyprus_utilities
+import utilities.cyprus_utilities as cyprus_utilities
+import utilities.general_utilities as general_utilities
+import utilities.time_series_utilities as time_series_utilities
 
 
 def download_electricity_generation_from_tsoc(year):
@@ -71,7 +72,7 @@ def download_electricity_generation_from_tsoc(year):
 
         current_date += increment
 
-    # From the date, hour and minute lists, create a datetime object and set the timezone to Asia/Nicosia.
+    # From the date, hour and minute lists, create a datetime object and set the time zone to Asia/Nicosia.
     date_time = pd.to_datetime(
         [f"{date} {hour}:{minute}" for date, hour, minute in zip(dates, hours, minutes)]
     ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
@@ -99,7 +100,7 @@ def run_electricity_generation_data_retrieval():
     log_file_name = "electricity_generation_of_Cyprus.log"
 
     # Create a directory to store the electricity generation time series.
-    result_directory = "Retrieved electricity generation data"
+    result_directory = "data__electricity_generation"
     if not os.path.exists(result_directory):
         os.makedirs(result_directory)
 
@@ -108,14 +109,14 @@ def run_electricity_generation_data_retrieval():
     end_year = 2015
 
     for year in range(start_year, end_year + 1):
-        utilities.write_to_log_file(
+        general_utilities.write_to_log_file(
             log_file_name,
             ("" if year == start_year else "\n") + f"Year: {year}\n\n",
             new_file=(year == start_year),
         )
 
         # Define the file name of the electricity generation time series.
-        file_name = f"/electricity_generation_CY_{year}.parquet"
+        file_name = f"/electricity_generation_CY_{year}.csv"
 
         # Check if the file does not exist.
         if not os.path.exists(result_directory + "/" + file_name):
@@ -124,12 +125,14 @@ def run_electricity_generation_data_retrieval():
             )
 
             # Harmonize the electricity generation time series.
-            electricity_generation_time_series = utilities.harmonize_time_series(
-                log_file_name, "CY", electricity_generation_time_series
+            electricity_generation_time_series = (
+                time_series_utilities.harmonize_time_series(
+                    log_file_name, "CY", electricity_generation_time_series
+                )
             )
 
             # Save the electricity generation time series to a parquet file.
-            utilities.save_time_series(
+            time_series_utilities.save_time_series(
                 electricity_generation_time_series,
                 result_directory + "/" + file_name,
                 "Electricity generation [MW]",

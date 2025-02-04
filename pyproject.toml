@@ -5,10 +5,19 @@ description = "Electricity demand data"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "cdsapi>=0.7.5",
+    "countryinfo>=0.1.2",
     "entsoe-py>=0.6.18",
+    "geopy>=2.4.1",
+    "matplotlib>=3.10.0",
     "mkdocs-material>=9.5.50",
     "pandas>=2.2.3",
+    "pathlib>=1.0.1",
+    "pyarrow>=19.0.0",
+    "pycountry>=24.6.1",
     "pytz>=2024.2",
+    "timezonefinder>=6.5.8",
+    "xarray>=2025.1.1",
 ]
 
 [dependency-groups]
