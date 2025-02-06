@@ -179,7 +179,7 @@ def harmonize_coords(ds):
     return ds
 
 
-def get_fraction_of_grid_cell_in_shape(region_shape, resolution=0.25, make_plot=True):
+def get_fraction_of_grid_cells_in_shape(region_shape, resolution=0.25, make_plot=True):
     """
     Calculate the fraction of each grid cell that is in the given shape.
 
