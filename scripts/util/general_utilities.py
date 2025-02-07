@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import pycountry
 import pytz
@@ -52,7 +54,7 @@ def read_countries_from_file(file_path: str) -> list[str]:
         try:
             country_codes.append(pycountry.countries.lookup(country).alpha_2)
         except LookupError:
-            print(f"{country} not found.")
+            logging.error(f"{country} not found.")
 
     return country_codes
 

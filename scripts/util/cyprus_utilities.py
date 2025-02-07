@@ -1,3 +1,4 @@
+import logging
 from urllib.request import Request, urlopen
 
 
@@ -85,7 +86,7 @@ def read_hour(lines: list[str], line_count: int) -> int:
         # Extract the hour from the line.
         hour = int(hour_line.split(" = ")[1].replace('"', "").replace(";", ""))
     else:
-        print("Hour not found")
+        logging.error("Hour not found")
 
     return hour
 
@@ -114,7 +115,7 @@ def read_minute(lines: list[str], line_count: int) -> int:
         # Extract the minute from the line.
         minute = int(minute_line.split(" = ")[1].replace('"', "").replace(";", ""))
     else:
-        print("Minute not found")
+        logging.error("Minute not found")
 
     return minute
 
@@ -147,7 +148,7 @@ def read_wind_generation(lines: list[str], line_count: int) -> float:
             wind_generation = float(generation_line.split(", ")[1])
 
     else:
-        print("Generation not found")
+        logging.error("Generation not found")
 
     return wind_generation
 
@@ -180,7 +181,7 @@ def read_solar_generation(lines: list[str], line_count: int) -> float:
             solar_generation = float(generation_line.split(", ")[2])
 
     else:
-        print("Generation not found")
+        logging.error("Generation not found")
 
     return solar_generation
 
@@ -215,7 +216,7 @@ def read_conventional_generation(lines: list[str], line_count: int) -> float:
             )
 
     else:
-        print("Generation not found")
+        logging.error("Generation not found")
 
     return conventional_generation
 
@@ -262,6 +263,6 @@ def read_total_generation(lines: list[str], line_count: int) -> float:
             total_generation = float(generation_line.split(", ")[3])
 
     else:
-        print("Generation not found")
+        logging.error("Generation not found")
 
     return total_generation
