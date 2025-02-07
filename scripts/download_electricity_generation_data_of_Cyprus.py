@@ -1,12 +1,13 @@
+import logging
 import os
 
 import pandas as pd
-import utilities.cyprus_utilities as cyprus_utilities
-import utilities.general_utilities as general_utilities
-import utilities.time_series_utilities as time_series_utilities
+import util.cyprus_utilities as cyprus_utilities
+import util.general_utilities as general_utilities
+import util.time_series_utilities as time_series_utilities
 
 
-def download_electricity_generation_from_tsoc(year):
+def download_electricity_generation_from_tsoc(year: int) -> pd.Series:
     """
     Retrieve the electricity generation data for Cyprus from the website of the Transmission System Operator of Cyprus.
 
@@ -95,31 +96,46 @@ def download_electricity_generation_from_tsoc(year):
     return electricity_generation_time_series
 
 
-def run_electricity_generation_data_retrieval():
-    # Define the log file name.
-    log_file_name = "electricity_generation_of_Cyprus.log"
+def run_electricity_generation_data_retrieval() -> None:
+    """
+    Run the electricity generation data retrieval from the website of the Transmission System Operator of Cyprus.
+    """
+
+    # Set up the logging configuration.
+    log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
+    log_file_name = "electricity_generation_data_of_Cyprus.log"
+    logging.basicConfig(
+        filename=log_files_directory + "/" + log_file_name,
+        level=logging.INFO,
+        filemode="w",
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
 
     # Create a directory to store the electricity generation time series.
-    result_directory = "data__electricity_generation"
-    if not os.path.exists(result_directory):
-        os.makedirs(result_directory)
+    result_directory = general_utilities.read_folders_structure()[
+        "electricity_generation_folder"
+    ]
+    os.makedirs(result_directory, exist_ok=True)
 
-    # Define the start and end years of the data retrieval.
+    # Define the target file type.
+    file_type = ".parquet"
+
+    # Define the years of the data retrieval.
     start_year = 2015
     end_year = 2015
+    years = range(start_year, end_year + 1)
 
-    for year in range(start_year, end_year + 1):
-        general_utilities.write_to_log_file(
-            log_file_name,
-            ("" if year == start_year else "\n") + f"Year: {year}\n\n",
-            new_file=(year == start_year),
+    # Loop over the years.
+    for year in years:
+        logging.info(f"Year {year}.")
+
+        # Define the file path of the electricity generation time series.
+        electricity_generation_file_path = (
+            result_directory + f"/electricity_generation_CY_{year}" + file_type
         )
 
-        # Define the file name of the electricity generation time series.
-        file_name = f"/electricity_generation_CY_{year}.csv"
-
         # Check if the file does not exist.
-        if not os.path.exists(result_directory + "/" + file_name):
+        if not os.path.exists(electricity_generation_file_path):
             electricity_generation_time_series = (
                 download_electricity_generation_from_tsoc(year)
             )
@@ -127,14 +143,16 @@ def run_electricity_generation_data_retrieval():
             # Harmonize the electricity generation time series.
             electricity_generation_time_series = (
                 time_series_utilities.harmonize_time_series(
-                    log_file_name, "CY", electricity_generation_time_series
+                    "CY",
+                    electricity_generation_time_series,
+                    interpolate_missing_values=False,
                 )
             )
 
             # Save the electricity generation time series to a parquet file.
             time_series_utilities.save_time_series(
                 electricity_generation_time_series,
-                result_directory + "/" + file_name,
+                electricity_generation_file_path,
                 "Electricity generation [MW]",
             )
 

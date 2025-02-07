@@ -1,8 +1,11 @@
+import logging
+
 import pandas as pd
-import utilities.general_utilities as general_utilities
+import pytz
+import util.general_utilities as general_utilities
 
 
-def get_time_series_range(year, country_code):
+def get_time_series_range(year: int, country_code: str) -> tuple[pd.Timestamp]:
     """
     Get start and end date of the data retrieval for a specific country and year in the local time zone.
 
@@ -31,14 +34,12 @@ def get_time_series_range(year, country_code):
     return start_date_and_time, end_date_and_time
 
 
-def add_missing_time_steps(log_file_name, country_code, time_series):
+def add_missing_time_steps(country_code: str, time_series: pd.Series) -> pd.Series:
     """
     Add the missing time steps to a time series.
 
     Parameters
     ----------
-    log_file_name : str
-        Name of the log file
     country_code : str
         The ISO Alpha-2 code of the country
     time_series : pandas.Series
@@ -85,22 +86,21 @@ def add_missing_time_steps(log_file_name, country_code, time_series):
         # Reindex the time series to include the missing time steps.
         time_series = time_series.reindex(full_local_time_index)
 
-        general_utilities.write_to_log_file(
-            log_file_name,
-            f"Added {expected_number_of_time_steps-number_of_time_steps} missing time steps out of {expected_number_of_time_steps}.\n",
+        logging.warning(
+            f"Added {expected_number_of_time_steps-number_of_time_steps} missing time steps out of {expected_number_of_time_steps}."
         )
 
     return time_series
 
 
-def resample_time_resolution(log_file_name, time_series, target_time_resolution="1h"):
+def resample_time_resolution(
+    time_series: pd.Series, target_time_resolution: str = "1h"
+) -> pd.Series:
     """
     Resample the time resolution of a time series to a given time resolution.
 
     Parameters
     ----------
-    log_file_name : str
-        Name of the log file
     time_series : pandas.Series
         Original time series
     target_time_resolution : str, optional
@@ -121,22 +121,19 @@ def resample_time_resolution(log_file_name, time_series, target_time_resolution=
         time_series = time_series.resample(target_time_resolution).mean()
 
         # Write the resampling information to the log file.
-        general_utilities.write_to_log_file(
-            log_file_name,
-            f"Resampled the time series from {time_resolution.total_seconds()/3600}h to {target_time_resolution}.\n",
+        logging.warning(
+            f"Resampled the time series from {time_resolution.total_seconds()/3600}h to {target_time_resolution}."
         )
 
     return time_series
 
 
-def linearly_interpolate(log_file_name, time_series):
+def linearly_interpolate(time_series: pd.Series) -> pd.Series:
     """
     Linearly interpolate the missing values in a time series only if they are isolated.
 
     Parameters
     ----------
-    log_file_name : str
-        Name of the log file
     time_series : pandas.Series
         Original time series
 
@@ -159,29 +156,23 @@ def linearly_interpolate(log_file_name, time_series):
 
     if interpolated_values > 0:
         # Write the number of interpolated values to the log file.
-        general_utilities.write_to_log_file(
-            log_file_name,
-            f"Interpolated {interpolated_values} isolated missing values.\n",
-        )
+        logging.warning(f"Interpolated {interpolated_values} isolated missing values.")
 
     return time_series
 
 
 def harmonize_time_series(
-    log_file_name,
-    country_code,
-    time_series,
-    resample=True,
-    target_time_resolution="1h",
-    interpolate_missing_values=True,
-):
+    country_code: str,
+    time_series: pd.Series,
+    resample: bool = True,
+    target_time_resolution: str = "1h",
+    interpolate_missing_values: bool = True,
+) -> pd.Series:
     """
     Harmonize a given time series by adding the missing time steps, resampling the time resolution, and interpolating the missing values.
 
     Parameters
     ----------
-    log_file_name : str
-        Name of the log file
     country_code : str
         The ISO Alpha-2 code of the country
     time_series : pandas.Series
@@ -200,22 +191,27 @@ def harmonize_time_series(
     """
 
     # Add the missing time steps to the time series.
-    time_series = add_missing_time_steps(log_file_name, country_code, time_series)
+    time_series = add_missing_time_steps(country_code, time_series)
 
     # Resample the time resolution of the time series.
     if resample:
         time_series = resample_time_resolution(
-            log_file_name, time_series, target_time_resolution=target_time_resolution
+            time_series, target_time_resolution=target_time_resolution
         )
 
     # Linearly interpolate the isolated missing values in the time series.
     if interpolate_missing_values:
-        time_series = linearly_interpolate(log_file_name, time_series)
+        time_series = linearly_interpolate(time_series)
 
     return time_series
 
 
-def save_time_series(time_series, full_file_name, variable_name, local_time_zone=None):
+def save_time_series(
+    time_series: pd.Series | pd.DataFrame,
+    full_file_name: str,
+    variable_name: str | list[str],
+    local_time_zone: pytz.timezone = None,
+) -> None:
     """
     Save the time series to a parquet or csv file.
 
@@ -227,7 +223,7 @@ def save_time_series(time_series, full_file_name, variable_name, local_time_zone
         The file name where the data will be saved
     variable_name : str or list of str
         The name of the variable in the time series
-    local_time_zone : str, optional
+    local_time_zone : pytz.timezone, optional
         The local time zone of the time series
     """
 
@@ -258,8 +254,7 @@ def save_time_series(time_series, full_file_name, variable_name, local_time_zone
     if isinstance(time_series, pd.Series):
         time_series_data[variable_name] = time_series
     elif isinstance(time_series, pd.DataFrame):
-        for variable in variable_name:
-            time_series_data[variable] = time_series[variable]
+        time_series_data = pd.concat([time_series_data, time_series], axis=1)
 
     # Save the time series.
     if full_file_name.endswith(".parquet"):
@@ -267,4 +262,4 @@ def save_time_series(time_series, full_file_name, variable_name, local_time_zone
     elif full_file_name.endswith(".csv"):
         time_series_data.to_csv(full_file_name)
     else:
-        raise ValueError("The file name must end with '.parquet' or '.csv'.")
+        raise ValueError("The file name must end with .parquet or .csv.")

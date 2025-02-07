@@ -1,7 +1,7 @@
 from urllib.request import Request, urlopen
 
 
-def query_website(date):
+def query_website(date: str) -> list[str]:
     """
     Query the website for the electricity demand data for 15-day period starting from the given date.
 
@@ -12,7 +12,7 @@ def query_website(date):
 
     Returns
     -------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     """
 
@@ -32,13 +32,13 @@ def query_website(date):
     return lines
 
 
-def read_date(lines, line_count):
+def read_date(lines: list[str], line_count: int) -> str:
     """
     Read the date from the html file.
 
     Parameters
     ----------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     line_count : int
         The current line count.
@@ -61,13 +61,13 @@ def read_date(lines, line_count):
     return date
 
 
-def read_hour(lines, line_count):
+def read_hour(lines: list[str], line_count: int) -> int:
     """
     Read the hour from the html file.
 
     Parameters
     ----------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     line_count : int
         The current line count.
@@ -90,13 +90,13 @@ def read_hour(lines, line_count):
     return hour
 
 
-def read_minute(lines, line_count):
+def read_minute(lines: list[str], line_count: int) -> int:
     """
     Read the minute from the html file.
 
     Parameters
     ----------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     line_count : int
         The current line count.
@@ -119,13 +119,13 @@ def read_minute(lines, line_count):
     return minute
 
 
-def read_wind_generation(lines, line_count):
+def read_wind_generation(lines: list[str], line_count: int) -> float:
     """
     Read the wind generation from the html file.
 
     Parameters
     ----------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     line_count : int
         The current line count.
@@ -152,13 +152,13 @@ def read_wind_generation(lines, line_count):
     return wind_generation
 
 
-def read_solar_generation(lines, line_count):
+def read_solar_generation(lines: list[str], line_count: int) -> float:
     """
     Read the solar generation from the html file.
 
     Parameters
     ----------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     line_count : int
         The current line count.
@@ -185,13 +185,13 @@ def read_solar_generation(lines, line_count):
     return solar_generation
 
 
-def read_conventional_generation(lines, line_count):
+def read_conventional_generation(lines: list[str], line_count: int) -> float:
     """
     Read the conventional generation from the html file.
 
     Parameters
     ----------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     line_count : int
         The current line count.
@@ -220,13 +220,13 @@ def read_conventional_generation(lines, line_count):
     return conventional_generation
 
 
-def read_total_generation(lines, line_count):
+def read_total_generation(lines: list[str], line_count: int) -> float:
     """
     Read the total generation from the html file.
 
     Parameters
     ----------
-    lines : list
+    lines : list of str
         The list of lines from the html file.
     line_count : int
         The current line count.
