@@ -1,6 +1,8 @@
 import logging
 from urllib.request import Request, urlopen
 
+import pandas as pd
+
 
 def query_website(date: str) -> list[str]:
     """
@@ -9,12 +11,12 @@ def query_website(date: str) -> list[str]:
     Parameters
     ----------
     date : str
-        The date in the format "YYYY-MM-DD".
+        The date in the format "YYYY-MM-DD"
 
     Returns
     -------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     """
 
     # Define the url of the current request.
@@ -40,14 +42,14 @@ def read_date(lines: list[str], line_count: int) -> str:
     Parameters
     ----------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     line_count : int
-        The current line count.
+        The current line count
 
     Returns
     -------
     date : str
-        The date in the format "YYYY-MM-DD".
+        The date in the format "YYYY-MM-DD"
     """
 
     # Extract the date from the line.
@@ -69,14 +71,14 @@ def read_hour(lines: list[str], line_count: int) -> int:
     Parameters
     ----------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     line_count : int
-        The current line count.
+        The current line count
 
     Returns
     -------
     hour : int
-        The hour.
+        The hour
     """
 
     # Extract the line that contains the hour data.
@@ -98,14 +100,14 @@ def read_minute(lines: list[str], line_count: int) -> int:
     Parameters
     ----------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     line_count : int
-        The current line count.
+        The current line count
 
     Returns
     -------
     minute : int
-        The minute.
+        The minute
     """
 
     # Extract the line that contains the minute data.
@@ -127,14 +129,14 @@ def read_wind_generation(lines: list[str], line_count: int) -> float:
     Parameters
     ----------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     line_count : int
-        The current line count.
+        The current line count
 
     Returns
     -------
     wind_generation : float
-        The wind generation in MW.
+        The wind generation in MW
     """
 
     # Extract the line that contains the generation data.
@@ -160,14 +162,14 @@ def read_solar_generation(lines: list[str], line_count: int) -> float:
     Parameters
     ----------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     line_count : int
-        The current line count.
+        The current line count
 
     Returns
     -------
     solar_generation : float
-        The solar generation in MW.
+        The solar generation in MW
     """
 
     # Extract the line that contains the generation data.
@@ -193,14 +195,14 @@ def read_conventional_generation(lines: list[str], line_count: int) -> float:
     Parameters
     ----------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     line_count : int
-        The current line count.
+        The current line count
 
     Returns
     -------
     conventional_generation : float
-        The conventional generation in MW.
+        The conventional generation in MW
     """
 
     # Extract the line that contains the generation data.
@@ -228,14 +230,14 @@ def read_total_generation(lines: list[str], line_count: int) -> float:
     Parameters
     ----------
     lines : list of str
-        The list of lines from the html file.
+        The list of lines from the html file
     line_count : int
-        The current line count.
+        The current line count
 
     Returns
     -------
     total_generation : float
-        The total generation in MW.
+        The total generation in MW
     """
 
     # Extract the line that contains the generation data.
@@ -266,3 +268,90 @@ def read_total_generation(lines: list[str], line_count: int) -> float:
         logging.error("Generation not found")
 
     return total_generation
+
+
+def download_electricity_generation_from_tsoc(year: int) -> pd.Series:
+    """
+    Retrieve the electricity generation data for Cyprus from the website of the Transmission System Operator of Cyprus.
+
+    Parameters
+    ----------
+    year : int
+        The year of interest
+
+    Returns
+    -------
+    electricity_generation_time_series : pandas.Series
+        The electricity generation time series in MW
+    """
+
+    # Define the start and end date.
+    start_date = pd.Timestamp(year=year, month=1, day=1)
+    end_date = pd.Timestamp(year=year, month=12, day=31)
+
+    # Define the lists that will store the data.
+    dates = []
+    hours = []
+    minutes = []
+    total_generation = []
+
+    # Define the increment that corresponds to the maximum number of days that can be requested.
+    increment = pd.Timedelta(days=15)
+
+    # Define the current date.
+    current_date = start_date
+
+    # Loop through the dates.
+    while current_date <= end_date:
+        # Define the dates of the current request.
+        dates_in_interval = [
+            (current_date + pd.Timedelta(days=dd)).strftime("%Y-%m-%d")
+            for dd in range(0, 15, 1)
+        ]
+
+        # Query the website for the current request.
+        lines = query_website(dates_in_interval[0])
+
+        # Set the line count to 0.
+        line_count = 0
+
+        # Loop through the lines.
+        while line_count < len(lines) - 1:
+            # Check if the current line contains the date.
+            if any(
+                ('var dateStr = "' + date) in lines[line_count]
+                for date in dates_in_interval
+            ):
+                dates.append(read_date(lines, line_count))
+                hours.append(read_hour(lines, line_count))
+                minutes.append(read_minute(lines, line_count))
+                total_generation.append(read_total_generation(lines, line_count))
+
+                line_count += 22
+
+            else:
+                line_count += 1
+
+        current_date += increment
+
+    # From the date, hour and minute lists, create a datetime object and set the time zone to Asia/Nicosia.
+    date_time = pd.to_datetime(
+        [f"{date} {hour}:{minute}" for date, hour, minute in zip(dates, hours, minutes)]
+    ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
+
+    # Create a series with the time and generation data.
+    electricity_generation_time_series = pd.Series(
+        data=total_generation, index=date_time
+    )
+
+    # Remove timesteps with NaT values.
+    electricity_generation_time_series = electricity_generation_time_series[
+        electricity_generation_time_series.index.notnull()
+    ]
+
+    # Remove timesteps outside the year of interest.
+    electricity_generation_time_series = electricity_generation_time_series[
+        electricity_generation_time_series.index.year == year
+    ]
+
+    return electricity_generation_time_series
