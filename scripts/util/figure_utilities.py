@@ -27,5 +27,7 @@ def simple_plot(
     # Plot the data.
     fig, ax = plt.subplots()
     data_to_plot.plot(ax=ax)
-    fig.savefig(figure_directory + "/" + figure_name + ".png")
+    fig.savefig(
+        figure_directory + "/" + figure_name + ".png", dpi=300, bbox_inches="tight"
+    )
     plt.close(fig)

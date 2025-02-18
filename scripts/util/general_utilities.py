@@ -1,6 +1,5 @@
 import logging
 
-import pandas as pd
 import pycountry
 import pytz
 import yaml
@@ -41,7 +40,7 @@ def read_countries_from_file(file_path: str) -> list[str]:
 
     Returns
     -------
-    country_codes : list of str
+    iso_alpha_2_codes : list of str
         The ISO Alpha-2 codes of the countries
     """
 
@@ -49,76 +48,139 @@ def read_countries_from_file(file_path: str) -> list[str]:
     with open(file_path, "r") as file:
         countries = file.read().splitlines()
 
-    country_codes = []
+    iso_alpha_2_codes = []
     for country in countries:
         try:
-            country_codes.append(pycountry.countries.lookup(country).alpha_2)
+            iso_alpha_2_codes.append(pycountry.countries.lookup(country).alpha_2)
         except LookupError:
             logging.error(f"{country} not found.")
 
-    return country_codes
+    return iso_alpha_2_codes
 
 
-def get_time_zone(country_code: str) -> pytz.timezone:
+def read_us_regions_from_file(file_path: str) -> list[str]:
+    """
+    Read the US regions from a file and get their codes.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the file containing the US regions
+
+    Returns
+    -------
+    region_codes : list of str
+        The codes of the US regions
+    """
+
+    # Read the US regions from the file.
+    with open(file_path, "r") as file:
+        us_regions = file.read().splitlines()
+
+    # Define the codes of the regions.
+    region_code_mapping = {
+        "California": "CAL",
+        "Carolinas": "CAR",
+        "Central": "CENT",
+        "Florida": "FLA",
+        "Mid-Atlantic": "MIDA",
+        "Midwest": "MIDW",
+        "New England": "NE",
+        "New York": "NY",
+        "Northwest": "NW",
+        "Southeast": "SE",
+        "Southwest": "SW",
+        "Tennessee": "TEN",
+        "Texas": "TEX",
+    }
+
+    region_codes = []
+    for region in us_regions:
+        try:
+            region_codes.append("US_" + region_code_mapping[region])
+        except KeyError:
+            logging.error(f"{region} not found.")
+
+    return region_codes
+
+
+def get_us_region_time_zone(region_code: str) -> pytz.timezone:
+    """
+    Get the time zone of a US region.
+
+    Parameters
+    ----------
+    region_code : str
+        The code of the US region
+
+    Returns
+    -------
+    time_zone : pytz.timezone
+        The time zone of the US region
+    """
+
+    # Define the time zones of the US regions.
+    time_zones_mapping = {
+        "US_CAL": "America/Los_Angeles",
+        "US_CAR": "America/New_York",
+        "US_CENT": "America/Chicago",
+        "US_FLA": "America/New_York",
+        "US_MIDA": "America/New_York",
+        "US_MIDW": "America/Chicago",
+        "US_NE": "America/New_York",
+        "US_NY": "America/New_York",
+        "US_NW": "America/Los_Angeles",
+        "US_SE": "America/New_York",
+        "US_SW": "America/Phoenix",
+        "US_TEN": "America/Chicago",
+        "US_TEX": "America/Chicago",
+    }
+
+    return pytz.timezone(time_zones_mapping[region_code])
+
+
+def get_time_zone(code: str) -> pytz.timezone:
     """
     Get the time zone of a country.
 
     Parameters
     ----------
-    country_code : str
-        The ISO Alpha-2 code of the country
+    code : str
+        The code of the region (ISO Alpha-2 code or a combination of ISO Alpha-2 code and region code)
 
     Returns
     -------
     time_zone : pytz.timezone
-        The time zone of the country or location
+        The time zone of the region
     """
 
-    # Get the list of time zones for the country.
-    time_zones = pytz.country_timezones[country_code]
+    if "_" not in code:
+        # The code is the ISO Alpha-2 code of the country.
+        iso_alpha_2_code = code
 
-    # If there are multiple time zones, find the time zone based on the capital city.
-    if len(time_zones) > 1:
-        # Get the country name.
-        country = pycountry.countries.get(alpha_2=country_code)
+        # Get the list of time zones for the country.
+        time_zones = pytz.country_timezones[iso_alpha_2_code]
 
-        # Get the capital city coordinates.
-        location = CountryInfo(country.name).capital_latlng()
+        # If there are multiple time zones, find the time zone based on the capital city.
+        if len(time_zones) > 1:
+            # Get the country name.
+            country = pycountry.countries.get(alpha_2=iso_alpha_2_code)
 
-        # Find time zone based on capital city coordinates.
-        tf = TimezoneFinder()
-        time_zone = tf.timezone_at(lat=location[0], lng=location[1])
+            # Get the capital city coordinates.
+            location = CountryInfo(country.name).capital_latlng()
+
+            # Find time zone based on capital city coordinates.
+            tf = TimezoneFinder()
+            time_zone = tf.timezone_at(lat=location[0], lng=location[1])
+        else:
+            # Get the time zone of the country.
+            time_zone = time_zones[0]
+
     else:
-        # Get the time zone of the country.
-        time_zone = time_zones[0]
+        # Split the country code into the ISO Alpha-2 code and the region code.
+        iso_alpha_2_code, region_code = code.split("_")
+
+        if iso_alpha_2_code == "US":
+            time_zone = get_us_region_time_zone(iso_alpha_2_code + "_" + region_code)
 
     return time_zone
-
-
-def calculate_time_difference(
-    local_time_zone: pytz.timezone, year: int = 2020
-) -> float:
-    """
-    Calculate the time shift between UTC and the local time zone.
-
-    Parameters
-    ----------
-    local_time_zone : pytz.timezone
-        Local time zone
-    year : int, optional
-        The year for which the time difference is calculated
-
-    Returns
-    -------
-    time_difference : float
-        Time difference in hours
-    """
-
-    # Get an arbitrary time expressed both in UTC and the local time zone.
-    datetime1 = pd.Timestamp(f"{year}-01-01 00:00:00", tz="UTC")
-    datetime2 = pd.Timestamp(f"{year}-01-01 00:00:00", tz=local_time_zone)
-
-    # Calculate the time shift between UTC and the local time zone.
-    time_difference = (datetime2 - datetime1).total_seconds() / 3600
-
-    return time_difference

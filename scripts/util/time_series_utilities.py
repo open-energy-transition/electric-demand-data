@@ -2,48 +2,20 @@ import logging
 
 import pandas as pd
 import pytz
-import util.general_utilities as general_utilities
 
 
-def get_time_series_range(year: int, country_code: str) -> tuple[pd.Timestamp]:
-    """
-    Get start and end date of the data retrieval for a specific country and year in the local time zone.
-
-    Parameters
-    ----------
-    year : int
-        The year of the data retrieval
-    country_code : str
-        The ISO Alpha-2 code of the country
-
-    Returns
-    -------
-    start_date_and_time : pandas.Timestamp
-        The start date and time of the data retrieval
-    end_date_and_time : pandas.Timestamp
-        The end date and time of the data retrieval
-    """
-
-    # Get the time zone of the country.
-    country_time_zone = general_utilities.get_time_zone(country_code)
-
-    # Define the start and end dates for the data retrieval.
-    start_date_and_time = pd.Timestamp(str(year), tz=country_time_zone)
-    end_date_and_time = pd.Timestamp(str(year + 1), tz=country_time_zone)
-
-    return start_date_and_time, end_date_and_time
-
-
-def add_missing_time_steps(country_code: str, time_series: pd.Series) -> pd.Series:
+def add_missing_time_steps(
+    time_series: pd.Series, local_time_zone: pytz.timezone
+) -> pd.Series:
     """
     Add the missing time steps to a time series.
 
     Parameters
     ----------
-    country_code : str
-        The ISO Alpha-2 code of the country
     time_series : pandas.Series
         Original time series
+    local_time_zone : pytz.timezone
+        Local time zone of the time series
 
     Returns
     -------
@@ -54,9 +26,6 @@ def add_missing_time_steps(country_code: str, time_series: pd.Series) -> pd.Seri
     # Get the time resolution of the time series.
     time_resolution = time_series.index.to_series().diff().min()
 
-    # Get the number of time steps in the time series.
-    number_of_time_steps = len(time_series)
-
     # Get the year of the time series.
     year = time_series.index.year[0]
 
@@ -66,29 +35,18 @@ def add_missing_time_steps(country_code: str, time_series: pd.Series) -> pd.Seri
     )
 
     # Check if there are less time steps than expected.
-    if number_of_time_steps < expected_number_of_time_steps:
-        # Get the start and end date of the data retrieval for the country and year.
-        start_date_and_time, end_date_and_time = get_time_series_range(
-            year, country_code
+    if len(time_series) < expected_number_of_time_steps:
+        logging.warning(
+            f"Added {expected_number_of_time_steps-len(time_series)} missing time steps out of {expected_number_of_time_steps}."
         )
-
-        # Get the time zone of the country.
-        country_time_zone = general_utilities.get_time_zone(country_code)
 
         # Define the full time index for the time series in the local time zone.
         full_local_time_index = pd.date_range(
-            start=start_date_and_time,
-            end=end_date_and_time,
-            freq=time_resolution,
-            tz=country_time_zone,
+            start=str(year), end=str(year + 1), freq=time_resolution, tz=local_time_zone
         )[:-1]
 
         # Reindex the time series to include the missing time steps.
         time_series = time_series.reindex(full_local_time_index)
-
-        logging.warning(
-            f"Added {expected_number_of_time_steps-number_of_time_steps} missing time steps out of {expected_number_of_time_steps}."
-        )
 
     return time_series
 
@@ -162,8 +120,8 @@ def linearly_interpolate(time_series: pd.Series) -> pd.Series:
 
 
 def harmonize_time_series(
-    country_code: str,
     time_series: pd.Series,
+    local_time_zone: pytz.timezone,
     resample: bool = True,
     target_time_resolution: str = "1h",
     interpolate_missing_values: bool = True,
@@ -173,10 +131,10 @@ def harmonize_time_series(
 
     Parameters
     ----------
-    country_code : str
-        The ISO Alpha-2 code of the country
     time_series : pandas.Series
         The original time series
+    local_time_zone : pytz.timezone
+        Local time zone of the time series
     resample : bool, optional
         If True, resample the time series to the target time resolution
     target_time_resolution : str, optional
@@ -191,7 +149,7 @@ def harmonize_time_series(
     """
 
     # Add the missing time steps to the time series.
-    time_series = add_missing_time_steps(country_code, time_series)
+    time_series = add_missing_time_steps(time_series, local_time_zone)
 
     # Resample the time resolution of the time series.
     if resample:
@@ -239,7 +197,7 @@ def save_time_series(
     # Create an empty DataFrame to store the time series and set the index to UTC time.
     time_series_data = pd.DataFrame(
         index=time_series.index.tz_convert("UTC").tz_localize(None)
-    ).rename_axis("Time (UTC)")
+    )
 
     # Add the hour of the day, day of the week, month of the year, and year to the DataFrame.
     time_series_data["Local hour of the day"] = time_series.index.hour
@@ -255,6 +213,9 @@ def save_time_series(
         time_series_data[variable_name] = time_series
     elif isinstance(time_series, pd.DataFrame):
         time_series_data = pd.concat([time_series_data, time_series], axis=1)
+
+    # Rename the index.
+    time_series_data.index.name = "Time (UTC)"
 
     # Save the time series.
     if full_file_name.endswith(".parquet"):
