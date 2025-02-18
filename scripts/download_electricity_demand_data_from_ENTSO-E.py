@@ -13,6 +13,7 @@ def run_electricity_demand_data_retrieval() -> None:
 
     # Set up the logging configuration.
     log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
+    os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "electricity_demand_data_from_ENTSO-E.log"
     logging.basicConfig(
         filename=log_files_directory + "/" + log_file_name,
