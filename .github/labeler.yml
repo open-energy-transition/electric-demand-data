@@ -1,0 +1,13 @@
+Docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/*
+          - README.md
+
+GitHub Actions:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**/*"
+
+Python:
+  - changed-files:
+      - any-glob-to-any-file: "**/*.py"

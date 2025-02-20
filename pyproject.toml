@@ -26,3 +26,12 @@ dependencies = [
 dev = [
     "pytest>=8.3.4",
 ]
+
+[tool.mypy]
+ignore_missing_imports = true
+disable_error_code = [
+    "import-untyped"
+    ]
+files = [
+  "scripts/*.py",
+]
