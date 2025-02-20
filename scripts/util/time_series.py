@@ -37,7 +37,7 @@ def add_missing_time_steps(
     # Check if there are less time steps than expected.
     if len(time_series) < expected_number_of_time_steps:
         logging.warning(
-            f"Added {expected_number_of_time_steps-len(time_series)} missing time steps out of {expected_number_of_time_steps}."
+            f"Added {expected_number_of_time_steps - len(time_series)} missing time steps out of {expected_number_of_time_steps}."
         )
 
         # Define the full time index for the time series in the local time zone.
@@ -80,7 +80,7 @@ def resample_time_resolution(
 
         # Write the resampling information to the log file.
         logging.warning(
-            f"Resampled the time series from {time_resolution.total_seconds()/3600}h to {target_time_resolution}."
+            f"Resampled the time series from {time_resolution.total_seconds() / 3600}h to {target_time_resolution}."
         )
 
     return time_series
