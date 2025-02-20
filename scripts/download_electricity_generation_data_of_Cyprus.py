@@ -10,7 +10,7 @@ import util.time_series as time_series_utilities
 
 def read_time_and_generation(
     page: str,
-) -> tuple[list[str], list[str], list[str], list[str]]:
+) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
     Read the dates, hours, minutes, and generation data from the html file.
 
@@ -40,7 +40,7 @@ def read_time_and_generation(
     )
 
     # Compute the total generation based on the available data.
-    total_generation = []
+    total_generation: list[float | None] = []
     for generation_step in generation:
         if generation_step[2] == "null":
             # When the value for total generation is null, typically the values for wind, solar, and conventional generation are also null.
