@@ -2,7 +2,7 @@ import os
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import util.general_utilities as general_utilities
+import util.general as general_utilities
 import xarray as xr
 
 
