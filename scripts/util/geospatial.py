@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pycountry
-import util.figure_utilities as figure_utilities
+import util.figures as figure_utilities
 import xarray as xr
 from shapely.geometry import Polygon
 
