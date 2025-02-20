@@ -8,69 +8,88 @@ import util.general as general_utilities
 import util.time_series as time_series_utilities
 
 
+def parse_generation(generation_step):
+    """
+    Process a single generation data entry and determine the total generation.
+
+    Parameters
+    ----------
+    generation_step : tuple of str
+        A tuple containing the wind, solar, total, and conventional generation values
+
+    Returns
+    -------
+    float | None
+        The total generation in MW, or None if data is unavailable
+    """
+
+    # Extract the wind, solar, total, and conventional generation values from the tuple.
+    wind, solar, total, conventional = generation_step
+
+    # If total generation is null, it usually means no data is available.
+    if total == "null":
+        return None
+
+    # If total generation is 0, attempt to compute it from wind, solar, and conventional values.
+    if total == "0":
+        wind = float(wind) if wind != "null" else 0
+        solar = float(solar) if solar != "null" else 0
+        conventional = float(conventional) if conventional != "null" else 0
+        total_estimated = wind + solar + conventional
+
+        # If the sum is still 0, return None.
+        return total_estimated if total_estimated > 0 else None
+
+    # Otherwise, return the total generation as a float.
+    return float(total)
+
+
 def read_time_and_generation(
     page: str,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
-    Read the dates, hours, minutes, and generation data from the html file.
+    Extract dates, hours, minutes, and generation data from an HTML file.
 
     Parameters
     ----------
     page : str
-        The html file
+        The HTML file content
 
     Returns
     -------
     dates : list of str
         The dates in the format "YYYY-MM-DD"
     hours : list of str
-        The hours
+        The hours as strings
     minutes : list of str
-        The minutes
-    generation : list of str
-        The generation data
+        The minutes as strings
+    total_generation : list of float | None
+        The total power generation in MW. If data is unavailable, None is returned
     """
 
-    # Extract the dates, hours, minutes, and generation data from the html file according to the regex pattern.
-    dates = re.findall(r"var dateStr = \"(\d{4}-\d{2}-\d{2})\";", page)
-    hours = re.findall(r"var hourStr = \"(\d{2})\";", page)
-    minutes = re.findall(r"var minutesStr = \"(\d{2})\";", page)
-    generation = re.findall(
-        r"\[dateStrFormat, (\d+|null), (\d+|null), (\d+|null), (\d+|null)\]", page
-    )
+    # Precompile regex patterns for improved performance when processing large files.
+    date_pattern = re.compile(r'var dateStr = "(\d{4}-\d{2}-\d{2})";')
+    hour_pattern = re.compile(r'var hourStr = "(\d{2})";')
+    minute_pattern = re.compile(r'var minutesStr = "(\d{2})";')
+    generation_pattern = re.compile(
+        r"\[dateStrFormat, (\d+|null), (\d+|null), (\d+|null), (\d+|null)\]"
+    )  # The values represent wind, solar, total, and conventional generation, respectively.
 
-    # Compute the total generation based on the available data.
-    total_generation: list[float | None] = []
-    for generation_step in generation:
-        if generation_step[2] == "null":
-            # When the value for total generation is null, typically the values for wind, solar, and conventional generation are also null.
-            total_generation.append(None)
-        elif generation_step[2] == "0":
-            # When the value for total generation is 0, typically the values for wind, solar, and/or conventional generation are not null, and these can be used to estimate the total demand.
-            wind_generation = (
-                float(generation_step[0]) if generation_step[0] != "null" else 0
-            )
-            solar_generation = (
-                float(generation_step[1]) if generation_step[1] != "null" else 0
-            )
-            conventional_generation = (
-                float(generation_step[3]) if generation_step[3] != "null" else 0
-            )
-            total_generation.append(
-                wind_generation + solar_generation + conventional_generation
-            )
-            # If the total demand is still 0, set it to None.
-            if total_generation[-1] == 0:
-                total_generation[-1] = None
-        else:
-            total_generation.append(float(generation_step[2]))
+    # Extract the dates, hours, minutes, and generation data from the HTML content using regex patterns.
+    dates = date_pattern.findall(page)
+    hours = hour_pattern.findall(page)
+    minutes = minute_pattern.findall(page)
+    generation_matches = generation_pattern.findall(page)
+
+    # Process the generation data to determine the total generation.
+    total_generation = [parse_generation(g) for g in generation_matches]
 
     return dates, hours, minutes, total_generation
 
 
 def download_electricity_generation_from_tsoc(year: int) -> pd.Series:
     """
-    Retrieve the electricity generation data for Cyprus from the website of the Transmission System Operator of Cyprus.
+    Retrieve the electricity generation data of Cyprus from the Transmission System Operator of Cyprus.
 
     Parameters
     ----------
@@ -87,54 +106,46 @@ def download_electricity_generation_from_tsoc(year: int) -> pd.Series:
     start_date = pd.Timestamp(year=year, month=1, day=1)
     end_date = pd.Timestamp(year=year, month=12, day=31)
 
-    # Define the lists that will store the data.
-    dates = []
-    hours = []
-    minutes = []
-    total_generation = []
+    # Define the increment for data requests (15 days).
+    date_ranges = pd.date_range(start_date, end_date, freq="15D")
 
-    # Define the increment that corresponds to the maximum number of days that can be requested.
-    increment = pd.Timedelta(days=15)
+    # Initialize lists to store results.
+    all_dates, all_hours, all_minutes, all_generation = [], [], [], []
 
-    # Define the current date.
-    current_date = start_date
-
-    # Loop through the dates.
-    while current_date <= end_date:
-        # Define the date in the format "DD-MM-YYYY".
+    # Loop through date ranges and fetch data.
+    for current_date in date_ranges:
+        # Format date in "DD-MM-YYYY".
         date_for_query = current_date.strftime("%d-%m-%Y")
 
-        # Define the url of the current request.
+        # Construct the request URL.
         url = f"https://tsoc.org.cy/electrical-system/archive-total-daily-system-generation-on-the-transmission-system/?startdt={date_for_query}&enddt=%2B15days"
 
-        # Read the html file.
+        # Fetch HTML content.
         page = (
             urlopen(Request(url=url, headers={"User-Agent": "Mozilla/5.0"}))
             .read()
             .decode("utf-8")
         )
 
-        # Extract the dates and generation data from the html file.
-        queried_dates, queried_hours, queried_minutes, queried_total_generation = (
-            read_time_and_generation(page)
-        )
+        # Extract time and generation data.
+        dates, hours, minutes, generation = read_time_and_generation(page)
 
-        dates.extend(queried_dates)
-        hours.extend(queried_hours)
-        minutes.extend(queried_minutes)
-        total_generation.extend(queried_total_generation)
+        # Store results.
+        all_dates.extend(dates)
+        all_hours.extend(hours)
+        all_minutes.extend(minutes)
+        all_generation.extend(generation)
 
-        current_date += increment
-
-    # From the date, hour and minute lists, create a datetime object and set the time zone to Asia/Nicosia.
+    # Construct datetime index with time zone.
     date_time = pd.to_datetime(
-        [f"{date} {hour}:{minute}" for date, hour, minute in zip(dates, hours, minutes)]
+        [
+            f"{date} {hour}:{minute}"
+            for date, hour, minute in zip(all_dates, all_hours, all_minutes)
+        ]
     ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
 
-    # Create a series with the time and generation data.
-    electricity_generation_time_series = pd.Series(
-        data=total_generation, index=date_time
-    )
+    # Create a Pandas Series for the electricity generation data.
+    electricity_generation_time_series = pd.Series(data=all_generation, index=date_time)
 
     # Remove timesteps with NaT values.
     electricity_generation_time_series = electricity_generation_time_series[
