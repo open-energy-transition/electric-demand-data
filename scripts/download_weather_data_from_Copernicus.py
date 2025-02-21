@@ -41,7 +41,7 @@ def get_request(
     """
 
     # Initialize the request with the common parameters.
-    request = {
+    request: dict[str, str | list[str] | list[float]] = {
         "product_type": ["reanalysis"],
         "variable": [ERA5_variable],
         "data_format": "netcdf",
