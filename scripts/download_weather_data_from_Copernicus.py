@@ -14,10 +14,10 @@ import xarray as xr
 def get_request(
     ERA5_variable: str,
     year: int,
-    region_bounds: list[float] = None,
+    region_bounds: list[float] | None = None,
     extra_time_steps: pd.DatetimeIndex = None,
     uneven_utc_offset: bool = False,
-) -> dict[str, str | list[str]]:
+) -> dict[str, str | list[str] | list[float]]:
     """
     Get the request for the ERA5 data from the Copernicus Climate Data Store (CDS).
 
@@ -36,7 +36,7 @@ def get_request(
 
     Returns
     -------
-    request : dict of str or list of str
+    request : dict of str or list of str or list of float
         The request for the ERA5 data
     """
 
@@ -59,29 +59,15 @@ def get_request(
 
     # Add the time steps of the year of interest or the extra time steps.
     if extra_time_steps is None:
-        request["year"] = [str(int(year))]
-        request["month"] = [
-            str(int(mm)) if mm >= 10 else "0" + str(int(mm)) for mm in range(1, 13)
-        ]
-        request["day"] = [
-            str(int(dd)) if dd >= 10 else "0" + str(int(dd)) for dd in range(1, 32)
-        ]
-        request["time"] = [
-            str(int(tt)) + ":00" if tt >= 10 else "0" + str(int(tt)) + ":00"
-            for tt in range(0, 24)
-        ]
+        request["year"] = [str(year)]
+        request["month"] = [f"{mm:02d}" for mm in range(1, 13)]
+        request["day"] = [f"{dd:02d}" for dd in range(1, 32)]
+        request["time"] = [f"{tt:02d}:00" for tt in range(24)]
     else:
-        request["year"] = [str(int(extra_time_steps.year[0]))]
-        request["month"] = [
-            str(int(extra_time_steps.month[0]))
-            if extra_time_steps.month[0] >= 10
-            else "0" + str(int(extra_time_steps.month[0]))
-        ]
-        request["day"] = [
-            str(int(extra_time_steps.day[0]))
-            if extra_time_steps.day[0] >= 10
-            else "0" + str(int(extra_time_steps.day[0]))
-        ]
+        request["year"] = [str(extra_time_steps[0].year)]
+        request["month"] = [f"{extra_time_steps[0].month:02d}"]
+        request["day"] = [f"{extra_time_steps[0].day:02d}"]
+
         if uneven_utc_offset:
             # Add an additional time step to consider the uneven UTC offset.
             # If the additional time steps are in the following year and are the first time steps of the year, add an additional time step at the end of the time steps.
@@ -94,10 +80,7 @@ def get_request(
                 extra_time_steps = extra_time_steps.union(
                     pd.DatetimeIndex([extra_time_steps[0] - pd.Timedelta(hours=1)])
                 )
-        request["time"] = [
-            str(int(tt)) + ":00" if tt >= 10 else "0" + str(int(tt)) + ":00"
-            for tt in extra_time_steps.hour
-        ]
+        request["time"] = [f"{tt:02d}:00" for tt in extra_time_steps.hour]
 
     return request
 
@@ -157,7 +140,7 @@ def download_ERA5_data_from_Copernicus(
     year: int,
     ERA5_variable: str,
     file_path: str,
-    region_bounds: list[float] = None,
+    region_bounds: list[float] | None = None,
     local_time_zone: pytz.timezone = None,
 ) -> None:
     """
