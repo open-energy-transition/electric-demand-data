@@ -1,5 +1,3 @@
-import logging
-
 import pycountry
 import pytz
 import yaml
@@ -29,79 +27,35 @@ def read_folders_structure(file_path: str = "directories.yaml") -> dict[str, str
     return folders_structure
 
 
-def read_countries_from_file(file_path: str) -> list[str]:
+def read_codes_from_file(file_path: str) -> list[str]:
     """
-    Read the countries from a file and get their ISO Alpha-2 codes.
+    Read the codes of the countries or regions from a file.
 
     Parameters
     ----------
     file_path : str
-        The path to the file containing the countries
+        The path to the file containing the entries
 
     Returns
     -------
-    iso_alpha_2_codes : list of str
-        The ISO Alpha-2 codes of the countries
+    codes : list of str
+        The ISO Alpha-2 codes of the countries or the combination of the ISO Alpha-2 codes and the region codes
     """
 
     # Read the countries from the file.
     with open(file_path, "r") as file:
-        countries = file.read().splitlines()
+        data = yaml.safe_load(file)
 
-    iso_alpha_2_codes = []
-    for country in countries:
-        try:
-            iso_alpha_2_codes.append(pycountry.countries.lookup(country).alpha_2)
-        except LookupError:
-            logging.error(f"{country} not found.")
+    # Extract the entries.
+    items = data["items"]
 
-    return iso_alpha_2_codes
+    # Extract codes.
+    if "region_code" in items[0]:
+        codes = [item["country_code"] + "_" + item["region_code"] for item in items]
+    else:
+        codes = [item["country_code"] for item in items]
 
-
-def read_us_regions_from_file(file_path: str) -> list[str]:
-    """
-    Read the US regions from a file and get their codes.
-
-    Parameters
-    ----------
-    file_path : str
-        The path to the file containing the US regions
-
-    Returns
-    -------
-    region_codes : list of str
-        The codes of the US regions
-    """
-
-    # Read the US regions from the file.
-    with open(file_path, "r") as file:
-        us_regions = file.read().splitlines()
-
-    # Define the codes of the regions.
-    region_code_mapping = {
-        "California": "CAL",
-        "Carolinas": "CAR",
-        "Central": "CENT",
-        "Florida": "FLA",
-        "Mid-Atlantic": "MIDA",
-        "Midwest": "MIDW",
-        "New England": "NE",
-        "New York": "NY",
-        "Northwest": "NW",
-        "Southeast": "SE",
-        "Southwest": "SW",
-        "Tennessee": "TEN",
-        "Texas": "TEX",
-    }
-
-    region_codes = []
-    for region in us_regions:
-        try:
-            region_codes.append("US_" + region_code_mapping[region])
-        except KeyError:
-            logging.error(f"{region} not found.")
-
-    return region_codes
+    return codes
 
 
 def get_us_region_time_zone(region_code: str) -> pytz.timezone:

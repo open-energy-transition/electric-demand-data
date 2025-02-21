@@ -142,7 +142,7 @@ def get_geopandas_region(
 
         if iso_alpha_2_code == "US":
             # Load the shapefile of the US regions.
-            region_shapes = gpd.read_file("data__us_balancing_authorities/regions.shp")
+            region_shapes = gpd.read_file("data/us_balancing_authorities/regions.shp")
             region_shape = region_shapes[region_shapes["EIAcode"] == region_code]
             region_shape = gpd.GeoDataFrame.from_features(region_shape["geometry"])
 

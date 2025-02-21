@@ -185,10 +185,10 @@ def run_population_density_data_retrieval() -> None:
 
     # Read the codes of the regions of interest.
     settings_directory = general_utilities.read_folders_structure()["settings_folder"]
-    # region_codes = general_utilities.read_countries_from_file(settings_directory+"/gegis__all_countries.txt")
-    region_codes = general_utilities.read_us_regions_from_file(
-        settings_directory + "/us_eia_regions.txt"
+    region_codes = general_utilities.read_codes_from_file(
+        settings_directory + "/gegis__all_countries.yaml"
     )
+    # region_codes = general_utilities.read_codes_from_file(settings_directory + "/us_eia_regions.yaml")
 
     # Loop over the regions of interest.
     for region_code in region_codes:

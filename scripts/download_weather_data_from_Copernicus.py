@@ -67,7 +67,6 @@ def get_request(
         request["year"] = [str(extra_time_steps[0].year)]
         request["month"] = [f"{extra_time_steps[0].month:02d}"]
         request["day"] = [f"{extra_time_steps[0].day:02d}"]
-
         if uneven_utc_offset:
             # Add an additional time step to consider the uneven UTC offset.
             # If the additional time steps are in the following year and are the first time steps of the year, add an additional time step at the end of the time steps.
@@ -251,10 +250,10 @@ def run_weather_data_retrieval() -> None:
 
     # Read the codes of the regions of interest.
     settings_directory = general_utilities.read_folders_structure()["settings_folder"]
-    # region_codes = general_utilities.read_countries_from_file(settings_directory+"/gegis__all_countries.txt")
-    region_codes = general_utilities.read_us_regions_from_file(
-        settings_directory + "/us_eia_regions.txt"
+    region_codes = general_utilities.read_codes_from_file(
+        settings_directory + "/gegis__all_countries.yaml"
     )
+    # region_codes = general_utilities.read_codes_from_file(settings_directory+"/us_eia_regions.yaml")
 
     # Define the ERA5 variables to download.
     era5_variables = ["2m_temperature"]
