@@ -134,8 +134,8 @@ def run_electricity_demand_data_retrieval() -> None:
 
     # Read the ISO Alpha-2 codes of the countries of interest.
     settings_directory = general_utilities.read_folders_structure()["settings_folder"]
-    iso_alpha_2_codes = general_utilities.read_countries_from_file(
-        settings_directory + "/gegis__countries_on_entsoe_platform.txt"
+    iso_alpha_2_codes = general_utilities.read_codes_from_file(
+        settings_directory + "/gegis__countries_on_entsoe_platform.yaml"
     )
 
     # Define the target file type.
