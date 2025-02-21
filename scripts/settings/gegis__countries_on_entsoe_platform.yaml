@@ -43,4 +43,21 @@ items:
     country_code: "NO"
   - country_name: Poland
     country_code: PL
-  - country_name: Portug
+  - country_name: Portugal
+    country_code: PT
+  - country_name: Romania
+    country_code: RO
+  - country_name: Serbia
+    country_code: RS
+  - country_name: Slovakia
+    country_code: SK
+  - country_name: Slovenia
+    country_code: SI
+  - country_name: Spain
+    country_code: ES
+  - country_name: Sweden
+    country_code: SE
+  - country_name: Switzerland
+    country_code: CH
+  - country_name: United Kingdom
+    country_code: GB
