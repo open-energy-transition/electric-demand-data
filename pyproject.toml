@@ -36,5 +36,5 @@ disable_error_code = [
     "import-untyped"
     ]
 files = [
-  "scripts/*.py",
+  "ETL/**/*.py",
 ]
