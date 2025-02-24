@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    timeout-minutes: 10
+    name: "lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+
+      - name: "Install uv"
+        uses: astral-sh/setup-uv@v5
+
+      - name: "Python format"
+        run: uvx ruff format --diff .
+
+      - name: "Python lint"
+        run: uvx ruff check .
+
+      - name: "Python type check"
+        run: uvx mypy
+
+      - uses: pre-commit/action@v3.0.1
