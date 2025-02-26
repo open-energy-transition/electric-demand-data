@@ -19,5 +19,8 @@ disable_error_code = [
     "import-untyped"
     ]
 files = [
-  "scripts/*.py",
+  "ETL/**/*.py",
 ]
+
+[tool.uv.workspace]
+members = ["ETL"]
