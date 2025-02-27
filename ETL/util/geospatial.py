@@ -69,6 +69,131 @@ def remove_islands(
     return region_shape
 
 
+def get_country_shape(
+    iso_alpha_2_code: str, remove_remote_islands: bool
+) -> gpd.GeoDataFrame | None:
+    """
+    Retrieve the shape of a country using its ISO Alpha-2 code.
+
+    Parameters
+    ----------
+    iso_alpha_2_code : str
+        The ISO Alpha-2 code of the country
+    remove_remote_islands : bool
+        Whether to remove small remote islands from the shape of some countries
+
+    Returns
+    -------
+    country_shape : geopandas.GeoDataFrame
+        GeoDataFrame containing the shape of the country
+    """
+
+    # Load the shapefile containing the world countries.
+    region_shapes = shpreader.natural_earth(
+        resolution="50m", category="cultural", name="admin_0_countries"
+    )
+
+    # Define a reader for the shapefile.
+    reader = shpreader.Reader(region_shapes)
+
+    try:
+        try:
+            # Read the shape of the region of interest by searching for the ISO Alpha-2 code.
+            region_shape = [
+                ii
+                for ii in list(reader.records())
+                if ii.attributes["ISO_A2"] == iso_alpha_2_code
+            ][0]
+        except IndexError:
+            # Read the shape of the region of interest by searching for the name of the country.
+            country_name = pycountry.countries.get(alpha_2=iso_alpha_2_code).name
+            region_shape = [
+                ii
+                for ii in list(reader.records())
+                if ii.attributes["NAME"] == country_name
+            ][0]
+
+        # Convert the shape to a GeoDataFrame.
+        region_shape = pd.Series({"geometry": region_shape.geometry})
+        region_shape = gpd.GeoSeries(region_shape)
+        region_shape = gpd.GeoDataFrame.from_features(region_shape, crs=4326)
+
+        # Remove small remote islands from the shape of some countries.
+        if remove_remote_islands:
+            region_shape = remove_islands(region_shape, iso_alpha_2_code)
+
+        # Add the ISO Alpha-2 code as the name of the region.
+        region_shape["ISO_A2_code"] = iso_alpha_2_code
+        region_shape = region_shape.set_index("ISO_A2_code")
+
+    except (AttributeError, IndexError):
+        logging.critical(f"Region shape for {iso_alpha_2_code} not found.")
+        region_shape = None
+
+    return region_shape
+
+
+def get_us_region_shape(region_code: str) -> gpd.GeoDataFrame:
+    """
+    Retrieve the shape of a US region defined by the Energy Information Administration (EIA).
+
+    Parameters
+    ----------
+    region_code : str
+        The code of the region
+
+    Returns
+    -------
+    region_shape : geopandas.GeoDataFrame
+        GeoDataFrame containing the shape of the US region
+    """
+
+    # Load the shapefile of the US regions.
+    region_shapes = gpd.read_file("data/us_balancing_authorities/regions.shp")
+
+    # Get the shape of the region of interest.
+    region_shape = region_shapes[region_shapes["EIAcode"] == region_code]
+    region_shape = gpd.GeoDataFrame.from_features(region_shape["geometry"])
+
+    return region_shape
+
+
+def get_region_shape(code: str) -> gpd.GeoDataFrame | None:
+    """
+    Get the shape of a region based on its code.
+
+    Parameters
+    ----------
+    code : str
+        The combination of ISO Alpha-2 code and region code
+
+    Returns
+    -------
+    region_shape : geopandas.GeoDataFrame
+        GeoDataFrame containing the region of interest
+    """
+
+    # Split the code into the ISO Alpha-2 code and the region code.
+    iso_alpha_2_code, region_code = code.split("_")
+
+    if iso_alpha_2_code == "US":
+        # Get the shape of the US region based on the region code.
+        region_shape = get_us_region_shape(region_code)
+    else:
+        logging.critical(f"Region {code} not implemented.")
+        region_shape = None
+
+    if region_shape.empty:
+        logging.critical(f"Region shape for {code} not found.")
+        region_shape = None
+    else:
+        # Add the full region code.
+        region_shape["region_code"] = code
+        region_shape = region_shape.set_index("region_code")
+
+    return region_shape
+
+
 def get_geopandas_region(
     code: str, make_plot: bool = True, remove_remote_islands: bool = True
 ) -> gpd.GeoDataFrame:
@@ -91,80 +216,14 @@ def get_geopandas_region(
     """
 
     if "_" not in code:
-        # The code is the ISO Alpha-2 code of the country.
-        iso_alpha_2_code = code
-
-        # Load the shapefile containing the world countries.
-        region_shapes = shpreader.natural_earth(
-            resolution="50m", category="cultural", name="admin_0_countries"
-        )
-
-        # Define a reader for the shapefile.
-        reader = shpreader.Reader(region_shapes)
-
-        try:
-            try:
-                # Read the shape of the region of interest by searching for the ISO Alpha-2 code.
-                region_shape = [
-                    ii
-                    for ii in list(reader.records())
-                    if ii.attributes["ISO_A2"] == iso_alpha_2_code
-                ][0]
-            except IndexError:
-                # Read the shape of the region of interest by searching for the name of the country.
-                country_name = pycountry.countries.get(alpha_2=iso_alpha_2_code).name
-                region_shape = [
-                    ii
-                    for ii in list(reader.records())
-                    if ii.attributes["NAME"] == country_name
-                ][0]
-
-            # Convert the shape to a GeoDataFrame.
-            region_shape = pd.Series({"geometry": region_shape.geometry})
-            region_shape = gpd.GeoSeries(region_shape)
-            region_shape = gpd.GeoDataFrame.from_features(region_shape, crs=4326)
-
-            # Remove small remote islands from the shape of some countries.
-            if remove_remote_islands:
-                region_shape = remove_islands(region_shape, iso_alpha_2_code)
-
-            # Add the ISO Alpha-2 code as the name of the region.
-            region_shape["ISO_A2_code"] = iso_alpha_2_code
-            region_shape = region_shape.set_index("ISO_A2_code")
-
-            if make_plot:
-                figure_utilities.simple_plot(
-                    region_shape, f"region_shape_{iso_alpha_2_code}"
-                )
-
-        except (AttributeError, IndexError):
-            logging.critical(f"Region shape for {iso_alpha_2_code} not found.")
-            region_shape = None
-
+        # Get the shape of the country based on the ISO Alpha-2 code.
+        region_shape = get_country_shape(code, remove_remote_islands)
     else:
-        # Split the country code into the ISO Alpha-2 code and the region code.
-        iso_alpha_2_code, region_code = code.split("_")
+        # Get the shape of the region based on the region code.
+        region_shape = get_region_shape(code)
 
-        if iso_alpha_2_code == "US":
-            # Load the shapefile of the US regions.
-            region_shapes = gpd.read_file("data/us_balancing_authorities/regions.shp")
-            region_shape = region_shapes[region_shapes["EIAcode"] == region_code]
-            region_shape = gpd.GeoDataFrame.from_features(region_shape["geometry"])
-
-            if region_shape.empty:
-                logging.critical(
-                    f"Region shape for {iso_alpha_2_code}_{region_code} not found."
-                )
-                region_shape = None
-            else:
-                # Add the full region code.
-                region_shape["region_code"] = iso_alpha_2_code + "_" + region_code
-                region_shape = region_shape.set_index("region_code")
-
-                if make_plot:
-                    figure_utilities.simple_plot(
-                        region_shape, f"region_shape_{iso_alpha_2_code}_{region_code}"
-                    )
+    if region_shape is not None and make_plot:
+        figure_utilities.simple_plot(region_shape, f"region_shape_{code}")
 
     return region_shape
 
