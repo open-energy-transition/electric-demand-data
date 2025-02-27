@@ -30,32 +30,37 @@ def remove_islands(
         GeoDataFrame containing the region of interest without small remote islands
     """
 
-    if iso_alpha_2_code in ["CL", "ES", "FR", "NL", "NO", "NZ", "PT"]:
-        # Create a GeoDataFrame to exclude remote islands.
-        if iso_alpha_2_code == "CL":  # Chile
+    new_bounds = None
+
+    # Create a GeoSeries containing the new bounds of the region of interest.
+    match iso_alpha_2_code:
+        case "CL":  # Chile
             new_bounds = gpd.GeoSeries(
                 Polygon([(-80, -60), (-60, -60), (-60, 0), (-80, 0)])
             )
-        elif iso_alpha_2_code == "ES":  # Spain
+        case "ES":  # Spain
             new_bounds = gpd.GeoSeries(
                 Polygon([(-10, 35), (5, 35), (5, 45), (-10, 45)])
             )
-        elif iso_alpha_2_code == "FR":  # France
+        case "FR":  # France
             new_bounds = gpd.GeoSeries(
                 Polygon([(-5, 40), (10, 40), (10, 55), (-5, 55)])
             )
-        elif iso_alpha_2_code == "NL":  # Netherlands
+        case "NL":  # Netherlands
             new_bounds = gpd.GeoSeries(Polygon([(0, 50), (10, 50), (10, 55), (0, 55)]))
-        elif iso_alpha_2_code == "NO":  # Norway
+        case "NO":  # Norway
             new_bounds = gpd.GeoSeries(Polygon([(0, 55), (35, 55), (35, 73), (0, 73)]))
-        elif iso_alpha_2_code == "NZ":  # New Zealand
+        case "NZ":  # New Zealand
             new_bounds = gpd.GeoSeries(
                 Polygon([(165, -50), (180, -50), (180, -30), (165, -30)])
             )
-        elif iso_alpha_2_code == "PT":  # Portugal
+        case "PT":  # Portugal
             new_bounds = gpd.GeoSeries(
                 Polygon([(-10, 35), (0, 35), (0, 45), (-10, 45)])
             )
+
+    if new_bounds is not None:
+        # Convert the GeoSeries to a GeoDataFrame and set the coordinate reference system to EPSG 4326.
         new_bounds = gpd.GeoDataFrame.from_features(new_bounds, crs=4326)
 
         # Remove any region outside the new bounds.
