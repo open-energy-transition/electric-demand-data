@@ -1,5 +1,4 @@
 import logging
-
 import pandas as pd
 
 def resample_time_resolution(
