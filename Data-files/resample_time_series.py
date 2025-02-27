@@ -1,5 +1,7 @@
 import logging
+
 import pandas as pd
+
 
 def resample_time_resolution(
     time_series: pd.Series, target_time_resolution: str = "1h"
