@@ -50,10 +50,12 @@ def read_codes_from_file(file_path: str) -> list[str]:
     items = data["items"]
 
     # Extract codes.
-    if "region_code" in items[0]:
-        codes = [item["country_code"] + "_" + item["region_code"] for item in items]
-    else:
-        codes = [item["country_code"] for item in items]
+    codes = [
+        item["country_code"] + "_" + item["region_code"]
+        if "region_code" in item
+        else item["country_code"]
+        for item in items
+    ]
 
     return codes
 
