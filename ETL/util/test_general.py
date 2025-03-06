@@ -67,3 +67,4 @@ def test_get_time_zone():
     # Check the time zones of the countries and regions.
     assert get_time_zone("US_CAL") == pytz.timezone("America/Los_Angeles")
     assert get_time_zone("FR") in pytz.country_timezones["FR"]
+    assert get_time_zone("US") == pytz.timezone("America/New_York")

@@ -127,7 +127,8 @@ def get_time_zone(code: str) -> pytz.timezone:
 
             # Find time zone based on capital city coordinates.
             tf = TimezoneFinder()
-            time_zone = tf.timezone_at(lat=location[0], lng=location[1])
+            time_zone_name = tf.timezone_at(lat=location[0], lng=location[1])
+            time_zone = pytz.timezone(time_zone_name)
         else:
             # Get the time zone of the country.
             time_zone = time_zones[0]
