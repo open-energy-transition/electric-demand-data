@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import pytz
-from util.time_series import (
+from time_series import (
     add_missing_time_steps,
     harmonize_time_series,
     linearly_interpolate,

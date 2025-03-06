@@ -2,7 +2,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 import pytz
-from util.general import (
+from general import (
     get_time_zone,
     get_us_region_time_zone,
     read_codes_from_file,
