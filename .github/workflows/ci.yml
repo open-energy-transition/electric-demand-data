@@ -47,7 +47,6 @@ jobs:
 
       - name: "Pytest run tests"
         run: uv run pytest
-      
+
       - name: "Pytest check coverage report"
         run: uv run pytest --cov
-      
