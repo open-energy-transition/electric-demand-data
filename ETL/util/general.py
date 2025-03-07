@@ -50,10 +50,12 @@ def read_codes_from_file(file_path: str) -> list[str]:
     items = data["items"]
 
     # Extract codes.
-    if "region_code" in items[0]:
-        codes = [item["country_code"] + "_" + item["region_code"] for item in items]
-    else:
-        codes = [item["country_code"] for item in items]
+    codes = [
+        item["country_code"] + "_" + item["region_code"]
+        if "region_code" in item
+        else item["country_code"]
+        for item in items
+    ]
 
     return codes
 
@@ -88,6 +90,41 @@ def get_us_region_time_zone(region_code: str) -> pytz.timezone:
         "US_SW": "America/Phoenix",
         "US_TEN": "America/Chicago",
         "US_TEX": "America/Chicago",
+    }
+
+    return pytz.timezone(time_zones_mapping[region_code])
+
+
+def get_ca_region_time_zone(region_code: str) -> pytz.timezone:
+    """
+    Get the time zone of a Canadian region.
+
+    Parameters
+    ----------
+    region_code : str
+        The code of the Canadian region
+
+    Returns
+    -------
+    time_zone : pytz.timezone
+        The time zone of the Canadian region
+    """
+
+    # Define the time zones of the Canadian regions.
+    time_zones_mapping = {
+        "CA_AB": "America/Edmonton",
+        "CA_BC": "America/Vancouver",
+        "CA_MB": "America/Winnipeg",
+        "CA_NB": "America/Moncton",
+        "CA_NL": "America/St_Johns",
+        "CA_NS": "America/Halifax",
+        "CA_NT": "America/Yellowknife",
+        "CA_NU": "America/Iqaluit",
+        "CA_ON": "America/Toronto",
+        "CA_PE": "America/Halifax",
+        "CA_QC": "America/Montreal",
+        "CA_SK": "America/Regina",
+        "CA_YT": "America/Whitehorse",
     }
 
     return pytz.timezone(time_zones_mapping[region_code])
@@ -136,5 +173,9 @@ def get_time_zone(code: str) -> pytz.timezone:
 
         if iso_alpha_2_code == "US":
             time_zone = get_us_region_time_zone(iso_alpha_2_code + "_" + region_code)
+        elif iso_alpha_2_code == "CA":
+            time_zone = get_ca_region_time_zone(iso_alpha_2_code + "_" + region_code)
+        else:
+            raise ValueError(f"The regions in {iso_alpha_2_code} are not supported.")
 
     return time_zone
