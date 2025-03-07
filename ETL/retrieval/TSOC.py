@@ -116,7 +116,7 @@ def read_generation(generation_step):
     return float(total)
 
 
-def read_timestap_and_generation(
+def read_timestamp_and_generation(
     page: str,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
