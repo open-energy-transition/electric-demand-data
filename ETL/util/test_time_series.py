@@ -17,7 +17,7 @@ local_time_zone = pytz.timezone("America/New_York")
 
 @pytest.fixture
 def sample_time_series():
-    # Define the time steps.
+    # Define a one-year-long time series with 30-minute resolution.
     dates = pd.date_range("2023", "2024", freq="30min", tz=local_time_zone)[:-1]
 
     # Define the data.
@@ -38,6 +38,9 @@ def test_add_missing_time_steps(sample_time_series):
     # Remove a time step.
     time_series = sample_time_series.drop(sample_time_series.index[20])
 
+    # Count the number of missing data points.
+    missing_data_points = time_series.isna().sum()
+
     # Add the missing time step back.
     filled_time_series = add_missing_time_steps(time_series, local_time_zone)
 
@@ -45,14 +48,14 @@ def test_add_missing_time_steps(sample_time_series):
     assert len(filled_time_series) == original_length
 
     # Ensure that there is one additional missing data point.
-    assert filled_time_series.isna().sum() == 4
+    assert filled_time_series.isna().sum() == missing_data_points + 1
 
 
 def test_resample_time_resolution(sample_time_series):
     # Resample to hourly resolution.
     resampled_time_series = resample_time_resolution(sample_time_series, "1h")
 
-    # Should have fewer points after resampling.
+    # The one-year-long time series resampled to hourly resolution should have 8760 time steps.
     assert len(resampled_time_series) == 8760
 
 
@@ -60,11 +63,14 @@ def test_linearly_interpolate(sample_time_series):
     # Check the data point expected to be interpolated.
     assert np.isnan(sample_time_series.iloc[10])
 
+    # Count the number of missing data points.
+    missing_data_points = sample_time_series.isna().sum()
+
     # Interpolate missing values where the two surrounding values are known.
     interpolated_time_series = linearly_interpolate(sample_time_series)
 
     # Check if only isolated missing values are interpolated.
-    assert interpolated_time_series.isna().sum() == 2
+    assert interpolated_time_series.isna().sum() == missing_data_points - 1
 
     # Check correct interpolation.
     assert np.isnan(interpolated_time_series.iloc[2])
