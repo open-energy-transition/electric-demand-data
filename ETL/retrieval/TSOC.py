@@ -116,7 +116,7 @@ def read_generation(generation_step):
     return float(total)
 
 
-def read_timestamp_and_generation(
+def read_time_step_and_generation(
     page: str,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
@@ -153,7 +153,7 @@ def read_timestamp_and_generation(
     return dates, hours, minutes, total_generation
 
 
-def read_all_timestamps_and_generation(
+def read_all_time_steps_and_generation(
     retrieval_start_dates: pd.DatetimeIndex | pd.Timestamp, interval: int
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
@@ -192,7 +192,7 @@ def read_all_timestamps_and_generation(
         page = query_tsoc_website(current_date, days=interval)
 
         # Extract time and generation data.
-        dates, hours, minutes, generation = read_timestamp_and_generation(page)
+        dates, hours, minutes, generation = read_time_step_and_generation(page)
 
         # Store results.
         all_dates.extend(dates)
@@ -227,7 +227,7 @@ def download_and_extract_data() -> pd.Series:
 
     # Retrieve all timestamps and generation data.
     all_dates, all_hours, all_minutes, all_generation = (
-        read_all_timestamps_and_generation(retrieval_start_dates, interval)
+        read_all_time_steps_and_generation(retrieval_start_dates, interval)
     )
 
     # Construct datetime index with time zone.

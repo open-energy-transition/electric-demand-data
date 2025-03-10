@@ -6,63 +6,6 @@ import os
 import util.general as general_utilities
 import util.time_series as time_series_utilities
 
-# Define all the codes available on each platform.
-codes_on_platform = {
-    "ENTSO-E": [
-        "AL",  # Albania
-        "AT",  # Austria
-        "BE",  # Belgium
-        "BA",  # Bosnia and Herzegovina
-        "BG",  # Bulgaria
-        "CH",  # Switzerland
-        "CY",  # Cyprus
-        "CZ",  # Czech Republic
-        "DE",  # Germany
-        "DK",  # Denmark
-        "EE",  # Estonia
-        "ES",  # Spain
-        "FI",  # Finland
-        "FR",  # France
-        "GB",  # United Kingdom
-        "GR",  # Greece
-        "HR",  # Croatia
-        "HU",  # Hungary
-        "IE",  # Ireland
-        "IT",  # Italy
-        "LT",  # Lithuania
-        "LU",  # Luxembourg
-        "LV",  # Latvia
-        "MD",  # Moldova
-        "ME",  # Montenegro
-        "MK",  # North Macedonia
-        "NL",  # Netherlands
-        "NO",  # Norway
-        "PL",  # Poland
-        "PT",  # Portugal
-        "RO",  # Romania
-        "RS",  # Serbia
-        "SE",  # Sweden
-        "SI",  # Slovenia
-        "SK",  # Slovakia
-        "UA",  # Ukraine
-        "XK",  # Kosovo
-    ],
-    "TSOC": ["CY"],  # Cyprus
-    "NESO": ["GB_GB"],  # Great Britain
-    "CCEI": [
-        "CA_AB",  # Alberta
-        "CA_BC",  # British Columbia
-        "CA_NB",  # New Brunswick
-        "CA_NL",  # Newfoundland and Labrador
-        "CA_NS",  # Nova Scotia
-        "CA_ON",  # Ontario
-        "CA_PE",  # Prince Edward Island
-        "CA_QC",  # Quebec
-        # "CA_SK",  # Saskatchewan (data is at daily resolution)
-        "CA_YT",  # Yukon
-    ],
-}
-
 
 def read_command_line_arguments():
     """
@@ -97,7 +40,7 @@ def read_command_line_arguments():
     return args
 
 
-def check_and_get_codes(args: argparse.Namespace) -> list[str] | None:
+def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str], bool]:
     """
     Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
 
@@ -110,7 +53,17 @@ def check_and_get_codes(args: argparse.Namespace) -> list[str] | None:
     -------
     codes : list[str]
         The list of codes of the countries or regions of interest
+    one_code_on_platform : bool
+        A flag to check if there is only one code on the platform
     """
+
+    # Get the list of codes available on the platform.
+    codes_on_platform = general_utilities.read_codes_from_file(
+        "retrieval/" + args.data_source + ".yaml"
+    )
+
+    # Define a flag to check if there is only one code on the platform.
+    one_code_on_platform = len(codes_on_platform[args.data_source]) == 1
 
     if args.code is not None:
         # Check if the code is in the list of countries or regions available on the platform.
@@ -142,7 +95,7 @@ def check_and_get_codes(args: argparse.Namespace) -> list[str] | None:
         # Run the data retrieval for all the countries or regions available on the platform.
         codes = codes_on_platform[args.data_source]
 
-    return codes
+    return codes, one_code_on_platform
 
 
 def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
@@ -160,7 +113,7 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     """
 
     # Get the list of codes of the countries or regions of interest.
-    codes = check_and_get_codes(args)
+    codes, one_code_on_platform = check_and_get_codes(args)
 
     if codes is None:
         return None
@@ -173,26 +126,12 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
         # Import the module for the data source.
         retrieval_module = importlib.import_module(f"retrieval.{args.data_source}")
 
-        if len(codes) == 1:
+        if len(codes) == 1 and one_code_on_platform:
             logging.info(f"Retrieving data for {codes[0]}.")
 
-            if len(codes_on_platform[args.data_source]) == 1:
-                # If there is only one code on the platform, there is no need to specify the code.
-                electricity_demand_time_series = (
-                    retrieval_module.download_and_extract_data()
-                )
-            else:
-                # If there are multiple codes on the platform, the code needs to be specified.
-                electricity_demand_time_series = (
-                    retrieval_module.download_and_extract_data(codes[0])
-                )
-
-            # Save the electricity demand time series.
-            time_series_utilities.simple_save(
-                electricity_demand_time_series,
-                "Load (MW)",
-                result_directory,
-                codes[0] + "_" + args.data_source,
+            # If there is only one code on the platform, there is no need to specify the code.
+            electricity_demand_time_series = (
+                retrieval_module.download_and_extract_data()
             )
 
         else:

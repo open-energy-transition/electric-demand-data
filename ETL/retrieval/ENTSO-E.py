@@ -175,6 +175,9 @@ def download_and_extract_data(iso_alpha_2_code: str) -> pd.Series:
     # Create a flag to check if the dataset has been created.
     dataset_created = False
 
+    # Initialize the electricity demand time series.
+    electricity_demand_time_series = pd.Series()
+
     # Loop over the retrieval periods.
     for period_start, period_end in zip(
         start_date_and_time_of_period, end_date_and_time_of_period

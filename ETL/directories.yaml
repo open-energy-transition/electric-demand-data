@@ -1,6 +1,7 @@
 log_files_folder: logs
 settings_folder: settings
 figures_folder: figures
+retrieval_scripts_folder: retrieval
 electricity_load_folder: data/electricity_load
 population_density_folder: data/population_density
 weather_folder: data/weather
