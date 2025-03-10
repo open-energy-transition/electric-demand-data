@@ -172,7 +172,7 @@ def main() -> None:
 
     # Create a directory to store the electricity demand time series.
     result_directory = general_utilities.read_folders_structure()[
-        "electricity_load_folder"
+        "electricity_demand_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)
 
