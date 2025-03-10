@@ -192,7 +192,7 @@ def read_all_timestamps_and_generation(
         page = query_tsoc_website(current_date, days=interval)
 
         # Extract time and generation data.
-        dates, hours, minutes, generation = read_timestap_and_generation(page)
+        dates, hours, minutes, generation = read_timestamp_and_generation(page)
 
         # Store results.
         all_dates.extend(dates)
@@ -242,8 +242,8 @@ def download_and_extract_data() -> pd.Series:
     electricity_generation_time_series = pd.Series(data=all_generation, index=date_time)
 
     # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
+    electricity_generation_time_series = time_series_utilities.clean_data(
+        electricity_generation_time_series
     )
 
     return electricity_generation_time_series

@@ -6,7 +6,7 @@ import os
 import util.general as general_utilities
 import util.time_series as time_series_utilities
 
-# Define all the countries on the ENTSO-E platform.
+# Define all the codes available on each platform.
 codes_on_platform = {
     "ENTSO-E": [
         "AL",  # Albania
@@ -45,8 +45,8 @@ codes_on_platform = {
         "SI",  # Slovenia
         "SK",  # Slovakia
         "UA",  # Ukraine
-        "XK",
-    ],  # Kosovo
+        "XK",  # Kosovo
+    ],
     "TSOC": ["CY"],  # Cyprus
     "NESO": ["GB_GB"],  # Great Britain
     "CCEI": [
@@ -58,9 +58,9 @@ codes_on_platform = {
         "CA_ON",  # Ontario
         "CA_PE",  # Prince Edward Island
         "CA_QC",  # Quebec
-        # "CA_SK", # Saskatchewan (data is at daily resolution)
-        "CA_YT",
-    ],  # Yukon
+        # "CA_SK",  # Saskatchewan (data is at daily resolution)
+        "CA_YT",  # Yukon
+    ],
 }
 
 
