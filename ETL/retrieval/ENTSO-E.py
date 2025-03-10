@@ -35,7 +35,7 @@ def fetch_entsoe_demand(
     end_date_and_time: pd.Timestamp,
     max_attempts: int = 3,
     retry_delay: int = 5,
-) -> pd.Series | None:
+) -> pd.Series:
     """
     Fetches the hourly electricity demand time series from ENTSO-E with retry logic.
 
@@ -75,9 +75,9 @@ def fetch_entsoe_demand(
             if attempts < max_attempts:
                 time.sleep(retry_delay)
 
-    logging.error("Failed to retrieve data after multiple attempts.")
-
-    return None
+    raise ConnectionError(
+        "Failed to connect to the ENTSO-E API after multiple attempts."
+    )
 
 
 def download_and_extract_data_of_period(

@@ -75,9 +75,7 @@ def query_tsoc_website(
             if attempts < max_attempts:
                 time.sleep(retry_delay)
 
-    logging.error("Failed to retrieve content after multiple attempts.")
-
-    return None
+    raise URLError("Failed to retrieve data after multiple attempts.")
 
 
 def read_generation(generation_step):

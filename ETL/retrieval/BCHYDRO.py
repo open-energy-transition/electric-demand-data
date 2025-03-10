@@ -72,6 +72,7 @@ def read_excel_file(year: int) -> pd.Series:
         header = 0
 
     # Define the index columns of the Excel file.
+    index_columns: list[str] | list[int]
     if (
         (year >= 2001 and year <= 2006)
         or (year >= 2008 and year <= 2011)
@@ -88,6 +89,7 @@ def read_excel_file(year: int) -> pd.Series:
         index_columns = ["Date ", "HE"]
 
     # Define the column of the electricity demand data.
+    load_column: list[str] | list[int]
     if (year >= 2001 and year <= 2006) or (year >= 2015 and year <= 2020):
         load_column = ["Balancing Authority Load"]
     elif year == 2007:

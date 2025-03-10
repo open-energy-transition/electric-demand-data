@@ -40,7 +40,9 @@ def read_command_line_arguments():
     return args
 
 
-def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str] | None, bool]:
+def check_and_get_codes(
+    args: argparse.Namespace,
+) -> tuple[list[str] | None, bool | None]:
     """
     Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
 
@@ -71,7 +73,7 @@ def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str] | None, boo
             logging.error(
                 f"Code {args.code} is not available on the {args.data_source} platform."
             )
-            codes = None
+            return None, None
         else:
             codes = [args.code]
 
@@ -90,7 +92,7 @@ def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str] | None, boo
         # Check if there are any codes left.
         if len(codes) == 0:
             logging.error("No valid codes have been found.")
-            codes = None
+            return None, None
     else:
         # Run the data retrieval for all the countries or regions available on the platform.
         codes = codes_on_platform
