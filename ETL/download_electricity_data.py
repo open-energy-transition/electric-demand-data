@@ -7,9 +7,14 @@ import util.general as general_utilities
 import util.time_series as time_series_utilities
 
 
-def read_command_line_arguments():
+def read_command_line_arguments() -> argparse.Namespace:
     """
     Create a parser for the command line arguments and read them.
+
+    Returns
+    -------
+    args : argparse.Namespace
+        The command line arguments
     """
 
     # Create a parser for the command line arguments.
