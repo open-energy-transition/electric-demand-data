@@ -59,6 +59,8 @@ def download_and_extract_data_of_year(year: int) -> pd.Series:
         The electricity demand time series in MW
     """
 
+    logging.info(f"Retrieving electricity demand data for the year {year}.")
+
     # Get the time zone of the country.
     local_time_zone = general_utilities.get_time_zone("GB")
 
@@ -108,29 +110,14 @@ def download_and_extract_data() -> pd.Series:
     start_year = 2009
     end_year = pd.Timestamp.today().year
 
-    # Define the years for the data retrieval.
-    years = range(start_year, end_year + 1)
+    # Retrieve the electricity demand time series of all years.
+    electricity_demand_time_series_list = [
+        download_and_extract_data_of_year(year)
+        for year in range(start_year, end_year + 1)
+    ]
 
-    # Initialize the flag for the dataset creation.
-    dataset_created = False
-
-    # Initialize the electricity demand time series.
-    electricity_demand_time_series = pd.Series()
-
-    # Loop over the years.
-    for year in years:
-        logging.info(f"Retrieving electricity demand data for the year {year}.")
-
-        # Retrieve the electricity demand time series.
-        electricity_demand_time_series_of_year = download_and_extract_data_of_year(year)
-
-        if dataset_created:
-            electricity_demand_time_series = pd.concat(
-                [electricity_demand_time_series, electricity_demand_time_series_of_year]
-            )
-        else:
-            electricity_demand_time_series = electricity_demand_time_series_of_year
-            dataset_created = True
+    # Concatenate the electricity demand time series of all years.
+    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
 
     # Clean the data.
     electricity_demand_time_series = time_series_utilities.clean_data(
