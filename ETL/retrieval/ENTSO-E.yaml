@@ -1,4 +1,6 @@
 items:
+  - country_name: Albania
+    country_code: AL
   - country_name: Austria
     country_code: AT
   - country_name: Belgium
@@ -21,6 +23,8 @@ items:
     country_code: FI
   - country_name: France
     country_code: FR
+  - country_name: Georgia
+    country_code: GE
   - country_name: Germany
     country_code: DE
   - country_name: Greece
