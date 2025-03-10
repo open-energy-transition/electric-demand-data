@@ -20,7 +20,7 @@ items:
     country_name: Canada
     country_code: CA
   - region_name: Ontario
-    region_code: ON
+    region_code: "ON"
     country_name: Canada
     country_code: CA
   - region_name: Prince Edward Island

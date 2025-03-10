@@ -126,39 +126,29 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
         # Import the module for the data source.
         retrieval_module = importlib.import_module(f"retrieval.{args.data_source}")
 
-        if one_code_on_platform:
-            logging.info(f"Retrieving data for {codes[0]}.")
+        # Loop over the codes.
+        for code in codes:
+            logging.info(f"Retrieving data for {code}.")
 
-            # If there is only one code on the platform, there is no need to specify the code.
-            electricity_demand_time_series = (
-                retrieval_module.download_and_extract_data()
-            )
+            # Retrieve the electricity demand time series.
+            if one_code_on_platform:
+                # If there is only one code on the platform (and only one code in the list of codes), there is no need to specify the code.
+                electricity_demand_time_series = (
+                    retrieval_module.download_and_extract_data()
+                )
+            else:
+                # If there are multiple codes on the platform, the code needs to be specified.
+                electricity_demand_time_series = (
+                    retrieval_module.download_and_extract_data(code)
+                )
 
             # Save the electricity demand time series.
             time_series_utilities.simple_save(
                 electricity_demand_time_series,
                 "Load (MW)",
                 result_directory,
-                codes[0] + "_" + args.data_source,
+                code + "_" + args.data_source,
             )
-
-        else:
-            # Loop over the codes.
-            for code in codes:
-                logging.info(f"Retrieving data for {code}.")
-
-                # Retrieve the electricity demand time series.
-                electricity_demand_time_series = (
-                    retrieval_module.download_and_extract_data(code)
-                )
-
-                # Save the electricity demand time series.
-                time_series_utilities.simple_save(
-                    electricity_demand_time_series,
-                    "Load (MW)",
-                    result_directory,
-                    code + "_" + args.data_source,
-                )
 
         logging.info(
             f"Electricity data from the {args.data_source} website has been successfully retrieved and saved."
