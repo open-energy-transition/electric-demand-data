@@ -40,7 +40,7 @@ def read_command_line_arguments():
     return args
 
 
-def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str], bool]:
+def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str] | None, bool]:
     """
     Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
 
@@ -63,15 +63,15 @@ def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str], bool]:
     )
 
     # Define a flag to check if there is only one code on the platform.
-    one_code_on_platform = len(codes_on_platform[args.data_source]) == 1
+    one_code_on_platform = len(codes_on_platform) == 1
 
     if args.code is not None:
         # Check if the code is in the list of countries or regions available on the platform.
-        if args.code not in codes_on_platform[args.data_source]:
+        if args.code not in codes_on_platform:
             logging.error(
                 f"Code {args.code} is not available on the {args.data_source} platform."
             )
-            return None
+            codes = None
         else:
             codes = [args.code]
 
@@ -81,7 +81,7 @@ def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str], bool]:
 
         # Check if the codes are in the list of countries or regions available on the platform.
         for code in codes:
-            if code not in codes_on_platform[args.data_source]:
+            if code not in codes_on_platform:
                 logging.error(
                     f"Code {code} is not available on the {args.data_source} platform."
                 )
@@ -90,10 +90,10 @@ def check_and_get_codes(args: argparse.Namespace) -> tuple[list[str], bool]:
         # Check if there are any codes left.
         if len(codes) == 0:
             logging.error("No valid codes have been found.")
-            return None
+            codes = None
     else:
         # Run the data retrieval for all the countries or regions available on the platform.
-        codes = codes_on_platform[args.data_source]
+        codes = codes_on_platform
 
     return codes, one_code_on_platform
 
@@ -126,12 +126,20 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
         # Import the module for the data source.
         retrieval_module = importlib.import_module(f"retrieval.{args.data_source}")
 
-        if len(codes) == 1 and one_code_on_platform:
+        if one_code_on_platform:
             logging.info(f"Retrieving data for {codes[0]}.")
 
             # If there is only one code on the platform, there is no need to specify the code.
             electricity_demand_time_series = (
                 retrieval_module.download_and_extract_data()
+            )
+
+            # Save the electricity demand time series.
+            time_series_utilities.simple_save(
+                electricity_demand_time_series,
+                "Load (MW)",
+                result_directory,
+                codes[0] + "_" + args.data_source,
             )
 
         else:
@@ -180,8 +188,6 @@ def main() -> None:
 
     # Run the data retrieval.
     run_data_retrieval(args, result_directory)
-
-    return None
 
 
 if __name__ == "__main__":
