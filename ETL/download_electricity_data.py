@@ -120,10 +120,7 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     # Get the list of codes of the countries or regions of interest.
     codes, one_code_on_platform = check_and_get_codes(args)
 
-    if codes is None:
-        return None
-
-    else:
+    if codes is not None:
         logging.info(
             f"Retrieving electricity data from the {args.data_source} website."
         )
