@@ -50,10 +50,12 @@ def read_codes_from_file(file_path: str) -> list[str]:
     items = data["items"]
 
     # Extract codes.
-    if "region_code" in items[0]:
-        codes = [item["country_code"] + "_" + item["region_code"] for item in items]
-    else:
-        codes = [item["country_code"] for item in items]
+    codes = [
+        item["country_code"] + "_" + item["region_code"]
+        if "region_code" in item
+        else item["country_code"]
+        for item in items
+    ]
 
     return codes
 
@@ -125,7 +127,8 @@ def get_time_zone(code: str) -> pytz.timezone:
 
             # Find time zone based on capital city coordinates.
             tf = TimezoneFinder()
-            time_zone = tf.timezone_at(lat=location[0], lng=location[1])
+            time_zone_name = tf.timezone_at(lat=location[0], lng=location[1])
+            time_zone = pytz.timezone(time_zone_name)
         else:
             # Get the time zone of the country.
             time_zone = time_zones[0]
