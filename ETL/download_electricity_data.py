@@ -115,8 +115,6 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
         The command line arguments
     result_directory : str
         The directory to store the electricity demand time series
-    codes : str | list[str]
-        The code or list of codes of the countries or regions of interest
     """
 
     # Get the list of codes of the countries or regions of interest.
