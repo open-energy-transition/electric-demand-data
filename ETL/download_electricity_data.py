@@ -40,7 +40,11 @@ def read_command_line_arguments() -> argparse.Namespace:
     """
 
     # Create a parser for the command line arguments.
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Download electricity demand data from the specified data source. "
+        "You can specify the country or region code or provide a file containing the list of codes. "
+        "If no code or file is provided, the data retrieval will be run for all the countries or regions available on the data source platform."
+    )
     parser.add_argument(
         "data_source",
         type=str,
