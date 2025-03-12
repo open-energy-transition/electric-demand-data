@@ -15,6 +15,7 @@ Description:
 """
 
 import json
+import logging
 import os
 import urllib.request
 from pathlib import Path
@@ -44,6 +45,8 @@ def download_and_extract_data_of_period(
     electricity_demand_time_series : pandas.Series
         The electricity generation time series in MW
     """
+
+    logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 
     # Extract the region code.
     region_code = region_code.split("_")[1]

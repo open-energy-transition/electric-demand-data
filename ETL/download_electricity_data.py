@@ -1,10 +1,32 @@
 import argparse
-import importlib
 import logging
 import os
 
+import retrieval.AESO as AESO
+import retrieval.BCHYDRO as BCHYDRO
+import retrieval.CCEI as CCEI
+import retrieval.EIA as EIA
+import retrieval.ENTSOE as ENTSOE
+import retrieval.HYDROQUEBEC as HYDROQUEBEC
+import retrieval.IESO as IESO
+import retrieval.NBPOWER as NBPOWER
+import retrieval.NESO as NESO
+import retrieval.TSOC as TSOC
 import util.general as general_utilities
 import util.time_series as time_series_utilities
+
+retrieval_module = {
+    "AESO": AESO,
+    "BCHYDRO": BCHYDRO,
+    "CCEI": CCEI,
+    "EIA": EIA,
+    "ENTSOE": ENTSOE,
+    "HYDROQUEBEC": HYDROQUEBEC,
+    "IESO": IESO,
+    "NBPOWER": NBPOWER,
+    "NESO": NESO,
+    "TSOC": TSOC,
+}
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -22,7 +44,8 @@ def read_command_line_arguments() -> argparse.Namespace:
     parser.add_argument(
         "data_source",
         type=str,
-        help='The acronym of the data source as defined in the retrieval modules (example: "ENTSO-E")',
+        choices=retrieval_module.keys(),
+        help='The acronym of the data source as defined in the retrieval modules (example: "ENTSOE")',
     )
     parser.add_argument(
         "-c",
@@ -125,9 +148,6 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             f"Retrieving electricity data from the {args.data_source} website."
         )
 
-        # Import the module for the data source.
-        retrieval_module = importlib.import_module(f"retrieval.{args.data_source}")
-
         # Loop over the codes.
         for code in codes:
             logging.info(f"Retrieving data for {code}.")
@@ -135,14 +155,14 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             # Retrieve the electricity demand time series.
             if one_code_on_platform:
                 # If there is only one code on the platform (and only one code in the list of codes), there is no need to specify the code.
-                electricity_demand_time_series = (
-                    retrieval_module.download_and_extract_data()
-                )
+                electricity_demand_time_series = retrieval_module[
+                    args.data_source
+                ].download_and_extract_data()
             else:
                 # If there are multiple codes on the platform, the code needs to be specified.
-                electricity_demand_time_series = (
-                    retrieval_module.download_and_extract_data(code)
-                )
+                electricity_demand_time_series = retrieval_module[
+                    args.data_source
+                ].download_and_extract_data(code)
 
             # Save the electricity demand time series.
             time_series_utilities.simple_save(
