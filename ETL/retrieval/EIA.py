@@ -5,9 +5,13 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from DATA_SOURCE...
+    This script retrieves the electricity load data from the Energy Information Administration (EIA).
 
-    Source: ...
+    The data is retrieved for the years from 2020 to the current year. The data is retrieved in six-month intervals.
+
+    The data is saved in CSV and Parquet formats.
+
+    Source: https://www.eia.gov/opendata/browser/electricity/rto/region-data
 """
 
 import json
