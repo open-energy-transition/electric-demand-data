@@ -26,7 +26,7 @@ def download_and_process(region):
     dfs = []
     
     # Loop through the years from 2018 to 2024
-    for year in range(2018, 2024):
+    for year in range(2018, 2025):
         for month in range(1, 13):
             # Format the month-year string
             month_str = f"{year}{month:02d}"
