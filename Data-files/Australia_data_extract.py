@@ -6,10 +6,7 @@ from urllib.parse import urlsplit
 from concurrent.futures import ThreadPoolExecutor
 
 # Base URL structure (ensure it follows expected formatting)
-BASE_URL = (
-    "https://aemo.com.au/aemo/data/nem/priceanddemand/"
-    "PRICE_AND_DEMAND_{}_{}.csv"
-)
+BASE_URL = "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{}_{}.csv"
 
 # List of regions to download data for
 REGIONS = ["NSW1", "QLD1", "VIC1", "SA1", "TAS1"]
@@ -23,7 +20,7 @@ def download_and_process(region: str) -> None:
     """Download and process files for a given region."""
     region_folder = os.path.join(region)
     os.makedirs(region_folder, exist_ok=True)
-    
+
     dfs = []
 
     for year in range(2018, 2024):
@@ -64,7 +61,9 @@ def download_and_process(region: str) -> None:
 
     if dfs:
         aggregated_df = pd.concat(dfs, ignore_index=True)
-        aggregated_file_path = os.path.join(AGGREGATE_FOLDER, f"aggregated_{region}.csv")
+        aggregated_file_path = os.path.join(
+            AGGREGATE_FOLDER, f"aggregated_{region}.csv"
+        )
         aggregated_df.to_csv(aggregated_file_path, index=False)
         print(f"Aggregated file saved for {region}: {aggregated_file_path}")
 
@@ -102,14 +101,22 @@ def aggregate_all_region_files() -> None:
     # Merge all regions into a single dataframe
     if region_data:
         final_aggregated_df = pd.concat(region_data.values(), axis=1)
-        final_aggregated_df = final_aggregated_df.loc[:, ~final_aggregated_df.columns.duplicated()]  # Drop duplicates
+        final_aggregated_df = final_aggregated_df.loc[
+            :, ~final_aggregated_df.columns.duplicated()
+        ]  # Drop duplicates
 
         # Compute total demand
-        demand_columns = [col for col in final_aggregated_df.columns if col.endswith("_DEMAND")]
-        final_aggregated_df["TOTAL_DEMAND"] = final_aggregated_df[demand_columns].sum(axis=1)
+        demand_columns = [
+            col for col in final_aggregated_df.columns if col.endswith("_DEMAND")
+        ]
+        final_aggregated_df["TOTAL_DEMAND"] = final_aggregated_df[demand_columns].sum(
+            axis=1
+        )
 
         # Sort and save the final file
-        final_aggregated_df.sort_values(by="SETTLEMENTDATE", ascending=True, inplace=True)
+        final_aggregated_df.sort_values(
+            by="SETTLEMENTDATE", ascending=True, inplace=True
+        )
         final_file = os.path.join(AGGREGATE_FOLDER, "final_aggregated.csv")
         final_aggregated_df.to_csv(final_file, index=False)
         print(f"Final aggregated file saved: {final_file}")
