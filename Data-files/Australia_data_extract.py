@@ -1,131 +1,132 @@
+import requests
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
-from urllib.parse import urlsplit
-
 import pandas as pd
-import requests
+from urllib.parse import urlsplit
+from concurrent.futures import ThreadPoolExecutor
 
-# Base URL structure (ensure it follows expected formatting)
-BASE_URL = "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{}_{}.csv"
+# Base URL structure (assuming the format is consistent)
+base_url = "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{}_{}.csv"
 
 # List of regions to download data for
-REGIONS = ["NSW1", "QLD1", "VIC1", "SA1", "TAS1"]
+regions = ["NSW1", "QLD1", "VIC1", "SA1", "TAS1"]
 
-# Create directories for aggregated files
-AGGREGATE_FOLDER = "aggregate"
-os.makedirs(AGGREGATE_FOLDER, exist_ok=True)
+# Create the aggregate folder for saving merged files
+aggregate_folder = "aggregate"
+os.makedirs(aggregate_folder, exist_ok=True)
 
-
-def download_and_process(region: str) -> None:
-    """Download and process files for a given region."""
+def download_and_process(region):
+    """Download and process files for a specific region."""
+    
+    # Create the region folder
     region_folder = os.path.join(region)
     os.makedirs(region_folder, exist_ok=True)
-
+    
+    # Initialize a list to collect all dataframes for merging
     dfs = []
-
+    
+    # Loop through the years from 2018 to 2024
     for year in range(2018, 2024):
         for month in range(1, 13):
+            # Format the month-year string
             month_str = f"{year}{month:02d}"
-            url = BASE_URL.format(month_str, region)
-
+            
+            # Construct the download URL
+            url = base_url.format(month_str, region)
+            
+            # Set the headers to mimic a browser
             headers = {
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                    "(KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
-                )
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
             }
-
+            
+            # Attempt to download the file
             response = requests.get(url, headers=headers)
-
+            
             if response.status_code == 200:
+                # Extract filename
                 filename = os.path.basename(urlsplit(url).path)
+                
+                # Define save path
                 file_path = os.path.join(region_folder, filename)
-
+                
+                # Save the file
                 with open(file_path, "wb") as file:
                     file.write(response.content)
-
                 print(f"File downloaded: {file_path}")
-
-                try:
-                    df = pd.read_csv(file_path)
-                    dfs.append(df)
-                except pd.errors.EmptyDataError:
-                    print(f"Warning: Empty CSV file {file_path}, skipping.")
+                
+                # Read the downloaded CSV into a dataframe
+                df = pd.read_csv(file_path)
+                dfs.append(df)
             else:
-                print(
-                    f"Failed to download file for {month_str} ({region}). "
-                    f"Status code: {response.status_code}"
-                )
-
-            time.sleep(5)  # Sleep to avoid rate limits
-
+                print(f"Failed to download file for {month_str} ({region}). Status code: {response.status_code}")
+            
+            # Sleep to avoid rate-limiting issues
+            time.sleep(5)
+    
+    # After all files for the region are downloaded, merge them into one file
     if dfs:
+        # Concatenate all dataframes for this region
         aggregated_df = pd.concat(dfs, ignore_index=True)
-        aggregated_file_path = os.path.join(
-            AGGREGATE_FOLDER, f"aggregated_{region}.csv"
-        )
+        
+        # Save the aggregated dataframe as a CSV file
+        aggregated_file_path = os.path.join(aggregate_folder, f"aggregated_{region}.csv")
         aggregated_df.to_csv(aggregated_file_path, index=False)
         print(f"Aggregated file saved for {region}: {aggregated_file_path}")
 
+def aggregate_all_region_files():
+    """Aggregate all region files into one final sorted file with regions as columns."""
+    
+    print("Now merging all regional data into a single dataset with regions as columns...")
 
-def aggregate_all_region_files() -> None:
-    """Aggregate all regional data into one dataset with regions as columns."""
-    print("Merging all regional data into a single dataset...")
-
-    aggregated_files = [
-        os.path.join(AGGREGATE_FOLDER, f)
-        for f in os.listdir(AGGREGATE_FOLDER)
-        if f.startswith("aggregated_")
-    ]
-
+    # Get all the aggregated files
+    all_aggregated_files = [os.path.join(aggregate_folder, f) for f in os.listdir(aggregate_folder) if f.startswith('aggregated_')]
+    
+    # Dictionary to store dataframes with SETTLEMENTDATE as the index
     region_data = {}
 
-    for file in aggregated_files:
-        region = os.path.basename(file).split("_")[1].split(".")[0]
+    for file in all_aggregated_files:
+        # Extract region name from the filename
+        region = os.path.basename(file).split('_')[1].split('.')[0]
 
-        try:
-            df = pd.read_csv(file)
-            df["SETTLEMENTDATE"] = pd.to_datetime(df["SETTLEMENTDATE"])
+        # Read the aggregated CSV
+        df = pd.read_csv(file)
 
-            if "TOTALDEMAND" in df.columns:
-                df = df[["SETTLEMENTDATE", "TOTALDEMAND"]].rename(
-                    columns={"TOTALDEMAND": f"{region}_DEMAND"}
-                )
-                region_data[region] = df
-            else:
-                print(f"Warning: TOTALDEMAND column not found in {file}")
+        # Ensure 'SETTLEMENTDATE' is in datetime format
+        df['SETTLEMENTDATE'] = pd.to_datetime(df['SETTLEMENTDATE'])
 
-        except pd.errors.EmptyDataError:
-            print(f"Warning: Skipping empty file {file}.")
+        # Extract only SETTLEMENTDATE and the Demand column (assuming the demand column name)
+        if 'TOTALDEMAND' in df.columns:
+            df = df[['SETTLEMENTDATE', 'TOTALDEMAND']].rename(columns={'TOTALDEMAND': f'{region}_DEMAND'})
+        else:
+            print(f"Warning: TOTALDEMAND column not found in {file}")
 
-    # Merge all regions into a single dataframe
-    if region_data:
-        final_aggregated_df = pd.concat(region_data.values(), axis=1)
-        final_aggregated_df = final_aggregated_df.loc[
-            :, ~final_aggregated_df.columns.duplicated()
-        ]  # Drop duplicates
+        # Store dataframe in dictionary
+        region_data[region] = df
 
-        # Compute total demand
-        demand_columns = [
-            col for col in final_aggregated_df.columns if col.endswith("_DEMAND")
-        ]
-        final_aggregated_df["TOTAL_DEMAND"] = final_aggregated_df[demand_columns].sum(
-            axis=1
-        )
+    # Merge all dataframes on SETTLEMENTDATE
+    final_aggregated_df = None
+    for region, df in region_data.items():
+        if final_aggregated_df is None:
+            final_aggregated_df = df
+        else:
+            final_aggregated_df = final_aggregated_df.merge(df, on='SETTLEMENTDATE', how='outer')
 
-        # Sort and save the final file
-        final_aggregated_df.sort_values(
-            by="SETTLEMENTDATE", ascending=True, inplace=True
-        )
-        final_file = os.path.join(AGGREGATE_FOLDER, "final_aggregated.csv")
-        final_aggregated_df.to_csv(final_file, index=False)
-        print(f"Final aggregated file saved: {final_file}")
+    # Add a TOTAL_DEMAND column summing all region demands
+    demand_columns = [col for col in final_aggregated_df.columns if col.endswith('_DEMAND')]
+    final_aggregated_df['TOTAL_DEMAND'] = final_aggregated_df[demand_columns].sum(axis=1)
 
+    # Sort by 'SETTLEMENTDATE'
+    final_aggregated_df = final_aggregated_df.sort_values(by='SETTLEMENTDATE', ascending=True)
 
-# Execute downloads in parallel using ThreadPoolExecutor
+    # Save the final aggregated dataframe as a CSV file
+    final_aggregated_file_path = os.path.join(aggregate_folder, "final_aggregated.csv")
+    final_aggregated_df.to_csv(final_aggregated_file_path, index=False)
+    print(f"Final aggregated file saved with all regions as columns: {final_aggregated_file_path}")
+
+# Using ThreadPoolExecutor to download files concurrently for each region
 with ThreadPoolExecutor() as executor:
-    executor.map(download_and_process, REGIONS)
+    for region in regions:
+        executor.submit(download_and_process, region)
 
-# Merge region files after downloading
+# After all regions are downloaded and aggregated separately, merge them into one final file
 aggregate_all_region_files()
