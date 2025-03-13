@@ -1,9 +1,10 @@
-import requests
 import os
 import time
-import pandas as pd
-from urllib.parse import urlsplit
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urlsplit
+
+import pandas as pd
+import requests
 
 # Base URL structure (assuming the format is consistent)
 base_url = "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{}_{}.csv"
