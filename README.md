@@ -8,6 +8,13 @@ This project uses [uv](https://github.com/astral-sh/uv) as a pacakge manager.
 It can be used within the provided Dockerfile or installed standalone, see:
 [Installing uv](https://docs.astral.sh/uv/getting-started/installation/)
 
+Then clone the repository, and run:
+```bash
+uv sync
+```
+
+### Useful commands
+
 Jupyter [(details)](https://docs.astral.sh/uv/guides/integration/jupyter/#using-jupyter-within-a-project):
 ```bash
 uv run --with jupyter jupyter lab --allow-root
