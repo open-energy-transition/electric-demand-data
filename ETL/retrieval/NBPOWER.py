@@ -14,12 +14,52 @@ Description:
     Source: https://tso.nbpower.com/Public/en/system_information_archive.aspx
 """
 
-from io import StringIO
+import logging
 
 import pandas as pd
-import requests
+import util.fetcher as fetcher
 import util.time_series as time_series_utilities
-from bs4 import BeautifulSoup
+
+
+def get_available_requests() -> list[tuple[int, int]]:
+    """
+    Get the list of available requests to retrieve the electricity demand data on the New Brunswick Power Corporation website.
+
+    Returns
+    -------
+    available_requests : list[tuple[int, int]]
+        The list of available requests
+    """
+
+    # Define the start and end date according to the data availability.
+    start_date = pd.Timestamp("2018-01-01")
+    end_date = pd.Timestamp.now()
+
+    # The available requests are the years and months from 2018 to the current year.
+    available_requests = [
+        (year, month)
+        for year in range(start_date.year, end_date.year + 1)
+        for month in range(1, 13)
+        if year != end_date.year or month < end_date.month
+    ]
+
+    return available_requests
+
+
+def get_url() -> str:
+    """
+    Get the URL of the electricity demand data on the New Brunswick Power Corporation website.
+
+    Returns
+    -------
+    url : str
+        The URL of the electricity demand data
+    """
+
+    # Define the URL of the electricity demand data.
+    url = "https://tso.nbpower.com/Public/en/system_information_archive.aspx"
+
+    return url
 
 
 def download_and_extract_data_of_month(year: int, month: int) -> pd.Series:
@@ -39,37 +79,32 @@ def download_and_extract_data_of_month(year: int, month: int) -> pd.Series:
         The electricity generation time series in MW
     """
 
-    # Define the URL of the electricity demand data.
-    url = "https://tso.nbpower.com/Public/en/system_information_archive.aspx"
+    # Check if the year and month are supported.
+    assert (
+        year,
+        month,
+    ) in get_available_requests(), f"Year {year} and month {month} are not supported."
 
-    # Start a session.
-    session = requests.Session()
+    logging.info(
+        f"Retrieving electricity demand data for the year {year} and month {month}."
+    )
 
-    # Get the page to extract necessary form data (VIEWSTATE, EVENTVALIDATION).
-    response = session.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
+    # Get the URL of the electricity demand data.
+    url = get_url()
 
-    # Extract hidden input values (needed for form submission).
-    viewstate = soup.find("input", {"id": "__VIEWSTATE"})["value"]
-    eventvalidation = soup.find("input", {"id": "__EVENTVALIDATION"})["value"]
-
-    # Prepare the payload.
-    payload = {
-        "__VIEWSTATE": viewstate,
-        "__EVENTVALIDATION": eventvalidation,
-        "__EVENTTARGET": "ctl00$cphMainContent$lbGetData",
-        "ctl00$cphMainContent$ddlMonth": month,
-        "ctl00$cphMainContent$ddlYear": year,
-    }
-
-    # Submit the form to get the data and read the response.
-    response = session.post(url, data=payload)
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    # Extract the data from the response.
-    dataset = pd.read_csv(StringIO(soup.text))
+    # Fetch HTML content from the URL.
+    dataset = fetcher.fetch_data(
+        url,
+        "query",
+        query_event_target="ctl00$cphMainContent$lbGetData",
+        query_params={
+            "ctl00$cphMainContent$ddlMonth": month,
+            "ctl00$cphMainContent$ddlYear": year,
+        },
+    )
 
     # Extract the electricity demand time series.
+    # It is unclear whether the time values represent the start or end of the hour. Most likely, they represent the start of the hour but this is not confirmed.
     electricity_demand_time_series = pd.Series(
         dataset["NB_LOAD"].values,
         index=pd.to_datetime(dataset["HOUR"].values, format="%Y-%m-%d %H:%M"),
@@ -95,15 +130,12 @@ def download_and_extract_data() -> pd.Series:
         The electricity generation time series in MW
     """
 
-    start_date = pd.Timestamp("2018-01-01")
-    end_date = pd.Timestamp.now()
+    # Get the list of available requests.
+    requests = get_available_requests()
 
     # Retrieve the electricity demand data for each month.
     electricity_demand_time_series_list = [
-        download_and_extract_data_of_month(year, month)
-        for year in range(start_date.year, end_date.year + 1)
-        for month in range(1, 13)
-        if year != end_date.year or month < end_date.month
+        download_and_extract_data_of_month(*request) for request in requests
     ]
 
     # Concatenate the electricity demand time series.
