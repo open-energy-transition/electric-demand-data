@@ -15,7 +15,24 @@ Description:
 """
 
 import pandas as pd
+import util.fetcher as fetcher
 import util.time_series as time_series_utilities
+
+
+def get_url() -> str:
+    """
+    Get the URL of the electricity demand data on the Hydro-Québec website.
+
+    Returns
+    -------
+    url : str
+        The URL of the electricity demand data
+    """
+
+    # Define the URL of the electricity demand data.
+    url = "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/historique-demande-electricite-quebec/exports/csv?lang=en&timezone=America%2FToronto&use_labels=true&delimiter=%2C"
+
+    return url
 
 
 def download_and_extract_data() -> pd.Series:
@@ -28,11 +45,11 @@ def download_and_extract_data() -> pd.Series:
         The electricity generation time series in MW
     """
 
-    # Define the URL of the electricity demand data.
-    url = "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/historique-demande-electricite-quebec/exports/csv?lang=en&timezone=America%2FToronto&use_labels=true&delimiter=%2C"
+    # Get the URL of the electricity demand data.
+    url = get_url()
 
     # Fetch the electricity demand data.
-    electricity_demand_time_series = pd.read_csv(url)
+    electricity_demand_time_series = fetcher.fetch_data(url, "csv")
 
     # Set the date as the index.
     electricity_demand_time_series = electricity_demand_time_series.set_index(
