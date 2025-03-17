@@ -18,64 +18,63 @@ Description:
 
 import logging
 import re
-import time
-from urllib.error import URLError
-from urllib.request import Request, urlopen
 
 import pandas as pd
+import util.fetcher as fetcher
 import util.time_series as time_series_utilities
 
 
-def query_tsoc_website(
-    starting_date: pd.Timestamp,
-    days: int = 15,
-    max_attempts: int = 3,
-    retry_delay: int = 5,
-) -> str:
+def get_available_requests() -> list[pd.Timestamp]:
     """
-    Query the website of the Transmission System Operator of Cyprus for the electricity generation data.
+    Get the list of available requests to retrieve the electricity generation data on the Transmission System Operator of Cyprus website.
+
+    Returns
+    -------
+    available_requests : list[pd.Timestamp]
+        The list of available requests
+    """
+
+    # Define the start and end date according to the data availability.
+    start_date_and_time = pd.Timestamp(
+        "2008-01-01 00:00:00"
+    )  # This is in local time (Asia/Nicosia).
+    end_date_and_time = pd.Timestamp.today()
+
+    # Define start dates for the data retrievals. We use 15-day intervals (the maximum available on the website) to minimize the number of requests.
+    available_requests = list(
+        pd.date_range(start_date_and_time, end_date_and_time, freq="15D")
+    )
+
+    return available_requests
+
+
+def get_url(start_date: pd.Timestamp) -> str:
+    """
+    Get the URL of the electricity generation data on the Transmission System Operator of Cyprus website.
 
     Parameters
     ----------
     starting_date : pandas.Timestamp
         The starting date for the data retrieval period
-    days : int, optional
-        The number of days of the retrieval period (it can be 1, 3, 7, or 15 days)
-    max_attempts : int, optional
-        The maximum number of retry attempts (default is 3)
-    retry_delay : int, optional
-        The delay between retry attempts in seconds (default is 5)
 
     Returns
     -------
-    str
-        The HTML content of the website
+    url : str
+        The URL of the electricity generation data
     """
 
-    # Format date in "YYYY-MM-DD".
-    date_for_query = starting_date.strftime("%d-%m-%Y")
+    # Check that the beginning of the period is on or after 2008-01-01.
+    assert start_date >= pd.Timestamp(
+        "2008-01-01 00:00:00"
+    ), "The beginning of the data availability is 2008-01-01."
+
+    # Convert the start and end dates and times to the required format.
+    start_date = start_date.strftime("%d-%m-%Y")
 
     # Construct the request URL.
-    url = f"https://tsoc.org.cy/electrical-system/archive-total-daily-system-generation-on-the-transmission-system/?startdt={date_for_query}&enddt=%2B{days}days"
+    url = f"https://tsoc.org.cy/electrical-system/archive-total-daily-system-generation-on-the-transmission-system/?startdt={start_date}&enddt=%2B15days"
 
-    # Fetch HTML content.
-    attempts = 0
-
-    while attempts < max_attempts:
-        try:
-            with urlopen(
-                Request(url=url, headers={"User-Agent": "Mozilla/5.0"})
-            ) as response:
-                return response.read().decode("utf-8")
-        except URLError as e:
-            attempts += 1
-            logging.warning(
-                f"Error fetching URL: {e}. Retrying ({attempts}/{max_attempts})..."
-            )
-            if attempts < max_attempts:
-                time.sleep(retry_delay)
-
-    raise URLError("Failed to retrieve data after multiple attempts.")
+    return url
 
 
 def read_generation(generation_step):
@@ -151,54 +150,48 @@ def read_timestamp_and_generation(
     return dates, hours, minutes, total_generation
 
 
-def read_all_timestamps_and_generation(
-    retrieval_start_dates: pd.DatetimeIndex | pd.Timestamp, interval: int
+def download_and_extract_data_of_period(
+    start_date: pd.Timestamp,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
-    Extract dates, hours, minutes, and generation data from an HTML file.
+    Download and extract the electricity generation data from the website of the Transmission System Operator of Cyprus for a specific period.
 
     Parameters
     ----------
-    retrieval_start_dates : pandas.DatetimeIndex | pandas.Timestamp
-        The starting dates for the data retrieval
+    start_date : pandas.Timestamp
+        The starting date for the data retrieval
 
     Returns
     -------
-    all_dates : list of str
-        The dates in the format "YYYY-MM-DD"
-    all_hours : list of str
-        The hours as strings
-    all_minutes : list of str
-        The minutes as strings
-    all_generation : list of float | None
-        The total power generation in MW. If data is unavailable, None is returned
+    electricity_generation_time_series : pandas.Series
+        The electricity generation time series in MW
     """
 
-    # Initialize lists to store results.
-    all_dates, all_hours, all_minutes, all_generation = [], [], [], []
+    # Check that the beginning of the period is on or after 2008-01-01.
+    assert start_date >= pd.Timestamp(
+        "2008-01-01 00:00:00"
+    ), "The beginning of the data availability is 2008-01-01."
 
-    if isinstance(retrieval_start_dates, pd.Timestamp):
-        retrieval_start_dates = pd.DatetimeIndex([retrieval_start_dates])
+    logging.info(f"Retrieving data for the 15-day period starting from {start_date}.")
 
-    # Loop through date ranges and fetch data.
-    for current_date in retrieval_start_dates:
-        logging.info(
-            f"Retrieving data for the time period starting from {current_date}."
-        )
+    # Get the URL of the electricity generation data.
+    url = get_url(start_date)
 
-        # Fetch the page content.
-        page = query_tsoc_website(current_date, days=interval)
+    # Fetch HTML content from the URL.
+    page = fetcher.fetch_data(url, "text", output="text")
 
-        # Extract time and generation data.
-        dates, hours, minutes, generation = read_timestamp_and_generation(page)
+    # Extract time and generation data.
+    dates, hours, minutes, generation = read_timestamp_and_generation(page)
 
-        # Store results.
-        all_dates.extend(dates)
-        all_hours.extend(hours)
-        all_minutes.extend(minutes)
-        all_generation.extend(generation)
+    # Construct datetime index with time zone.
+    date_time = pd.to_datetime(
+        [f"{date} {hour}:{minute}" for date, hour, minute in zip(dates, hours, minutes)]
+    ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
 
-    return all_dates, all_hours, all_minutes, all_generation
+    # Create a Pandas Series for the electricity generation data.
+    electricity_generation_time_series = pd.Series(data=generation, index=date_time)
+
+    return electricity_generation_time_series
 
 
 def download_and_extract_data() -> pd.Series:
@@ -211,33 +204,18 @@ def download_and_extract_data() -> pd.Series:
         The electricity generation time series in MW
     """
 
-    # Define the start and end date according to the data availability.
-    start_date_and_time = pd.Timestamp("2008-01-01 00:00:00")
-    end_date_and_time = pd.Timestamp.today()
+    # Get the list of available requests.
+    requests = get_available_requests()
 
-    # Define the interval for the data retrievals. It can be 1, 3, 7 or 15 days.
-    interval = 15
+    # Retrieve the electricity generation data for eact time period.
+    electricity_generation_time_series_list = [
+        download_and_extract_data_of_period(request) for request in requests
+    ]
 
-    # Define the starting dates for the data retrievals.
-    retrieval_start_dates = pd.date_range(
-        start_date_and_time, end_date_and_time, freq=str(interval) + "D"
+    # Concatenate the electricity demand time series of all periods.
+    electricity_generation_time_series = pd.concat(
+        electricity_generation_time_series_list
     )
-
-    # Retrieve all timestamps and generation data.
-    all_dates, all_hours, all_minutes, all_generation = (
-        read_all_timestamps_and_generation(retrieval_start_dates, interval)
-    )
-
-    # Construct datetime index with time zone.
-    date_time = pd.to_datetime(
-        [
-            f"{date} {hour}:{minute}"
-            for date, hour, minute in zip(all_dates, all_hours, all_minutes)
-        ]
-    ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
-
-    # Create a Pandas Series for the electricity generation data.
-    electricity_generation_time_series = pd.Series(data=all_generation, index=date_time)
 
     # Clean the data.
     electricity_generation_time_series = time_series_utilities.clean_data(
