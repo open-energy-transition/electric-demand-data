@@ -16,62 +16,76 @@ Description:
 """
 
 import logging
-import ssl
-from urllib.request import urlopen
 
 import pandas as pd
+import util.fetcher as fetcher
 import util.time_series as time_series_utilities
 
 
-def read_csv_file_1994_2002() -> pd.Series:
+def get_available_requests() -> list[tuple[int, bool] | tuple[None, bool]]:
     """
-    Read the CSV file from Ontario's Independent Electricity System Operator website for the years 1994 to 2002.
+    Get the available requests for the electricity demand data on the Ontario Independent Electricity System Operator website.
 
     Returns
     -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+    available_requests : list of tuple
+        The available requests for the electricity demand data
     """
 
-    logging.info("Retrieving electricity demand data for the years 1994 to 2002.")
+    # The available requests are a combination of a year number and a boolean indicating whether the data is before April 2002.
+    # available_requests = [(year = None, before_Apr_2002 = True)
+    #                       (year = 2002, before_Apr_2002 = False),
+    #                       (year = 2003, before_Apr_2002 = False),
+    #                       ...
+    #                       (year = current year, before_Apr_2002 = False)]
+    available_requests = [(None, True)] + [
+        (year, False) for year in range(2002, pd.Timestamp.now().year + 1)
+    ]
 
-    # Construct the request URL.
-    url = "https://www.ieso.ca/-/media/Files/IESO/Power-Data/data-directory/HourlyDemands_1994-2002.csv"
-
-    # Ignore SSL certificate errors.
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-
-    # Fetch HTML content from the URL.
-    dataset = pd.read_csv(urlopen(url, context=ctx))
-
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pd.Series(
-        dataset["OntarioDemand"].values, index=pd.to_datetime(dataset["DateTime"])
-    )
-
-    # Convert the time zone of the electricity demand time series to UTC.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize(
-            "America/Toronto", ambiguous="NaT", nonexistent="NaT"
-        )
-    )
-
-    # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
-    electricity_demand_time_series.index += pd.Timedelta(hours=1)
-
-    return electricity_demand_time_series
+    return available_requests
 
 
-def read_csv_file(year: int) -> pd.Series:
+def get_url(year: int | None, before_Apr_2002: bool) -> str:
     """
-    Read the CSV file from Ontario's Independent Electricity System Operator website for a year between 2002 and the current year.
+    Get the URL of the electricity demand data on the Ontario Independent Electricity System Operator website.
 
     Parameters
     ----------
     year : int
         The year of the electricity demand data
+    before_Apr_2002 : bool
+        Whether the url is for the time period before April 2002
+
+    Returns
+    -------
+    url : str
+        The URL of the electricity demand data
+    """
+
+    assert (
+        year,
+        before_Apr_2002,
+    ) in get_available_requests(), "The request is not available."
+
+    # Define the URL of the electricity demand data.
+    if before_Apr_2002:
+        url = "https://www.ieso.ca/-/media/Files/IESO/Power-Data/data-directory/HourlyDemands_1994-2002.csv"
+    elif year is not None and year >= 2002 and year <= pd.Timestamp.now().year:
+        url = f"https://reports-public.ieso.ca/public/Demand/PUB_Demand_{year}.csv"
+
+    return url
+
+
+def read_csv_file(year: int | None, before_Apr_2002: bool) -> pd.Series:
+    """
+    Read the CSV file from Ontario's Independent Electricity System Operator website.
+
+    Parameters
+    ----------
+    year : int
+        The year of the electricity demand data
+    before_Apr_2002 : bool
+        Whether the url is for the time period before April 2002
 
     Returns
     -------
@@ -79,26 +93,53 @@ def read_csv_file(year: int) -> pd.Series:
         The electricity generation time series in MW
     """
 
-    logging.info(f"Retrieving electricity demand data for the year {year}.")
+    assert (
+        year,
+        before_Apr_2002,
+    ) in get_available_requests(), "The request is not available."
 
-    # Define the URL of the electricity demand data.
-    url = f"https://reports-public.ieso.ca/public/Demand/PUB_Demand_{year}.csv"
+    # Get the URL of the electricity demand data.
+    url = get_url(year=year, before_Apr_2002=before_Apr_2002)
 
-    # Fetch HTML content from the URL.
-    dataset = pd.read_csv(url, skiprows=3)
+    if before_Apr_2002:
+        logging.info("Retrieving electricity demand data for the years 1994 to 2002.")
 
-    # Extract the index of the electricity demand time series.
-    index = pd.to_datetime(
-        [
-            date + " " + str(time - 1) + ":00"
-            for date, time in zip(dataset["Date"], dataset["Hour"])
-        ]
-    ).tz_localize("America/Toronto", ambiguous="NaT", nonexistent="NaT")
+        # Fetch HTML content from the URL.
+        dataset = fetcher.fetch_data(url, "text", verify_ssl=False)
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pd.Series(
-        dataset["Ontario Demand"].values, index=index
-    )
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pd.Series(
+            dataset["OntarioDemand"].values, index=pd.to_datetime(dataset["DateTime"])
+        )
+
+        # Convert the time zone of the electricity demand time series to UTC.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize(
+                "America/Toronto", ambiguous="NaT", nonexistent="NaT"
+            )
+        )
+
+        # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
+        electricity_demand_time_series.index += pd.Timedelta(hours=1)
+
+    else:
+        logging.info(f"Retrieving electricity demand data for the year {year}.")
+
+        # Fetch HTML content from the URL.
+        dataset = fetcher.fetch_data(url, "csv", csv_kwargs={"skiprows": 3})
+
+        # Extract the index of the electricity demand time series.
+        index = pd.to_datetime(
+            [
+                date + " " + str(time - 1) + ":00"
+                for date, time in zip(dataset["Date"], dataset["Hour"])
+            ]
+        ).tz_localize("America/Toronto", ambiguous="NaT", nonexistent="NaT")
+
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pd.Series(
+            dataset["Ontario Demand"].values, index=index
+        )
 
     return electricity_demand_time_series
 
@@ -113,9 +154,12 @@ def download_and_extract_data() -> pd.Series:
         The electricity generation time series in MW
     """
 
+    # Get the list of available requests.
+    requests = get_available_requests()
+
     # Retrieve the electricity demand time series from the csv files.
-    electricity_demand_time_series_list = [read_csv_file_1994_2002()] + [
-        read_csv_file(year) for year in range(2002, pd.Timestamp.now().year + 1)
+    electricity_demand_time_series_list = [
+        read_csv_file(*request) for request in requests
     ]
 
     # Concatenate the electricity demand time series.
