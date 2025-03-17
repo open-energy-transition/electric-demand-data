@@ -15,7 +15,47 @@ Description:
 """
 
 import pandas as pd
+import util.fetcher as fetcher
 import util.time_series as time_series_utilities
+
+
+def get_url(region_code: str) -> str:
+    """
+    Get the URL of the electricity demand data on the Canadian Centre for Energy Information website.
+
+    Parameters
+    ----------
+    region_code : str
+        The code of the Province or Territory of interest
+
+    Returns
+    -------
+    url : str
+        The URL of the electricity demand data
+    """
+
+    # Define the mapping between the region codes and API variable names.
+    variable_names = {
+        "AB": ["AB", "INTERNAL_LOAD"],
+        "BC": ["BC", "LOAD"],
+        "NB": ["NB", "LOAD"],
+        "NL": ["NL", "DEMAND"],
+        "NS": ["NS", "LOAD"],
+        "ON": ["ON", "ONTARIO_DEMAND"],
+        "PE": ["PE", "ON_ISL_LOAD"],
+        "QC": ["QC", "DEMAND"],
+        "SK": ["SK", "SYSTEM_DEMAND"],
+        "YT": ["YK", "TOTAL"],
+    }
+
+    assert (
+        region_code in variable_names.keys()
+    ), f"Region code {region_code} is not supported."
+
+    # Construct the request URL.
+    url = f"https://api.statcan.gc.ca/hfed-dehf/sdmx/rest/data/CCEI,DF_HFED_{variable_names[region_code][0]},1.0/N...{variable_names[region_code][1]}?&dimensionAtObservation=AllDimensions&format=csv"
+
+    return url
 
 
 def download_and_extract_data(region_code: str) -> pd.Series:
@@ -36,25 +76,11 @@ def download_and_extract_data(region_code: str) -> pd.Series:
     # Extract the region code.
     region_code = region_code.split("_")[1]
 
-    # Define the mapping between the region codes and API variable names.
-    variable_names = {
-        "AB": ["AB", "INTERNAL_LOAD"],
-        "BC": ["BC", "LOAD"],
-        "NB": ["NB", "LOAD"],
-        "NL": ["NL", "DEMAND"],
-        "NS": ["NS", "LOAD"],
-        "ON": ["ON", "ONTARIO_DEMAND"],
-        "PE": ["PE", "ON_ISL_LOAD"],
-        "QC": ["QC", "DEMAND"],
-        "SK": ["SK", "SYSTEM_DEMAND"],
-        "YT": ["YK", "TOTAL"],
-    }
-
-    # Construct the request URL.
-    url = f"https://api.statcan.gc.ca/hfed-dehf/sdmx/rest/data/CCEI,DF_HFED_{variable_names[region_code][0]},1.0/N...{variable_names[region_code][1]}?&dimensionAtObservation=AllDimensions&format=csv"
+    # Get the URL of the electricity demand data.
+    url = get_url(region_code)
 
     # Fetch HTML content from the URL.
-    dataset = pd.read_csv(url)
+    dataset = fetcher.fetch_data(url, "csv")
 
     if region_code == "NB":
         # Remove unknown code from the time step values.
