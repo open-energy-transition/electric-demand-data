@@ -18,12 +18,29 @@ import logging
 
 import numpy as np
 import pandas as pd
+import util.fetcher as fetcher
 import util.time_series as time_series_utilities
 
 
-def read_excel_file(year: int) -> pd.Series:
+def get_available_requests() -> list[int]:
     """
-    Read the Excel file from BC Hydro website for the year of interest.
+    Get the list of available requests to retrieve the electricity demand data on the British Columbia Hydro and Power Authority website.
+
+    Returns
+    -------
+    available_requests : list[int]
+        The list of available requests
+    """
+
+    # The available requests are the years from 2001 to current year.
+    available_requests = list(range(2001, pd.Timestamp.now().year + 1))
+
+    return available_requests
+
+
+def get_url(year: int) -> str:
+    """
+    Get the URL of the electricity demand data on the British Columbia Hydro and Power Authority website.
 
     Parameters
     ----------
@@ -32,11 +49,12 @@ def read_excel_file(year: int) -> pd.Series:
 
     Returns
     -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+    url : str
+        The URL of the electricity demand data
     """
 
-    logging.info(f"Retrieving electricity demand data for the year {year}.")
+    # Check if the year is supported.
+    assert year in get_available_requests(), f"Year {year} is not supported."
 
     # Define the URL of the electricity demand data.
     url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/balancing_authority_load_data/Historical%20Transmission%20Data/"
@@ -57,6 +75,35 @@ def read_excel_file(year: int) -> pd.Series:
     elif year == 2025:
         url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/actual_flow_data/historical_data/BalancingAuthorityLoad%202025.xls"
 
+    return url
+
+
+def get_excel_information(
+    year: int,
+) -> tuple[int, int | None, list[str] | list[int], list[str] | list[int]]:
+    """
+    Get the Excel information of the electricity demand data on the British Columbia Hydro and Power Authority website.
+
+    Parameters
+    ----------
+    year : int
+        The year of the electricity demand data
+
+    Returns
+    -------
+    rows_to_skip : int
+        The number of rows to skip in the Excel file
+    header : int or None
+        The header of the Excel file
+    index_columns : list[str] or list[int]
+        The names of the index columns in the Excel file
+    load_column : list[str] or list[int]
+        The names of the load columns in the Excel file
+    """
+
+    # Check if the year is supported.
+    assert year in get_available_requests(), f"Year {year} is not supported."
+
     # Define the number of rows to skip.
     if (year >= 2001 and year <= 2006) or (year >= 2014 and year <= 2021):
         rows_to_skip = 1
@@ -68,7 +115,7 @@ def read_excel_file(year: int) -> pd.Series:
     # Define the header of the Excel file.
     if year == 2007:
         header = None
-    else:
+    elif year >= 2001 and year <= 2006 or year >= 2008 and year <= 2025:
         header = 0
 
     # Define the index columns of the Excel file.
@@ -99,9 +146,43 @@ def read_excel_file(year: int) -> pd.Series:
     elif year >= 2012 and year <= 2014 or year >= 2021 and year <= 2025:
         load_column = ["Control Area Load"]
 
+    return rows_to_skip, header, index_columns, load_column
+
+
+def read_excel_file(year: int) -> pd.Series:
+    """
+    Read the Excel file from BC Hydro website for the year of interest.
+
+    Parameters
+    ----------
+    year : int
+        The year of the electricity demand data
+
+    Returns
+    -------
+    electricity_demand_time_series : pandas.Series
+        The electricity generation time series in MW
+    """
+
+    assert year in get_available_requests(), f"Year {year} is not supported."
+
+    logging.info(f"Retrieving electricity demand data for the year {year}.")
+
+    # Get the URL of the electricity demand data.
+    url = get_url(year)
+
+    # Get the Excel information of the electricity demand data.
+    rows_to_skip, header, index_columns, load_column = get_excel_information(year)
+
     # Fetch HTML content from the URL.
-    dataset = pd.read_excel(
-        url, skiprows=rows_to_skip, header=header, usecols=index_columns + load_column
+    dataset = fetcher.fetch_data(
+        url,
+        "excel",
+        excel_kwargs={
+            "skiprows": rows_to_skip,
+            "header": header,
+            "usecols": index_columns + load_column,
+        },
     )
 
     # Extract the first and last time steps of the electricity demand time series.
@@ -144,9 +225,12 @@ def download_and_extract_data() -> pd.Series:
         The electricity generation time series in MW
     """
 
+    # Get the list of available requests.
+    requests = get_available_requests()
+
     # Retrieve the electricity demand time series for the years from 2001 to current year.
     electricity_demand_time_series_list = [
-        read_excel_file(year) for year in range(2001, pd.Timestamp.now().year + 1)
+        read_excel_file(request) for request in requests
     ]
 
     # Concatenate the electricity demand time series of all years.
