@@ -46,7 +46,7 @@ uv run download_electricity_data.py ENTSOE -c FR
 │   ├── EIA.yaml          # List of region names and codes available on EIA
 │   ├── ...               # Other data sources
 ├── util/
-│   ├── fetcher.py        # Functions to featch online content
+│   ├── fetcher.py        # Functions to fetch online content
 │   ├── general.py        # General utility functions
 │   ├── time_series.py    # Time series processing
 ├── download_electricity_data.py  # Main script
@@ -57,7 +57,7 @@ uv run download_electricity_data.py ENTSOE -c FR
 
 Each retrieval script in the `retrieval/` folder is designed to fetch electricity demand data from a specific data provider. While the structure may vary slightly, they generally follow this pattern:
 
-- **Data Source Definition**: The script includes a description of the provider and details on the data retrieval process.
+- **Data Request Construction**: The script builds all data requests according to the data source availability.
 - **URL Construction**: The script builds the appropriate API or web request URL.
 - **Data Download**: It fetches the data using `util.fetcher` functions.
 - **Data Processing**: The script applies necessary transformations, such as cleaning and time adjustments, using `util.time_series`.
