@@ -32,3 +32,21 @@ jobs:
         run: uvx mypy
 
       - uses: pre-commit/action@v3.0.1
+
+  pytest:
+    timeout-minutes: 10
+    name: "pytest"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+
+      - name: "Install uv"
+        uses: astral-sh/setup-uv@v5
+
+      - name: "Pytest run tests"
+        run: uv run pytest
+
+      - name: "Pytest check coverage report"
+        run: uv run pytest --cov
