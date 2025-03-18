@@ -857,6 +857,7 @@ version = "0.1.0"
 source = { virtual = "models/xgboost" }
 dependencies = [
     { name = "pandas" },
+    { name = "pycountry" },
     { name = "scikit-learn" },
     { name = "xgboost-cpu" },
 ]
@@ -864,6 +865,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
+    { name = "pycountry", specifier = ">=24.6.1" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
     { name = "xgboost-cpu", specifier = ">=3.0.0" },
 ]
