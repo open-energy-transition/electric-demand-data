@@ -54,7 +54,7 @@ def get_url(year: int) -> str:
     """
 
     # Check if the year is supported.
-    assert year in get_available_requests(), f"Year {year} is not supported."
+    assert year in get_available_requests(), f"The year {year} is not available."
 
     # Define the URL of the electricity demand data.
     url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/balancing_authority_load_data/Historical%20Transmission%20Data/"
@@ -102,7 +102,7 @@ def get_excel_information(
     """
 
     # Check if the year is supported.
-    assert year in get_available_requests(), f"Year {year} is not supported."
+    assert year in get_available_requests(), f"The year {year} is not available."
 
     # Define the number of rows to skip.
     if (year >= 2001 and year <= 2006) or (year >= 2014 and year <= 2021):
@@ -164,7 +164,7 @@ def read_excel_file(year: int) -> pd.Series:
         The electricity generation time series in MW
     """
 
-    assert year in get_available_requests(), f"Year {year} is not supported."
+    assert year in get_available_requests(), f"The year {year} is not available."
 
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 

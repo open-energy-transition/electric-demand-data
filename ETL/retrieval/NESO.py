@@ -54,7 +54,7 @@ def get_url(year: int) -> str:
     """
 
     # Check if the year is supported.
-    assert year in get_available_requests(), f"Year {year} is not supported."
+    assert year in get_available_requests(), f"The year {year} is not available."
 
     # Define the dataset names for the electricity demand data.
     dataset_name = {
@@ -99,7 +99,7 @@ def download_and_extract_data_of_year(year: int) -> pd.Series:
     """
 
     # Check if the year is supported.
-    assert year in get_available_requests(), f"Year {year} is not supported."
+    assert year in get_available_requests(), f"The year {year} is not available."
 
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 

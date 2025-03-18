@@ -83,7 +83,7 @@ def download_and_extract_data_of_month(year: int, month: int) -> pd.Series:
     assert (
         year,
         month,
-    ) in get_available_requests(), f"Year {year} and month {month} are not supported."
+    ) in get_available_requests(), f"Year {year} and month {month} are not available."
 
     logging.info(
         f"Retrieving electricity demand data for the year {year} and month {month}."
