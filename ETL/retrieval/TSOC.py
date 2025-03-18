@@ -64,9 +64,9 @@ def get_url(start_date: pd.Timestamp) -> str:
     """
 
     # Check that the beginning of the period is on or after 2008-01-01.
-    assert start_date >= pd.Timestamp("2008-01-01 00:00:00"), (
-        "The beginning of the data availability is 2008-01-01."
-    )
+    assert start_date >= pd.Timestamp(
+        "2008-01-01 00:00:00"
+    ), "The beginning of the data availability is 2008-01-01."
 
     # Convert the start and end dates and times to the required format.
     start_date = start_date.strftime("%d-%m-%Y")
@@ -168,9 +168,9 @@ def download_and_extract_data_of_period(
     """
 
     # Check that the beginning of the period is on or after 2008-01-01.
-    assert start_date >= pd.Timestamp("2008-01-01 00:00:00"), (
-        "The beginning of the data availability is 2008-01-01."
-    )
+    assert start_date >= pd.Timestamp(
+        "2008-01-01 00:00:00"
+    ), "The beginning of the data availability is 2008-01-01."
 
     logging.info(f"Retrieving data for the 15-day period starting from {start_date}.")
 

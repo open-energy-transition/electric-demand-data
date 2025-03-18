@@ -76,14 +76,14 @@ def get_url(
     """
 
     # Check that the number of time points is less than 5000.
-    assert (end_date_and_time - start_date_and_time).days * 24 < 5000, (
-        "The number of time points is greater than 5000."
-    )
+    assert (
+        end_date_and_time - start_date_and_time
+    ).days * 24 < 5000, "The number of time points is greater than 5000."
 
     # Check that the beginning of the period is on or after 2020-01-01.
-    assert start_date_and_time >= pd.Timestamp("2020-01-01 00:00:00"), (
-        "The beginning of the data availability is 2020-01-01."
-    )
+    assert start_date_and_time >= pd.Timestamp(
+        "2020-01-01 00:00:00"
+    ), "The beginning of the data availability is 2020-01-01."
 
     # Load the environment variables.
     load_dotenv(dotenv_path=Path(".") / ".env")
@@ -123,14 +123,14 @@ def download_and_extract_data_of_period(
     """
 
     # Check that the number of time points is less than 5000.
-    assert (end_date_and_time - start_date_and_time).days * 24 < 5000, (
-        "The number of time points is greater than 5000."
-    )
+    assert (
+        end_date_and_time - start_date_and_time
+    ).days * 24 < 5000, "The number of time points is greater than 5000."
 
     # Check that the beginning of the period is on or after 2020-01-01.
-    assert start_date_and_time >= pd.Timestamp("2020-01-01 00:00:00"), (
-        "The beginning of the data availability is 2020-01-01."
-    )
+    assert start_date_and_time >= pd.Timestamp(
+        "2020-01-01 00:00:00"
+    ), "The beginning of the data availability is 2020-01-01."
 
     logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 

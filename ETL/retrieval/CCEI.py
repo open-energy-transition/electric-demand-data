@@ -48,9 +48,9 @@ def get_url(region_code: str) -> str:
         "YT": ["YK", "TOTAL"],
     }
 
-    assert region_code in variable_names.keys(), (
-        f"Region code {region_code} is not supported."
-    )
+    assert (
+        region_code in variable_names.keys()
+    ), f"Region code {region_code} is not supported."
 
     # Construct the request URL.
     url = f"https://api.statcan.gc.ca/hfed-dehf/sdmx/rest/data/CCEI,DF_HFED_{variable_names[region_code][0]},1.0/N...{variable_names[region_code][1]}?&dimensionAtObservation=AllDimensions&format=csv"

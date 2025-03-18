@@ -53,9 +53,9 @@ def get_url(file_number: int) -> str:
     """
 
     # Check if the file number is supported.
-    assert file_number in get_available_requests(), (
-        f"File number {file_number} is not supported."
-    )
+    assert (
+        file_number in get_available_requests()
+    ), f"File number {file_number} is not supported."
 
     # Define the URL of the electricity demand data.
     if file_number == 1:
@@ -92,9 +92,9 @@ def get_excel_information(file_number: int) -> tuple[str, int, list[str], list[s
     """
 
     # Check if the file number is supported.
-    assert file_number in get_available_requests(), (
-        f"File number {file_number} is not supported."
-    )
+    assert (
+        file_number in get_available_requests()
+    ), f"File number {file_number} is not supported."
 
     # Define the excel information.
     if file_number == 1:
@@ -165,9 +165,9 @@ def read_excel_file(file_number: int) -> pd.Series:
     """
 
     # Check if the file number is supported.
-    assert file_number in get_available_requests(), (
-        f"File number {file_number} is not supported."
-    )
+    assert (
+        file_number in get_available_requests()
+    ), f"File number {file_number} is not supported."
 
     logging.info(
         f"Retrieving electricity demand data from the file number {file_number}."
