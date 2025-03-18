@@ -89,7 +89,7 @@ def fetch_data(
 
                     if output == "tabular":
                         # Return the content as a DataFrame.
-                        return pd.read_csv(StringIO(content))
+                        return pd.read_csv(StringIO(content), **csv_kwargs)
                     elif output == "text":
                         # Return the content as a string.
                         return content
