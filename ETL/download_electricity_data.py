@@ -2,30 +2,21 @@ import argparse
 import logging
 import os
 
-import retrieval.AESO as AESO
-import retrieval.BCHYDRO as BCHYDRO
-import retrieval.CCEI as CCEI
-import retrieval.EIA as EIA
-import retrieval.ENTSOE as ENTSOE
-import retrieval.HYDROQUEBEC as HYDROQUEBEC
-import retrieval.IESO as IESO
-import retrieval.NBPOWER as NBPOWER
-import retrieval.NESO as NESO
-import retrieval.TSOC as TSOC
+import retrieval
 import util.general as general_utilities
 import util.time_series as time_series_utilities
 
 retrieval_module = {
-    "AESO": AESO,
-    "BCHYDRO": BCHYDRO,
-    "CCEI": CCEI,
-    "EIA": EIA,
-    "ENTSOE": ENTSOE,
-    "HYDROQUEBEC": HYDROQUEBEC,
-    "IESO": IESO,
-    "NBPOWER": NBPOWER,
-    "NESO": NESO,
-    "TSOC": TSOC,
+    "AESO": retrieval.AESO,
+    "BCHYDRO": retrieval.BCHYDRO,
+    "CCEI": retrieval.CCEI,
+    "EIA": retrieval.EIA,
+    "ENTSOE": retrieval.ENTSOE,
+    "HYDROQUEBEC": retrieval.HYDROQUEBEC,
+    "IESO": retrieval.IESO,
+    "NBPOWER": retrieval.NBPOWER,
+    "NESO": retrieval.NESO,
+    "TSOC": retrieval.TSOC,
 }
 
 
