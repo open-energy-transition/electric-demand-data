@@ -2,21 +2,30 @@ import argparse
 import logging
 import os
 
-import retrieval
+import retrieval.aeso
+import retrieval.bchydro
+import retrieval.ccei
+import retrieval.eia
+import retrieval.entsoe
+import retrieval.hydroquebec
+import retrieval.ieso
+import retrieval.nbpower
+import retrieval.neso
+import retrieval.tsoc
 import util.general as general_utilities
 import util.time_series as time_series_utilities
 
 retrieval_module = {
-    "AESO": retrieval.AESO,
-    "BCHYDRO": retrieval.BCHYDRO,
-    "CCEI": retrieval.CCEI,
-    "EIA": retrieval.EIA,
-    "ENTSOE": retrieval.ENTSOE,
-    "HYDROQUEBEC": retrieval.HYDROQUEBEC,
-    "IESO": retrieval.IESO,
-    "NBPOWER": retrieval.NBPOWER,
-    "NESO": retrieval.NESO,
-    "TSOC": retrieval.TSOC,
+    "AESO": retrieval.aeso,
+    "BCHYDRO": retrieval.bchydro,
+    "CCEI": retrieval.ccei,
+    "EIA": retrieval.eia,
+    "ENTSOE": retrieval.entsoe,
+    "HYDROQUEBEC": retrieval.hydroquebec,
+    "IESO": retrieval.ieso,
+    "NBPOWER": retrieval.nbpower,
+    "NESO": retrieval.neso,
+    "TSOC": retrieval.tsoc,
 }
 
 
@@ -63,6 +72,31 @@ def read_command_line_arguments() -> argparse.Namespace:
     return args
 
 
+def check_and_format_data_source(data_source: str) -> str:
+    """
+    Check if the data source is valid and format it.
+
+    Parameters
+    ----------
+    data_source : str
+        The data source
+
+    Returns
+    -------
+    data_source : str
+        The formatted data source
+    """
+
+    data_source = data_source.upper()
+
+    if data_source not in retrieval_module.keys():
+        raise ValueError(
+            f"Data source {data_source} is not valid. Please choose one of the following: {', '.join(retrieval_module.keys())}."
+        )
+
+    return data_source
+
+
 def check_and_get_codes(
     args: argparse.Namespace,
 ) -> tuple[list[str] | None, bool | None]:
@@ -84,7 +118,7 @@ def check_and_get_codes(
 
     # Get the list of codes available on the platform.
     codes_on_platform = general_utilities.read_codes_from_file(
-        "retrieval/" + args.data_source + ".yaml"
+        "retrieval/" + args.data_source.lower() + ".yaml"
     )
 
     # Define a flag to check if there is only one code on the platform.
@@ -175,6 +209,9 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
 def main() -> None:
     # Read the command line arguments.
     args = read_command_line_arguments()
+
+    # Check the validity of the data source.
+    args.data_source = check_and_format_data_source(args.data_source)
 
     # Set up the logging configuration.
     log_file_name = f"electricity_data_from_{args.data_source}.log"
