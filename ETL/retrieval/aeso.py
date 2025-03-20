@@ -9,8 +9,6 @@ Description:
 
     The data is retrieved for the years from 2011 to 2024. The data is retrieved from the available Excel files on the AESO website.
 
-    The data is saved in CSV and Parquet formats.
-
     Source: https://www.aeso.ca/market/market-and-system-reporting/data-requests/hourly-load-by-area-and-region
 """
 
@@ -18,7 +16,6 @@ import logging
 
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
 
 
 def get_available_requests() -> list[int]:
@@ -149,9 +146,10 @@ def get_excel_information(file_number: int) -> tuple[str, int, list[str], list[s
     return sheet_name, rows_to_skip, index_columns, load_columns
 
 
-def read_excel_file(file_number: int) -> pd.Series:
+def download_and_extract_data_of_request(file_number: int) -> pd.Series:
     """
     Read the Excel files on the Alberta Electric System Operator website.
+    There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
 
     Parameters
     ----------
@@ -221,36 +219,6 @@ def read_excel_file(file_number: int) -> pd.Series:
     # Extract the electricity demand time series in the local time zone.
     electricity_demand_time_series = pd.Series(
         data=dataset[load_columns].sum(axis=1).values, index=local_time_index
-    )
-
-    return electricity_demand_time_series
-
-
-def download_and_extract_data() -> pd.Series:
-    """
-    Retrieve the electricity demand data of Alberta from the Alberta Electric System Operator.
-    There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity demand data from each Excel file.
-    electricity_demand_time_series_list = [
-        read_excel_file(request) for request in requests
-    ]
-
-    # Concatenate the electricity demand time series of all files.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
     )
 
     return electricity_demand_time_series

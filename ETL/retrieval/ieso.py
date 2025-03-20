@@ -7,9 +7,7 @@ Description:
 
     This script retrieves the electricity load data from the website of Ontario's Independent Electricity System Operator (IESO).
 
-    The data is retrieved for the years from 1994 to current year.
-
-    The data is saved in CSV and Parquet formats.
+    The data is retrieved for the years from 1994 to current year. The data is retrieved from the available CSV files on the IESO website.
 
     Source: https://www.ieso.ca/Power-Data/Data-Directory
     Source: https://reports-public.ieso.ca/public/Demand/
@@ -19,7 +17,6 @@ import logging
 
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
 
 
 def get_available_requests() -> list[tuple[int, bool] | tuple[None, bool]]:
@@ -62,10 +59,9 @@ def get_url(year: int | None, before_Apr_2002: bool) -> str:
         The URL of the electricity demand data
     """
 
-    assert (
-        year,
-        before_Apr_2002,
-    ) in get_available_requests(), "The request is not available."
+    assert (year, before_Apr_2002) in get_available_requests(), (
+        "The request is not available."
+    )
 
     # Define the URL of the electricity demand data.
     if before_Apr_2002:
@@ -76,9 +72,11 @@ def get_url(year: int | None, before_Apr_2002: bool) -> str:
     return url
 
 
-def read_csv_file(year: int | None, before_Apr_2002: bool) -> pd.Series:
+def download_and_extract_data_of_request(
+    year: int | None, before_Apr_2002: bool
+) -> pd.Series:
     """
-    Read the CSV file from Ontario's Independent Electricity System Operator website.
+    Read the CSV files from Ontario's Independent Electricity System Operator website.
 
     Parameters
     ----------
@@ -93,10 +91,9 @@ def read_csv_file(year: int | None, before_Apr_2002: bool) -> pd.Series:
         The electricity generation time series in MW
     """
 
-    assert (
-        year,
-        before_Apr_2002,
-    ) in get_available_requests(), "The request is not available."
+    assert (year, before_Apr_2002) in get_available_requests(), (
+        "The request is not available."
+    )
 
     # Get the URL of the electricity demand data.
     url = get_url(year=year, before_Apr_2002=before_Apr_2002)
@@ -140,34 +137,5 @@ def read_csv_file(year: int | None, before_Apr_2002: bool) -> pd.Series:
         electricity_demand_time_series = pd.Series(
             dataset["Ontario Demand"].values, index=index
         )
-
-    return electricity_demand_time_series
-
-
-def download_and_extract_data() -> pd.Series:
-    """
-    Retrieve the electricity demand data from Ontario's Independent Electricity System Operator.
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity demand time series from the csv files.
-    electricity_demand_time_series_list = [
-        read_csv_file(*request) for request in requests
-    ]
-
-    # Concatenate the electricity demand time series.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
-    )
 
     return electricity_demand_time_series

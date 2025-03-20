@@ -7,16 +7,24 @@ Description:
 
     This script retrieves the electricity load data from the website of Hydro-Québec.
 
-    The data is retrieved for the years from 2019 to 2023.
-
-    The data is saved in CSV and Parquet formats.
+    The data is retrieved for the years from 2019 to 2023. The data is retrieved all at once.
 
     Source: https://donnees.hydroquebec.com/explore/dataset/historique-demande-electricite-quebec/information/
 """
 
+import logging
+
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
+
+
+def get_available_requests() -> None:
+    """
+    Get the list of available requests to retrieve the electricity demand data on the Hydro-Québec website.
+    """
+
+    logging.info("The data is retrieved all at once.")
+    return None
 
 
 def get_url() -> str:
@@ -63,10 +71,5 @@ def download_and_extract_data() -> pd.Series:
 
     # Sort the index.
     electricity_demand_time_series = electricity_demand_time_series.sort_index()
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
-    )
 
     return electricity_demand_time_series

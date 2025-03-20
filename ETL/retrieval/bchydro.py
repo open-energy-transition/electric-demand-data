@@ -7,9 +7,7 @@ Description:
 
     This script retrieves the electricity load data from the website of British Columbia Hydro and Power Authority (BC Hydro).
 
-    The data is retrieved for the years from 2001 to current year.
-
-    The data is saved in CSV and Parquet formats.
+    The data is retrieved for the years from 2001 to current year. The data is retrieved from the available Excel files on the BC Hydro website.
 
     Source: https://www.bchydro.com/energy-in-bc/operations/transmission/transmission-system/balancing-authority-load-data/historical-transmission-data.html
 """
@@ -19,7 +17,6 @@ import logging
 import numpy as np
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
 
 
 def get_available_requests() -> list[int]:
@@ -149,9 +146,9 @@ def get_excel_information(
     return rows_to_skip, header, index_columns, load_column
 
 
-def read_excel_file(year: int) -> pd.Series:
+def download_and_extract_data_of_request(year: int) -> pd.Series:
     """
-    Read the Excel file from BC Hydro website for the year of interest.
+    Read the Excel files on the British Columbia Hydro and Power Authority website.
 
     Parameters
     ----------
@@ -211,34 +208,5 @@ def read_excel_file(year: int) -> pd.Series:
 
     # Extract the electricity demand time series.
     electricity_demand_time_series = pd.Series(available_data.values, index=timestamps)
-
-    return electricity_demand_time_series
-
-
-def download_and_extract_data() -> pd.Series:
-    """
-    Retrieve the electricity demand data from Ontario's Independent Electricity System Operator.
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity demand time series for the years from 2001 to current year.
-    electricity_demand_time_series_list = [
-        read_excel_file(request) for request in requests
-    ]
-
-    # Concatenate the electricity demand time series of all years.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
-    )
 
     return electricity_demand_time_series

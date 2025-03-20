@@ -9,8 +9,6 @@ Description:
 
     The data is retrieved for the years from 2014 (end of year) to the current year. The data is retrieved in one-year intervals.
 
-    The data is saved in CSV and Parquet formats.
-
     Source: https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html
     Source: https://github.com/EnergieID/entsoe-py
 """
@@ -21,7 +19,6 @@ from pathlib import Path
 
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
 from dotenv import load_dotenv
 
 
@@ -61,7 +58,7 @@ def get_url(
     iso_alpha_2_code: str = "",
 ) -> str:
     """
-    Get the URL of the electricity load data on the ENTSO-E transparency platform.
+    Get the URL of the electricity load data on the ENTSO-E transparency platform. Used only to check if the platform is available.
 
     Parameters
     ----------
@@ -101,13 +98,13 @@ def get_url(
     return url
 
 
-def download_and_extract_data_of_period(
+def download_and_extract_data_of_request(
     start_date_and_time: pd.Timestamp,
     end_date_and_time: pd.Timestamp,
     iso_alpha_2_code: str,
 ) -> pd.Series:
     """
-    Download the electricity demand time series from the ENTSO-E API for a specific country and year.
+    Download the electricity demand time series from the ENTSO-E API.
 
     Parameters
     ----------
@@ -156,47 +153,5 @@ def download_and_extract_data_of_period(
         electricity_demand_time_series.index = (
             electricity_demand_time_series.index + time_difference
         )
-
-    return electricity_demand_time_series
-
-
-def download_and_extract_data(iso_alpha_2_code: str) -> pd.Series:
-    """
-    Download the electricity demand time series from the ENTSO-E API for a specific country and year.
-
-    Parameters
-    ----------
-    iso_alpha_2_code : str
-        The ISO Alpha-2 code of the country
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity demand time series of all periods.
-    electricity_demand_time_series_list = [
-        download_and_extract_data_of_period(*request, iso_alpha_2_code)
-        for request in requests
-    ]
-
-    # Remove empty time series.
-    electricity_demand_time_series_list = [
-        time_series
-        for time_series in electricity_demand_time_series_list
-        if not time_series.empty
-    ]
-
-    # Concatenate the electricity demand time series of all periods.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
-    )
 
     return electricity_demand_time_series

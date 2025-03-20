@@ -9,8 +9,6 @@ Description:
 
     The data is retrieved for the years from 2018 to current year. The data is retrieved in one-month intervals.
 
-    The data is saved in CSV and Parquet formats.
-
     Source: https://tso.nbpower.com/Public/en/system_information_archive.aspx
 """
 
@@ -18,7 +16,6 @@ import logging
 
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
 
 
 def get_available_requests() -> list[tuple[int, int]]:
@@ -62,9 +59,9 @@ def get_url() -> str:
     return url
 
 
-def download_and_extract_data_of_month(year: int, month: int) -> pd.Series:
+def download_and_extract_data_of_request(year: int, month: int) -> pd.Series:
     """
-    Retrieve the electricity demand data of a specific month from the website of NB Power.
+    Retrieve the electricity demand data from the New Brunswick Power Corporation website.
 
     Parameters
     ----------
@@ -80,10 +77,9 @@ def download_and_extract_data_of_month(year: int, month: int) -> pd.Series:
     """
 
     # Check if the year and month are supported.
-    assert (
-        year,
-        month,
-    ) in get_available_requests(), f"Year {year} and month {month} are not available."
+    assert (year, month) in get_available_requests(), (
+        f"Year {year} and month {month} are not available."
+    )
 
     logging.info(
         f"Retrieving electricity demand data for the year {year} and month {month}."
@@ -115,35 +111,6 @@ def download_and_extract_data_of_month(year: int, month: int) -> pd.Series:
         electricity_demand_time_series.index.tz_localize(
             "America/Moncton", ambiguous="infer"
         )
-    )
-
-    return electricity_demand_time_series
-
-
-def download_and_extract_data() -> pd.Series:
-    """
-    Retrieve the electricity demand data from the website of Hydro-Québec.
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity demand data for each month.
-    electricity_demand_time_series_list = [
-        download_and_extract_data_of_month(*request) for request in requests
-    ]
-
-    # Concatenate the electricity demand time series.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
     )
 
     return electricity_demand_time_series

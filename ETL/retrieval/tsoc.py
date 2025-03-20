@@ -11,8 +11,6 @@ Description:
 
     The data is retrieved for the years from 2008 to the current year. The data is retrieved in 15-day intervals.
 
-    The data is saved in Parquet and CSV formats.
-
     Source: https://tsoc.org.cy/electrical-system/archive-total-daily-system-generation-on-the-transmission-system/
 """
 
@@ -21,7 +19,6 @@ import re
 
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
 
 
 def get_available_requests() -> list[pd.Timestamp]:
@@ -150,11 +147,11 @@ def read_timestamp_and_generation(
     return dates, hours, minutes, total_generation
 
 
-def download_and_extract_data_of_period(
+def download_and_extract_data_of_request(
     start_date: pd.Timestamp,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
-    Download and extract the electricity generation data from the website of the Transmission System Operator of Cyprus for a specific period.
+    Download and extract the electricity generation data from the website of the Transmission System Operator of Cyprus.
 
     Parameters
     ----------
@@ -190,36 +187,5 @@ def download_and_extract_data_of_period(
 
     # Create a Pandas Series for the electricity generation data.
     electricity_generation_time_series = pd.Series(data=generation, index=date_time)
-
-    return electricity_generation_time_series
-
-
-def download_and_extract_data() -> pd.Series:
-    """
-    Download and extract the electricity generation data from the website of the Transmission System Operator of Cyprus.
-
-    Returns
-    -------
-    electricity_generation_time_series : pandas.Series
-        The electricity generation time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity generation data for eact time period.
-    electricity_generation_time_series_list = [
-        download_and_extract_data_of_period(request) for request in requests
-    ]
-
-    # Concatenate the electricity demand time series of all periods.
-    electricity_generation_time_series = pd.concat(
-        electricity_generation_time_series_list
-    )
-
-    # Clean the data.
-    electricity_generation_time_series = time_series_utilities.clean_data(
-        electricity_generation_time_series
-    )
 
     return electricity_generation_time_series

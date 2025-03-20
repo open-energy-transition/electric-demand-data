@@ -9,14 +9,22 @@ Description:
 
     The data is retrieved from different starting dates depending on the region until the current date. The data has various time resolutions.
 
-    The data is saved in CSV and Parquet formats.
-
     Source: https://energy-information.canada.ca/en/resources/high-frequency-electricity-data
 """
 
+import logging
+
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
+
+
+def get_available_requests() -> None:
+    """
+    Get the list of available requests to retrieve the electricity demand data on the Canadian Centre for Energy Information website.
+    """
+
+    logging.info("The data is retrieved all at once.")
+    return None
 
 
 def get_url(region_code: str) -> str:
@@ -93,10 +101,5 @@ def download_and_extract_data(region_code: str) -> pd.Series:
     electricity_demand_time_series = pd.Series(
         data=dataset["OBS_VALUE"].values, index=pd.to_datetime(dataset["TIME_PERIOD"])
     ).tz_localize("UTC")
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
-    )
 
     return electricity_demand_time_series

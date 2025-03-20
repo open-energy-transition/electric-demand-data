@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 
+import pandas as pd
 import retrieval.aeso
 import retrieval.bchydro
 import retrieval.ccei
@@ -157,6 +158,90 @@ def check_and_get_codes(
     return codes, one_code_on_platform
 
 
+def retrieve_data(data_source, code: str | None) -> pd.Series:
+    """
+    Retrieve the electricity generation data from the specified data source and code.
+
+    Parameters
+    ----------
+    data_source : str
+        The data source
+    code : str, optional
+        The code of the country or region
+
+    Returns
+    -------
+    electricity_generation_time_series : pandas.Series
+        The electricity generation time series in MW
+    """
+
+    # Get the list of requests to retrieve the electricity demand time series.
+    requests = retrieval_module[data_source].get_available_requests()
+
+    # If there are multiple requests (request is not None), loop over the requests to retrieve the electricity demand time series of each request.
+    # If there is only one code on the platform (code is None), there is no need to specify the code.
+    # If there are multiple codes on the platform, the code needs to be specified.
+    if requests is None:
+        if code is None:
+            electricity_demand_time_series = retrieval_module[
+                data_source
+            ].download_and_extract_data()
+        else:
+            electricity_demand_time_series = retrieval_module[
+                data_source
+            ].download_and_extract_data(code)
+
+    else:
+        if code is None:
+            if isinstance(requests[0], tuple):
+                electricity_demand_time_series_list = [
+                    retrieval_module[data_source].download_and_extract_data_of_request(
+                        *request
+                    )
+                    for request in requests
+                ]
+            else:
+                electricity_demand_time_series_list = [
+                    retrieval_module[data_source].download_and_extract_data_of_request(
+                        request
+                    )
+                    for request in requests
+                ]
+
+        else:
+            if isinstance(requests[0], tuple):
+                electricity_demand_time_series_list = [
+                    retrieval_module[data_source].download_and_extract_data_of_request(
+                        *request, code
+                    )
+                    for request in requests
+                ]
+            else:
+                electricity_demand_time_series_list = [
+                    retrieval_module[data_source].download_and_extract_data_of_request(
+                        request, code
+                    )
+                    for request in requests
+                ]
+
+        # Remove empty time series.
+        electricity_demand_time_series_list = [
+            time_series
+            for time_series in electricity_demand_time_series_list
+            if not time_series.empty
+        ]
+
+        # Concatenate the electricity demand time series of all periods.
+        electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
+
+    # Clean the data.
+    electricity_demand_time_series = time_series_utilities.clean_data(
+        electricity_demand_time_series
+    )
+
+    return electricity_demand_time_series
+
+
 def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     """
     Run the electricity demand data retrieval for the countries or regions of interest.
@@ -182,16 +267,9 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             logging.info(f"Retrieving data for {code}.")
 
             # Retrieve the electricity demand time series.
-            if one_code_on_platform:
-                # If there is only one code on the platform (and only one code in the list of codes), there is no need to specify the code.
-                electricity_demand_time_series = retrieval_module[
-                    args.data_source
-                ].download_and_extract_data()
-            else:
-                # If there are multiple codes on the platform, the code needs to be specified.
-                electricity_demand_time_series = retrieval_module[
-                    args.data_source
-                ].download_and_extract_data(code)
+            electricity_demand_time_series = retrieve_data(
+                args.data_source, None if one_code_on_platform else code
+            )
 
             # Save the electricity demand time series.
             time_series_utilities.simple_save(
@@ -214,7 +292,7 @@ def main() -> None:
     args.data_source = check_and_format_data_source(args.data_source)
 
     # Set up the logging configuration.
-    log_file_name = f"electricity_data_from_{args.data_source}.log"
+    log_file_name = f"electricity_data_from_{args.data_source.upper()}.log"
     log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(

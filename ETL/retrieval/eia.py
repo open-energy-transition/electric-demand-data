@@ -9,8 +9,6 @@ Description:
 
     The data is retrieved for the years from 2020 to the current year. The data is retrieved in six-month intervals.
 
-    The data is saved in CSV and Parquet formats.
-
     Source: https://www.eia.gov/opendata/browser/electricity/rto/region-data
 """
 
@@ -20,7 +18,6 @@ from pathlib import Path
 
 import pandas as pd
 import util.fetcher as fetcher
-import util.time_series as time_series_utilities
 from dotenv import load_dotenv
 
 
@@ -101,11 +98,11 @@ def get_url(
     return url
 
 
-def download_and_extract_data_of_period(
+def download_and_extract_data_of_request(
     start_date_and_time: pd.Timestamp, end_date_and_time: pd.Timestamp, region_code: str
 ) -> pd.Series:
     """
-    Retrieve the electricity demand data from the Energy Information Administration (EIA) for a specific region and period.
+    Retrieve the electricity demand data from the Energy Information Administration (EIA).
 
     Parameters
     ----------
@@ -147,40 +144,5 @@ def download_and_extract_data_of_period(
     electricity_demand_time_series = pd.Series(
         dataset["value"].values, index=pd.to_datetime(dataset["period"])
     ).tz_localize("UTC")
-
-    return electricity_demand_time_series
-
-
-def download_and_extract_data(region_code: str) -> pd.Series:
-    """
-    Retrieve the electricity demand data from the Energy Information Administration (EIA).
-
-    Parameters
-    ----------
-    region_code : str
-        The code of the region of interest
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity demand time series of all periods.
-    electricity_demand_time_series_list = [
-        download_and_extract_data_of_period(*request, region_code)
-        for request in requests
-    ]
-
-    # Concatenate the electricity demand time series of all periods.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
-    )
 
     return electricity_demand_time_series

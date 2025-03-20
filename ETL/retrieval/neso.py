@@ -9,8 +9,6 @@ Description:
 
     The data is retrieved for the years from 2009 to the current year. The data is retrieved in one-year intervals.
 
-    The data is saved in CSV and Parquet formats.
-
     Source: https://www.neso.energy/data-portal/historic-demand-data
 """
 
@@ -19,7 +17,6 @@ import logging
 import pandas as pd
 import util.fetcher as fetcher
 import util.general as general_utilities
-import util.time_series as time_series_utilities
 
 
 def get_available_requests() -> list[int]:
@@ -83,9 +80,9 @@ def get_url(year: int) -> str:
     return url
 
 
-def download_and_extract_data_of_year(year: int) -> pd.Series:
+def download_and_extract_data_of_request(year: int) -> pd.Series:
     """
-    Download the electricity demand time series for a specific year.
+    Download the electricity demand time series from the website of the UK's National Energy System Operator.
 
     Parameters
     ----------
@@ -121,35 +118,6 @@ def download_and_extract_data_of_year(year: int) -> pd.Series:
             freq="30min",
             tz=local_time_zone,
         ),
-    )
-
-    return electricity_demand_time_series
-
-
-def download_and_extract_data() -> pd.Series:
-    """
-    Download the electricity demand time series from the website of the UK's National Energy System Operator.
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
-    """
-
-    # Get the list of available requests.
-    requests = get_available_requests()
-
-    # Retrieve the electricity demand time series of all years.
-    electricity_demand_time_series_list = [
-        download_and_extract_data_of_year(request) for request in requests
-    ]
-
-    # Concatenate the electricity demand time series of all years.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
     )
 
     return electricity_demand_time_series
