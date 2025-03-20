@@ -292,7 +292,7 @@ def main() -> None:
     args.data_source = check_and_format_data_source(args.data_source)
 
     # Set up the logging configuration.
-    log_file_name = f"electricity_data_from_{args.data_source.upper()}.log"
+    log_file_name = f"electricity_data_from_{args.data_source}.log"
     log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
