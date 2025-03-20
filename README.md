@@ -1,6 +1,8 @@
-# Electricity Demand data
+# Electricity Demand Data
 
-This repository will host the code related to the demand project.
+This project is aimed at improving the demand forecasts that are used in energy planning studies.
+It includes the process to obtain the open data from various sources (see ETL) and the models that use the data to predict electricity demand (see models).
+The project is in active development, we are always looking for suggestions and contributions!
 
 ## Development
 
