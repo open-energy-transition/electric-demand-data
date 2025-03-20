@@ -10,6 +10,7 @@ It can be used within the provided Dockerfile or installed standalone, see:
 
 Then clone the repository, and run:
 ```bash
+git clone https://github.com/open-energy-transition/electric-demand-data.git
 uv sync
 ```
 
