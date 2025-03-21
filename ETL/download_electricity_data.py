@@ -193,36 +193,20 @@ def retrieve_data(data_source: str, code: str | None) -> pd.Series:
 
     else:
         if code is None:
-            if isinstance(requests[0], tuple):
-                electricity_demand_time_series_list = [
-                    retrieval_module[data_source].download_and_extract_data_for_request(
-                        *request
-                    )
-                    for request in requests
-                ]
-            else:
-                electricity_demand_time_series_list = [
-                    retrieval_module[data_source].download_and_extract_data_for_request(
-                        request
-                    )
-                    for request in requests
-                ]
+            electricity_demand_time_series_list = [
+                retrieval_module[data_source].download_and_extract_data_of_request(
+                    *request if isinstance(request, tuple) else request
+                )
+                for request in requests
+            ]
 
         else:
-            if isinstance(requests[0], tuple):
-                electricity_demand_time_series_list = [
-                    retrieval_module[data_source].download_and_extract_data_for_request(
-                        *request, code
-                    )
-                    for request in requests
-                ]
-            else:
-                electricity_demand_time_series_list = [
-                    retrieval_module[data_source].download_and_extract_data_for_request(
-                        request, code
-                    )
-                    for request in requests
-                ]
+            electricity_demand_time_series_list = [
+                retrieval_module[data_source].download_and_extract_data_of_request(
+                    *request if isinstance(request, tuple) else request, code
+                )
+                for request in requests
+            ]
 
         # Remove empty time series.
         electricity_demand_time_series_list = [
