@@ -1,6 +1,12 @@
 version = 1
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "electric-demand-data",
+    "etl",
+]
+
 [[package]]
 name = "babel"
 version = "2.16.0"
@@ -93,6 +99,11 @@ requires-dist = [{ name = "mkdocs-material", specifier = ">=9.5.50" }]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=8.3.4" }]
+
+[[package]]
+name = "etl"
+version = "0.1.0"
+source = { virtual = "ETL" }
 
 [[package]]
 name = "ghp-import"
