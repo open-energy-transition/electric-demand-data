@@ -114,7 +114,7 @@ def check_and_format_data_source(data_source: str) -> str:
 
 def check_and_get_codes(
     args: argparse.Namespace,
-) -> tuple[list[str] | None, bool | None]:
+) -> tuple[list[str], bool]:
     """
     Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
 
@@ -142,10 +142,9 @@ def check_and_get_codes(
     if args.code is not None:
         # Check if the code is in the list of countries or regions available on the platform.
         if args.code not in codes_on_platform:
-            logging.error(
+            raise ValueError(
                 f"Code {args.code} is not available on the {args.data_source} platform. Please choose one of the following: {', '.join(codes_on_platform)}"
             )
-            return None, None
         else:
             codes = [args.code]
 
@@ -163,10 +162,9 @@ def check_and_get_codes(
 
         # Check if there are any codes left.
         if len(codes) == 0:
-            logging.error(
+            raise ValueError(
                 f"None of the codes in the file are available on the {args.data_source} platform. Please choose from the following: {', '.join(codes_on_platform)}"
             )
-            return None, None
     else:
         # Run the data retrieval for all the countries or regions available on the platform.
         codes = codes_on_platform
@@ -258,31 +256,28 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     # Get the list of codes of the countries or regions of interest.
     codes, one_code_on_platform = check_and_get_codes(args)
 
-    if codes is not None:
-        logging.info(
-            f"Retrieving electricity data from the {args.data_source} website."
+    logging.info(f"Retrieving electricity data from the {args.data_source} website.")
+
+    # Loop over the codes.
+    for code in codes:
+        logging.info(f"Retrieving data for {code}.")
+
+        # Retrieve the electricity demand time series.
+        electricity_demand_time_series = retrieve_data(
+            args.data_source, None if one_code_on_platform else code
         )
 
-        # Loop over the codes.
-        for code in codes:
-            logging.info(f"Retrieving data for {code}.")
-
-            # Retrieve the electricity demand time series.
-            electricity_demand_time_series = retrieve_data(
-                args.data_source, None if one_code_on_platform else code
-            )
-
-            # Save the electricity demand time series.
-            util.time_series.simple_save(
-                electricity_demand_time_series,
-                "Load (MW)",
-                result_directory,
-                code + "_" + args.data_source,
-            )
-
-        logging.info(
-            f"Electricity data from the {args.data_source} website has been successfully retrieved and saved."
+        # Save the electricity demand time series.
+        util.time_series.simple_save(
+            electricity_demand_time_series,
+            "Load (MW)",
+            result_directory,
+            code + "_" + args.data_source,
         )
+
+    logging.info(
+        f"Electricity data from the {args.data_source} website has been successfully retrieved and saved."
+    )
 
 
 def main() -> None:
