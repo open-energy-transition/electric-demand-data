@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0
+
+Description:
+
+    This script downloads electricity demand data from various data sources.
+
+    Users can specify a data source and optionally provide a country or region code to retrieve specific data.
+
+    The retrieved data is cleaned and saved in a structured format for further analysis.
+"""
+
 import argparse
 import logging
 import os
@@ -178,9 +192,10 @@ def retrieve_data(data_source: str, code: str | None) -> pd.Series:
     # Get the list of requests to retrieve the electricity demand time series.
     requests = retrieval_module[data_source].get_available_requests()
 
+    # If there are no requests (requests is None), it means that the electricity demand time series can be retrieved all at once.
     # If there are multiple requests (request is not None), loop over the requests to retrieve the electricity demand time series of each request.
     # If there is only one code on the platform (code is None), there is no need to specify the code.
-    # If there are multiple codes on the platform, the code needs to be specified.
+    # If there are multiple codes on the platform (code is not None), the code needs to be specified.
     if requests is None:
         if code is None:
             electricity_demand_time_series = retrieval_module[
