@@ -55,11 +55,15 @@ uv run download_electricity_data.py ENTSOE -c FR
 
 ## Retrieval Scripts
 
-Each retrieval script in the `retrieval/` folder is designed to fetch electricity demand data from a specific data provider. The functions cointained in each retrieval script generally are:
+Each retrieval script in the `retrieval/` folder is designed to fetch electricity demand data from a specific data source. The main functions in each script typically include:
 
-- **Data Request Construction (`get_available_requests`)**: The function builds all data requests according to the data source availability.
-- **URL Construction (`get_url`)**: The function builds the appropriate API or web request URL.
-- **Data Download and Processing (`download_end_extract_data_for_request`)**: The function fetches the data using `util.fetcher` functions and trasnforms the data into a `pandas.Series`.
+- **Data Request Construction (`get_available_requests`)**: Builds all data requests based on the availability of the data source.
+- **URL Construction (`get_url`)**: Generates the appropriate web request URL.
+- **Data Download and Processing (`download_end_extract_data_for_request`)**: Fetches the data using `util.fetcher` functions and transforms it into a `pandas.Series`.
+
+## List of country or region names and codes
+
+For each retrieval script in the `retrieval/` folder, a corresponding YAML file must be created, listing all available countries or regions from the respective data source. The names and codes should adhere to the ISO 3166 standard. For country codes, please use alpha-2 codes. The regions are typically the principal subdivisions of a country (e.g., provinces or states). For non-standard subdivisions, please use a widely accepted name and code.
 
 ## Logging
 
