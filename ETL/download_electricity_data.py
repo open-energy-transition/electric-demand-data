@@ -158,7 +158,7 @@ def check_and_get_codes(
     return codes, one_code_on_platform
 
 
-def retrieve_data(data_source, code: str | None) -> pd.Series:
+def retrieve_data(data_source: str, code: str | None) -> pd.Series:
     """
     Retrieve the electricity generation data from the specified data source and code.
 
