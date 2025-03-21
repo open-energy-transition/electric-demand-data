@@ -55,13 +55,11 @@ uv run download_electricity_data.py ENTSOE -c FR
 
 ## Retrieval Scripts
 
-Each retrieval script in the `retrieval/` folder is designed to fetch electricity demand data from a specific data provider. While the structure may vary slightly, they generally follow this pattern:
+Each retrieval script in the `retrieval/` folder is designed to fetch electricity demand data from a specific data provider. The functions cointained in each retrieval script generally are:
 
-- **Data Request Construction**: The script builds all data requests according to the data source availability.
-- **URL Construction**: The script builds the appropriate API or web request URL.
-- **Data Download**: It fetches the data using `util.fetcher` functions.
-- **Data Processing**: The script applies necessary transformations, such as cleaning and time adjustments, using `util.time_series`.
-- **Output Format**: The retrieved data is stored in CSV and Parquet formats.
+- **Data Request Construction (`get_available_requests`)**: The function builds all data requests according to the data source availability.
+- **URL Construction (`get_url`)**: The function builds the appropriate API or web request URL.
+- **Data Download and Processing (`download_end_extract_data_for_request`)**: The function fetches the data using `util.fetcher` functions and trasnforms the data into a `pandas.Series`.
 
 ## Logging
 
