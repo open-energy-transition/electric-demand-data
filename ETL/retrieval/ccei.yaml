@@ -1,0 +1,41 @@
+items:
+  - region_name: Alberta
+    region_code: AB
+    country_name: Canada
+    country_code: CA
+  - region_name: British Columbia
+    region_code: BC
+    country_name: Canada
+    country_code: CA
+  - region_name: New Brunswick
+    region_code: NB
+    country_name: Canada
+    country_code: CA
+  - region_name: Newfoundland and Labrador
+    region_code: NL
+    country_name: Canada
+    country_code: CA
+  - region_name: Nova Scotia
+    region_code: NS
+    country_name: Canada
+    country_code: CA
+  - region_name: Ontario
+    region_code: "ON"
+    country_name: Canada
+    country_code: CA
+  - region_name: Prince Edward Island
+    region_code: PE
+    country_name: Canada
+    country_code: CA
+  - region_name: Quebec
+    region_code: QC
+    country_name: Canada
+    country_code: CA
+  # - region_name: Saskatchewan  # Data is at daily resolution
+  #   region_code: SK
+  #   country_name: Canada
+  #   country_code: CA
+  - region_name: Yukon
+    region_code: YT
+    country_name: Canada
+    country_code: CA

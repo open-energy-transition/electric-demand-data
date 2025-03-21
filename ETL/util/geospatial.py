@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pycountry
-import util.figures as figure_utilities
+import util.figures
 import xarray as xr
 from shapely.geometry import Polygon
 
@@ -223,7 +223,7 @@ def get_geopandas_region(
         region_shape = get_region_shape(code)
 
     if region_shape is not None and make_plot:
-        figure_utilities.simple_plot(region_shape, f"region_shape_{code}")
+        util.figures.simple_plot(region_shape, f"region_shape_{code}")
 
     return region_shape
 
@@ -349,7 +349,7 @@ def get_fraction_of_grid_cells_in_shape(
     )
 
     if make_plot:
-        figure_utilities.simple_plot(
+        util.figures.simple_plot(
             fraction_of_grid_cells_in_shape,
             f"fraction_of_grid_cells_in_shape_{region_shape.index[0]}",
         )

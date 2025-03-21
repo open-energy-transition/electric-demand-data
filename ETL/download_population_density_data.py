@@ -4,9 +4,9 @@ from urllib.request import urlretrieve
 
 import geopandas as gpd
 import numpy as np
-import util.figures as figure_utilities
-import util.general as general_utilities
-import util.geospatial as geospatial_utilities
+import util.figures
+import util.general
+import util.geospatial
 import xarray as xr
 
 
@@ -117,7 +117,7 @@ def extract_population_density_of_region(
     """
 
     # Get the lateral bounds of the region of interest.
-    region_bounds = geospatial_utilities.get_region_bounds(
+    region_bounds = util.geospatial.get_region_bounds(
         region_shape
     )  # West, South, East, North
 
@@ -140,7 +140,7 @@ def extract_population_density_of_region(
     population_density.to_netcdf(file_path)
 
     if make_plot:
-        figure_utilities.simple_plot(
+        util.figures.simple_plot(
             population_density, f"population_density_{region_shape.index[0]}"
         )
 
@@ -151,7 +151,7 @@ def run_population_density_data_retrieval() -> None:
     """
 
     # Set up the logging configuration.
-    log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "population_density_data.log"
     logging.basicConfig(
@@ -162,7 +162,7 @@ def run_population_density_data_retrieval() -> None:
     )
 
     # Create a directory to store the population density data.
-    result_directory = general_utilities.read_folders_structure()[
+    result_directory = util.general.read_folders_structure()[
         "population_density_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)
@@ -179,13 +179,13 @@ def run_population_density_data_retrieval() -> None:
     download_population_density_data_from_SEDAC(year, global_population_file_path)
 
     # Load the population density data.
-    population_density = geospatial_utilities.load_xarray(
+    population_density = util.geospatial.load_xarray(
         global_population_file_path, engine="rasterio"
     )
 
     # Read the codes of the regions of interest.
-    settings_directory = general_utilities.read_folders_structure()["settings_folder"]
-    region_codes = general_utilities.read_codes_from_file(
+    settings_directory = util.general.read_folders_structure()["settings_folder"]
+    region_codes = util.general.read_codes_from_file(
         settings_directory + "/gegis__all_countries.yaml"
     )
     # region_codes = general_utilities.read_codes_from_file(settings_directory + "/us_eia_regions.yaml")
@@ -201,7 +201,7 @@ def run_population_density_data_retrieval() -> None:
             logging.info(f"Extracting population density of {region_code}...")
 
             # Get the shape of the region of interest.
-            region_shape = geospatial_utilities.get_geopandas_region(region_code)
+            region_shape = util.geospatial.get_geopandas_region(region_code)
 
             # Extract the population density of the region.
             extract_population_density_of_region(

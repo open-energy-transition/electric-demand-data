@@ -2,7 +2,7 @@ import os
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import util.general as general_utilities
+import util.general
 import xarray as xr
 
 
@@ -21,7 +21,7 @@ def simple_plot(
     """
 
     # Create a directory to store the figures.
-    figure_directory = general_utilities.read_folders_structure()["figures_folder"]
+    figure_directory = util.general.read_folders_structure()["figures_folder"]
     os.makedirs(figure_directory, exist_ok=True)
 
     # Plot the data.
