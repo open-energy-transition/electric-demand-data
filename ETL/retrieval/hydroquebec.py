@@ -15,7 +15,7 @@ Description:
 import logging
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 
 
 def get_available_requests() -> None:
@@ -57,7 +57,7 @@ def download_and_extract_data() -> pd.Series:
     url = get_url()
 
     # Fetch the electricity demand data.
-    electricity_demand_time_series = fetcher.fetch_data(url, "csv")
+    electricity_demand_time_series = util.fetcher.fetch_data(url, "csv")
 
     # Set the date as the index.
     electricity_demand_time_series = electricity_demand_time_series.set_index(

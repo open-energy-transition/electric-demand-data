@@ -18,7 +18,7 @@ import logging
 import re
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 
 
 def get_available_requests() -> list[pd.Timestamp]:
@@ -74,7 +74,7 @@ def get_url(start_date: pd.Timestamp) -> str:
     return url
 
 
-def read_generation(generation_step):
+def _read_generation(generation_step):
     """
     Process a single generation data entry and determine the total generation.
 
@@ -110,7 +110,7 @@ def read_generation(generation_step):
     return float(total)
 
 
-def read_timestamp_and_generation(
+def _read_timestamp_and_generation(
     page: str,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
@@ -142,7 +142,7 @@ def read_timestamp_and_generation(
     )  # The values represent wind, solar, total, and conventional generation, respectively.
 
     # Process the generation data to determine the total generation.
-    total_generation = [read_generation(g) for g in generation_matches]
+    total_generation = [_read_generation(g) for g in generation_matches]
 
     return dates, hours, minutes, total_generation
 
@@ -175,10 +175,10 @@ def download_and_extract_data_of_request(
     url = get_url(start_date)
 
     # Fetch HTML content from the URL.
-    page = fetcher.fetch_data(url, "text", output="text")
+    page = util.fetcher.fetch_data(url, "text", output="text")
 
     # Extract time and generation data.
-    dates, hours, minutes, generation = read_timestamp_and_generation(page)
+    dates, hours, minutes, generation = _read_timestamp_and_generation(page)
 
     # Construct datetime index with time zone.
     date_time = pd.to_datetime(

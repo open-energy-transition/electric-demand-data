@@ -17,7 +17,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 from dotenv import load_dotenv
 
 
@@ -138,7 +138,7 @@ def download_and_extract_data_of_request(
     url = get_url(start_date_and_time, end_date_and_time, region_code)
 
     # Fetch the electricity demand data from the URL.
-    dataset = fetcher.fetch_data(url, "json", json_keys=["response", "data"])
+    dataset = util.fetcher.fetch_data(url, "json", json_keys=["response", "data"])
 
     # Create the electricity demand time series.
     electricity_demand_time_series = pd.Series(

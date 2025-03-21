@@ -15,7 +15,7 @@ Description:
 import logging
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 
 
 def get_available_requests() -> list[int]:
@@ -67,7 +67,7 @@ def get_url(file_number: int) -> str:
     return url
 
 
-def get_excel_information(file_number: int) -> tuple[str, int, list[str], list[str]]:
+def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[str]]:
     """
     Get the Excel information of the electricity demand data on the Alberta Electric System Operator website.
 
@@ -175,12 +175,12 @@ def download_and_extract_data_of_request(file_number: int) -> pd.Series:
     url = get_url(file_number)
 
     # Get the Excel information of the electricity demand data.
-    sheet_name, rows_to_skip, index_columns, load_columns = get_excel_information(
+    sheet_name, rows_to_skip, index_columns, load_columns = _get_excel_information(
         file_number
     )
 
     # Fetch the electricity demand data from the URL.
-    dataset = fetcher.fetch_data(
+    dataset = util.fetcher.fetch_data(
         url,
         "excel",
         excel_kwargs={

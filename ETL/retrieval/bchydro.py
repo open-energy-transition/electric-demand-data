@@ -16,7 +16,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 
 
 def get_available_requests() -> list[int]:
@@ -75,7 +75,7 @@ def get_url(year: int) -> str:
     return url
 
 
-def get_excel_information(
+def _get_excel_information(
     year: int,
 ) -> tuple[int, int | None, list[str] | list[int], list[str] | list[int]]:
     """
@@ -169,10 +169,10 @@ def download_and_extract_data_of_request(year: int) -> pd.Series:
     url = get_url(year)
 
     # Get the Excel information of the electricity demand data.
-    rows_to_skip, header, index_columns, load_column = get_excel_information(year)
+    rows_to_skip, header, index_columns, load_column = _get_excel_information(year)
 
     # Fetch HTML content from the URL.
-    dataset = fetcher.fetch_data(
+    dataset = util.fetcher.fetch_data(
         url,
         "excel",
         excel_kwargs={

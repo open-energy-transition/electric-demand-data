@@ -15,7 +15,7 @@ Description:
 import logging
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 
 
 def get_available_requests() -> list[tuple[int, int]]:
@@ -89,7 +89,7 @@ def download_and_extract_data_of_request(year: int, month: int) -> pd.Series:
     url = get_url()
 
     # Fetch HTML content from the URL.
-    dataset = fetcher.fetch_data(
+    dataset = util.fetcher.fetch_data(
         url,
         "query",
         query_event_target="ctl00$cphMainContent$lbGetData",

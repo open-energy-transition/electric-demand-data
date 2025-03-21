@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 from dotenv import load_dotenv
 
 
@@ -134,7 +134,7 @@ def download_and_extract_data_of_request(
     end_date_and_time = end_date_and_time.tz_localize("UTC")
 
     # Download the electricity demand time series from the ENTSO-E API.
-    electricity_demand_time_series = fetcher.fetch_entsoe_demand(
+    electricity_demand_time_series = util.fetcher.fetch_entsoe_demand(
         api_key, iso_alpha_2_code, start_date_and_time, end_date_and_time
     )
 

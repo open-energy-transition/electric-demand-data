@@ -15,8 +15,8 @@ Description:
 import logging
 
 import pandas as pd
-import util.fetcher as fetcher
-import util.general as general_utilities
+import util.fetcher
+import util.general
 
 
 def get_available_requests() -> list[int]:
@@ -104,10 +104,10 @@ def download_and_extract_data_of_request(year: int) -> pd.Series:
     url = get_url(year)
 
     # Fetch the electricity demand data from the URL.
-    dataset = fetcher.fetch_data(url, "json", json_keys=["result", "records"])
+    dataset = util.fetcher.fetch_data(url, "json", json_keys=["result", "records"])
 
     # Get the time zone of the country.
-    local_time_zone = general_utilities.get_time_zone("GB")
+    local_time_zone = util.general.get_time_zone("GB")
 
     # Extract the electricity demand time series.
     electricity_demand_time_series = pd.Series(

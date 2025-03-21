@@ -16,7 +16,7 @@ Description:
 import logging
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 
 
 def get_available_requests() -> list[tuple[int, bool] | tuple[None, bool]]:
@@ -102,7 +102,7 @@ def download_and_extract_data_of_request(
         logging.info("Retrieving electricity demand data for the years 1994 to 2002.")
 
         # Fetch HTML content from the URL.
-        dataset = fetcher.fetch_data(url, "text", verify_ssl=False)
+        dataset = util.fetcher.fetch_data(url, "text", verify_ssl=False)
 
         # Extract the electricity demand time series.
         electricity_demand_time_series = pd.Series(
@@ -123,7 +123,7 @@ def download_and_extract_data_of_request(
         logging.info(f"Retrieving electricity demand data for the year {year}.")
 
         # Fetch HTML content from the URL.
-        dataset = fetcher.fetch_data(url, "csv", csv_kwargs={"skiprows": 3})
+        dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"skiprows": 3})
 
         # Extract the index of the electricity demand time series.
         index = pd.to_datetime(

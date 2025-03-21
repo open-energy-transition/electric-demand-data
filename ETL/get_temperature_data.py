@@ -4,9 +4,9 @@ import os
 import geopandas as gpd
 import pandas as pd
 import pytz
-import util.general as general_utilities
-import util.geospatial as geospatial_utilities
-import util.time_series as time_series_utilities
+import util.general
+import util.geospatial
+import util.time_series
 import xarray as xr
 
 
@@ -35,7 +35,7 @@ def get_largest_population_densities_in_region(
 
     # Calculate the fraction of each grid cell that is in the given shapes.
     fraction_of_grid_cells_in_shape = (
-        geospatial_utilities.get_fraction_of_grid_cells_in_shape(region_shape)
+        util.geospatial.get_fraction_of_grid_cells_in_shape(region_shape)
     )
 
     # Rearrange the population density data to sort the values.
@@ -75,19 +75,17 @@ def get_temperature_in_largest_population_density_areas(
     """
 
     # Read the temperature data from the Copernicus Climate Data Store (CDS).
-    temperature_data_directory = general_utilities.read_folders_structure()[
-        "weather_folder"
-    ]
-    temperature_data = geospatial_utilities.load_xarray(
+    temperature_data_directory = util.general.read_folders_structure()["weather_folder"]
+    temperature_data = util.geospatial.load_xarray(
         temperature_data_directory
         + f"/2m_temperature_{region_shape.index[0]}_{year}.nc"
     )
 
     # Read the regional population density data.
-    population_density_directory = general_utilities.read_folders_structure()[
+    population_density_directory = util.general.read_folders_structure()[
         "population_density_folder"
     ]
-    population_density = geospatial_utilities.load_xarray(
+    population_density = util.geospatial.load_xarray(
         population_density_directory
         + f"/population_density_0.25_deg_{region_shape.index[0]}_2015.nc"
     )
@@ -203,7 +201,7 @@ def run_temperature_calculation() -> None:
     """
 
     # Set up the logging configuration.
-    log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "temperature_data.log"
     logging.basicConfig(
@@ -214,15 +212,15 @@ def run_temperature_calculation() -> None:
     )
 
     # Create a directory to store the weather data.
-    result_directory = general_utilities.read_folders_structure()["temperature_folder"]
+    result_directory = util.general.read_folders_structure()["temperature_folder"]
     os.makedirs(result_directory, exist_ok=True)
 
     # Read the codes of the regions of interest.
-    settings_directory = general_utilities.read_folders_structure()["settings_folder"]
-    region_codes = general_utilities.read_codes_from_file(
+    settings_directory = util.general.read_folders_structure()["settings_folder"]
+    region_codes = util.general.read_codes_from_file(
         settings_directory + "/gegis__all_countries.yaml"
     )
-    # region_codes = general_utilities.read_codes_from_file(settings_directory+"/us_eia_regions.yaml")
+    # region_codes = util.general.read_codes_from_file(settings_directory+"/us_eia_regions.yaml")
 
     # Define the target file type.
     file_type = ".parquet"
@@ -257,10 +255,10 @@ def run_temperature_calculation() -> None:
                 temperature_file_path_top_3
             ):
                 # Get the shape of the region of interest.
-                region_shape = geospatial_utilities.get_geopandas_region(region_code)
+                region_shape = util.geospatial.get_geopandas_region(region_code)
 
                 # Get the time zone information for the region.
-                region_time_zone = general_utilities.get_time_zone(region_code)
+                region_time_zone = util.general.get_time_zone(region_code)
 
             # Check if the file of temperature time series for the largest population density area does not exist.
             if not os.path.exists(temperature_file_path_top_1):
@@ -277,7 +275,7 @@ def run_temperature_calculation() -> None:
                 )
 
                 # Save the temperature time series.
-                time_series_utilities.save_time_series(
+                util.time_series.save_time_series(
                     temperature_time_series_top_1,
                     temperature_file_path_top_1,
                     temperature_time_series_top_1.columns.values,
@@ -294,7 +292,7 @@ def run_temperature_calculation() -> None:
                 )
 
                 # Save the temperature time series.
-                time_series_utilities.save_time_series(
+                util.time_series.save_time_series(
                     temperature_time_series_top_3,
                     temperature_file_path_top_3,
                     "Temperature (K)",

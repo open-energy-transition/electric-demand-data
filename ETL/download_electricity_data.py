@@ -13,8 +13,8 @@ import retrieval.ieso
 import retrieval.nbpower
 import retrieval.neso
 import retrieval.tsoc
-import util.general as general_utilities
-import util.time_series as time_series_utilities
+import util.general
+import util.time_series
 
 retrieval_module = {
     "AESO": retrieval.aeso,
@@ -118,7 +118,7 @@ def check_and_get_codes(
     """
 
     # Get the list of codes available on the platform.
-    codes_on_platform = general_utilities.read_codes_from_file(
+    codes_on_platform = util.general.read_codes_from_file(
         "retrieval/" + args.data_source.lower() + ".yaml"
     )
 
@@ -137,7 +137,7 @@ def check_and_get_codes(
 
     elif args.file is not None:
         # Read the codes from the file.
-        codes = general_utilities.read_codes_from_file(args.file)
+        codes = util.general.read_codes_from_file(args.file)
 
         # Check if the codes are in the list of countries or regions available on the platform.
         for code in codes:
@@ -235,7 +235,7 @@ def retrieve_data(data_source: str, code: str | None) -> pd.Series:
         electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
 
     # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
+    electricity_demand_time_series = util.time_series.clean_data(
         electricity_demand_time_series
     )
 
@@ -272,7 +272,7 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             )
 
             # Save the electricity demand time series.
-            time_series_utilities.simple_save(
+            util.time_series.simple_save(
                 electricity_demand_time_series,
                 "Load (MW)",
                 result_directory,
@@ -293,7 +293,7 @@ def main() -> None:
 
     # Set up the logging configuration.
     log_file_name = f"electricity_data_from_{args.data_source}.log"
-    log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
         filename=log_files_directory + "/" + log_file_name,
@@ -303,7 +303,7 @@ def main() -> None:
     )
 
     # Create a directory to store the electricity demand time series.
-    result_directory = general_utilities.read_folders_structure()[
+    result_directory = util.general.read_folders_structure()[
         "electricity_demand_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)

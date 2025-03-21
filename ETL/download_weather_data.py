@@ -6,8 +6,8 @@ import os
 import cdsapi
 import pandas as pd
 import pytz
-import util.general as general_utilities
-import util.geospatial as geospatial_utilities
+import util.general
+import util.geospatial
 import xarray as xr
 
 
@@ -234,7 +234,7 @@ def run_weather_data_retrieval() -> None:
     """
 
     # Set up the logging configuration.
-    log_files_directory = general_utilities.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "weather_data_from_Copernicus.log"
     logging.basicConfig(
@@ -245,15 +245,15 @@ def run_weather_data_retrieval() -> None:
     )
 
     # Create a directory to store the weather data.
-    result_directory = general_utilities.read_folders_structure()["weather_folder"]
+    result_directory = util.general.read_folders_structure()["weather_folder"]
     os.makedirs(result_directory, exist_ok=True)
 
     # Read the codes of the regions of interest.
-    settings_directory = general_utilities.read_folders_structure()["settings_folder"]
-    region_codes = general_utilities.read_codes_from_file(
+    settings_directory = util.general.read_folders_structure()["settings_folder"]
+    region_codes = util.general.read_codes_from_file(
         settings_directory + "/gegis__all_countries.yaml"
     )
-    # region_codes = general_utilities.read_codes_from_file(settings_directory+"/us_eia_regions.yaml")
+    # region_codes = util.general.read_codes_from_file(settings_directory+"/us_eia_regions.yaml")
 
     # Define the ERA5 variables to download.
     era5_variables = ["2m_temperature"]
@@ -283,17 +283,15 @@ def run_weather_data_retrieval() -> None:
                 # Check if the file does not exist.
                 if not os.path.exists(era5_data_file_path):
                     # Get the region of interest.
-                    region_shape = geospatial_utilities.get_geopandas_region(
-                        region_code
-                    )
+                    region_shape = util.geospatial.get_geopandas_region(region_code)
 
                     # Get the lateral bounds of the region of interest.
-                    region_bounds = geospatial_utilities.get_region_bounds(
+                    region_bounds = util.geospatial.get_region_bounds(
                         region_shape
                     )  # West, South, East, North
 
                     # Get the time zone of the region.
-                    region_time_zone = general_utilities.get_time_zone(region_code)
+                    region_time_zone = util.general.get_time_zone(region_code)
 
                     # Download the ERA5 data from the Copernicus Climate Data Store (CDS).
                     download_ERA5_data_from_Copernicus(

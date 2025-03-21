@@ -15,7 +15,7 @@ Description:
 import logging
 
 import pandas as pd
-import util.fetcher as fetcher
+import util.fetcher
 
 
 def get_available_requests() -> None:
@@ -88,7 +88,7 @@ def download_and_extract_data(region_code: str) -> pd.Series:
     url = get_url(region_code)
 
     # Fetch HTML content from the URL.
-    dataset = fetcher.fetch_data(url, "csv")
+    dataset = util.fetcher.fetch_data(url, "csv")
 
     if region_code == "NB":
         # Remove unknown code from the time step values.
