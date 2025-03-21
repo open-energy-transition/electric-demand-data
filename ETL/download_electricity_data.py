@@ -209,7 +209,7 @@ def retrieve_data(data_source: str, code: str | None) -> pd.Series:
     else:
         if code is None:
             electricity_demand_time_series_list = [
-                retrieval_module[data_source].download_and_extract_data_of_request(
+                retrieval_module[data_source].download_and_extract_data_for_request(
                     *request if isinstance(request, tuple) else request
                 )
                 for request in requests
@@ -217,7 +217,7 @@ def retrieve_data(data_source: str, code: str | None) -> pd.Series:
 
         else:
             electricity_demand_time_series_list = [
-                retrieval_module[data_source].download_and_extract_data_of_request(
+                retrieval_module[data_source].download_and_extract_data_for_request(
                     *request if isinstance(request, tuple) else request, code
                 )
                 for request in requests
