@@ -22,7 +22,7 @@ uv run download_electricity_data.py <data_source> [-c countryor_region_code] [-f
 Arguments:
 
 - `<data_source>`: The acronym of the data source (e.g., `ENTSOE`).
-- `-c, --code`: (Optional) The country or region code (e.g., `US`, `FR`).
+- `-c, --code`: (Optional) The country or region code (e.g., `US`, `US_CAL`).
 - `-f, --file`: (Optional) YAML file containing multiple codes.
 
 ### Example
