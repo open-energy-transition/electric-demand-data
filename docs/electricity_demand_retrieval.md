@@ -16,7 +16,7 @@ This repository provides scripts to download and process electricity demand data
 To download electricity data, run:
 
 ```bash
-uv run download_electricity_data.py <data_source> [-c country_code] [-f code_file]
+uv run download_electricity_data.py <data_source> [-c countryor_region_code] [-f code_file]
 ```
 
 Arguments:
