@@ -72,7 +72,7 @@ def get_url(year: int | None, before_Apr_2002: bool) -> str:
     return url
 
 
-def download_and_extract_data_of_request(
+def download_and_extract_data_for_request(
     year: int | None, before_Apr_2002: bool
 ) -> pd.Series:
     """

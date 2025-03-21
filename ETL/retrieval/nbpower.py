@@ -59,7 +59,7 @@ def get_url() -> str:
     return url
 
 
-def download_and_extract_data_of_request(year: int, month: int) -> pd.Series:
+def download_and_extract_data_for_request(year: int, month: int) -> pd.Series:
     """
     Retrieve the electricity demand data from the New Brunswick Power Corporation website.
 

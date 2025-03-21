@@ -147,7 +147,7 @@ def _read_timestamp_and_generation(
     return dates, hours, minutes, total_generation
 
 
-def download_and_extract_data_of_request(
+def download_and_extract_data_for_request(
     start_date: pd.Timestamp,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """

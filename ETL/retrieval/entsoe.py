@@ -98,7 +98,7 @@ def get_url(
     return url
 
 
-def download_and_extract_data_of_request(
+def download_and_extract_data_for_request(
     start_date_and_time: pd.Timestamp,
     end_date_and_time: pd.Timestamp,
     iso_alpha_2_code: str,

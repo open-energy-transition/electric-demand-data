@@ -80,7 +80,7 @@ def get_url(year: int) -> str:
     return url
 
 
-def download_and_extract_data_of_request(year: int) -> pd.Series:
+def download_and_extract_data_for_request(year: int) -> pd.Series:
     """
     Download the electricity demand time series from the website of the UK's National Energy System Operator.
 

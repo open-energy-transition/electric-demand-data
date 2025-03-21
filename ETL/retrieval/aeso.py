@@ -146,7 +146,7 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
     return sheet_name, rows_to_skip, index_columns, load_columns
 
 
-def download_and_extract_data_of_request(file_number: int) -> pd.Series:
+def download_and_extract_data_for_request(file_number: int) -> pd.Series:
     """
     Read the Excel files on the Alberta Electric System Operator website.
     There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.

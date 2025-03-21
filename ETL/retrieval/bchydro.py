@@ -146,7 +146,7 @@ def _get_excel_information(
     return rows_to_skip, header, index_columns, load_column
 
 
-def download_and_extract_data_of_request(year: int) -> pd.Series:
+def download_and_extract_data_for_request(year: int) -> pd.Series:
     """
     Read the Excel files on the British Columbia Hydro and Power Authority website.
 
