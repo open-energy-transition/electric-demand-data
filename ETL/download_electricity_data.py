@@ -143,7 +143,7 @@ def check_and_get_codes(
         # Check if the code is in the list of countries or regions available on the platform.
         if args.code not in codes_on_platform:
             logging.error(
-                f"Code {args.code} is not available on the {args.data_source} platform."
+                f"Code {args.code} is not available on the {args.data_source} platform. Please choose one of the following: {', '.join(codes_on_platform)}"
             )
             return None, None
         else:
@@ -163,7 +163,9 @@ def check_and_get_codes(
 
         # Check if there are any codes left.
         if len(codes) == 0:
-            logging.error("No valid codes have been found.")
+            logging.error(
+                f"None of the codes in the file are available on the {args.data_source} platform. Please choose from the following: {', '.join(codes_on_platform)}"
+            )
             return None, None
     else:
         # Run the data retrieval for all the countries or regions available on the platform.
