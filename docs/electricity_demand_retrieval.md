@@ -1,6 +1,6 @@
 # Electricity demand data retrieval
 
-This repository provides scripts to download and process electricity demand data from various sources. The main script, `download_electricity_data.py`, serves as the entry point for retrieving data, while individual retrieval scripts are located in the `retrieval/` folder, each handling data extraction from a specific provider.
+This repository provides scripts to download and process electricity demand data from various sources. The main script, `download_electricity_data.py`, serves as the entry point for retrieving data, while individual retrieval scripts are located in the `retrieval/` folder, each handling data extraction from a specific source.
 
 ## Features
 
@@ -61,7 +61,7 @@ Each retrieval script in the `retrieval/` folder is designed to fetch electricit
 - **URL Construction (`get_url`)**: Generates the appropriate web request URL.
 - **Data Download and Processing (`download_end_extract_data_for_request`)**: Fetches the data using `util.fetcher` functions and transforms it into a `pandas.Series`.
 
-## List of country or region names and codes
+## Country and Region Names and Codes
 
 For each retrieval script in the `retrieval/` folder, a corresponding YAML file must be created, listing all available countries or regions from the respective data source. The names and codes should adhere to the ISO 3166 standard. For country codes, please use alpha-2 codes. The regions are typically the principal subdivisions of a country (e.g., provinces or states). For non-standard subdivisions, please use a widely accepted name and code.
 
