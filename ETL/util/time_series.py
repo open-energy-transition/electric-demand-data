@@ -122,7 +122,7 @@ def linearly_interpolate(time_series: pd.Series) -> pd.Series:
 
 def check_time_series_data_quality(time_series: pd.Series) -> None:
     """
-    Check the data quality of a time series.
+    Check the data quality of a time series (e.g., missing values, duplicated time steps, and frequency).
 
     Parameters
     ----------
@@ -131,15 +131,17 @@ def check_time_series_data_quality(time_series: pd.Series) -> None:
     """
 
     # Check if there are any missing values in the time series.
-    if time_series.isnull().sum() > 0:
+    count_missing_values = time_series.isnull().sum()
+    if count_missing_values > 0:
         logging.warning(
-            f"There are {time_series.isnull().sum()} missing values in the time series."
+            f"There are {count_missing_values} missing values in the time series."
         )
 
     # Check if there are any duplicated time steps in the time series.
-    if time_series.index.duplicated().sum() > 0:
+    count_duplicated_time_steps = time_series.index.duplicated().sum()
+    if count_duplicated_time_steps > 0:
         logging.warning(
-            f"There are {time_series.index.duplicated().sum()} duplicated time steps in the time series."
+            f"There are {count_duplicated_time_steps} duplicated time steps in the time series."
         )
 
     # Chech the frequency of the time series.
