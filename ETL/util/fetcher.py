@@ -3,7 +3,7 @@ import re
 import time
 from io import StringIO
 
-import pandas as pd
+import pandas
 import requests
 from entsoe import EntsoePandasClient
 from entsoe.exceptions import NoMatchingDataError
@@ -29,7 +29,7 @@ def fetch_data(
     json_keys: list[str] = [],
     query_event_target: str = "",
     query_params: dict[str, str] = {},
-) -> pd.DataFrame | str:
+) -> pandas.DataFrame | str:
     """
     Fetch the data from the specified URL.
 
@@ -62,7 +62,7 @@ def fetch_data(
 
     Returns
     -------
-    pd.DataFrame | str
+    pandas.DataFrame | str
         The fetched data as a DataFrame or a string.
     """
 
@@ -70,11 +70,11 @@ def fetch_data(
         try:
             if content_type == "csv":
                 # Read the CSV file from the URL.
-                return pd.read_csv(url, **csv_kwargs)
+                return pandas.read_csv(url, **csv_kwargs)
 
             elif content_type == "excel":
                 # Read the Excel file from the URL.
-                return pd.read_excel(url, **excel_kwargs)
+                return pandas.read_excel(url, **excel_kwargs)
 
             else:
                 # Send the GET request.
@@ -89,7 +89,7 @@ def fetch_data(
 
                     if output == "tabular":
                         # Return the content as a DataFrame.
-                        return pd.read_csv(StringIO(content), **csv_kwargs)
+                        return pandas.read_csv(StringIO(content), **csv_kwargs)
                     elif output == "text":
                         # Return the content as a string.
                         return content
@@ -105,7 +105,7 @@ def fetch_data(
                         content = content[json_key]
 
                     # Return the content as a DataFrame.
-                    return pd.DataFrame(content)
+                    return pandas.DataFrame(content)
 
                 elif content_type == "query":
                     # Read the content of the response.
@@ -138,7 +138,7 @@ def fetch_data(
                     content = response.text
 
                     # Return the content as a DataFrame.
-                    return pd.read_csv(StringIO(content))
+                    return pandas.read_csv(StringIO(content))
 
         except ConnectionError:
             logging.error(f"Connection error. Retrying ({attempt}/{retries})...")
@@ -165,11 +165,11 @@ def fetch_data(
 def fetch_entsoe_demand(
     api_key: str,
     iso_alpha_2_code: str,
-    start_date_and_time: pd.Timestamp,
-    end_date_and_time: pd.Timestamp,
+    start_date_and_time: pandas.Timestamp,
+    end_date_and_time: pandas.Timestamp,
     retries: int = 3,
     retry_delay: int = 5,
-) -> pd.Series:
+) -> pandas.Series:
     """
     Fetches the hourly electricity demand time series from ENTSO-E with retry logic.
 
@@ -179,9 +179,9 @@ def fetch_entsoe_demand(
         The API key for the ENTSO-E API
     iso_alpha_2_code : str
         The ISO Alpha-2 code of the country
-    start_date_and_time : pd.Timestamp
+    start_date_and_time : pandas.Timestamp
         The start date and time of the data retrieval
-    end_date_and_time : pd.Timestamp
+    end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
     max_attempts : int, optional
         The maximum number of retry attempts (default is 3)
@@ -218,4 +218,4 @@ def fetch_entsoe_demand(
             f"No data available for {iso_alpha_2_code} between {start_date_and_time} and {end_date_and_time}."
         )
 
-        return pd.Series()
+        return pandas.Series()

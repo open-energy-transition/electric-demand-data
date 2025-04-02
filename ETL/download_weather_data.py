@@ -4,18 +4,18 @@ import logging
 import os
 
 import cdsapi
-import pandas as pd
+import pandas
 import pytz
 import util.general
 import util.geospatial
-import xarray as xr
+import xarray
 
 
 def get_request(
     ERA5_variable: str,
     year: int,
     region_bounds: list[float] | None = None,
-    extra_time_steps: pd.DatetimeIndex = None,
+    extra_time_steps: pandas.DatetimeIndex = None,
     uneven_utc_offset: bool = False,
 ) -> dict[str, str | list[str] | list[float]]:
     """
@@ -72,12 +72,16 @@ def get_request(
             # If the additional time steps are in the following year and are the first time steps of the year, add an additional time step at the end of the time steps.
             if extra_time_steps.hour[0] == 0:
                 extra_time_steps = extra_time_steps.union(
-                    pd.DatetimeIndex([extra_time_steps[-1] + pd.Timedelta(hours=1)])
+                    pandas.DatetimeIndex(
+                        [extra_time_steps[-1] + pandas.Timedelta(hours=1)]
+                    )
                 )
             # If the additional time steps are in the previous year and are the last time steps of the year, add an additional time step at the beginning of the time steps.
             elif extra_time_steps.hour[-1] == 23:
                 extra_time_steps = extra_time_steps.union(
-                    pd.DatetimeIndex([extra_time_steps[0] - pd.Timedelta(hours=1)])
+                    pandas.DatetimeIndex(
+                        [extra_time_steps[0] - pandas.Timedelta(hours=1)]
+                    )
                 )
         request["time"] = [f"{tt:02d}:00" for tt in extra_time_steps.hour]
 
@@ -88,7 +92,7 @@ def merge_temporary_temperature_datasets(
     file_path_1: str,
     file_path_2: str,
     file_path_final: str,
-    time_steps: pd.DatetimeIndex,
+    time_steps: pandas.DatetimeIndex,
     uneven_utc_offset: bool,
 ) -> None:
     """
@@ -109,11 +113,11 @@ def merge_temporary_temperature_datasets(
     """
 
     # Load the two temperature datasets.
-    temperature_data_1 = xr.open_dataarray(file_path_1)
-    temperature_data_2 = xr.open_dataarray(file_path_2)
+    temperature_data_1 = xarray.open_dataarray(file_path_1)
+    temperature_data_2 = xarray.open_dataarray(file_path_2)
 
     # Merge the two temperature datasets.
-    temperature_data = xr.concat(
+    temperature_data = xarray.concat(
         [temperature_data_1, temperature_data_2], dim="valid_time"
     )
     temperature_data = temperature_data.sortby("valid_time")
@@ -174,7 +178,7 @@ def download_ERA5_data_from_Copernicus(
         # Get all the time steps of the year in the time zone of the region and convert them to UTC.
         time_steps = (
             (
-                pd.date_range(
+                pandas.date_range(
                     start=str(year), end=str(year + 1), freq="h", tz=local_time_zone
                 )[:-1]
             )
@@ -187,7 +191,7 @@ def download_ERA5_data_from_Copernicus(
 
         # Get the time difference to check if the time zone of the region has an uneven UTC offset.
         time_difference = (
-            pd.Timestamp(str(year), tz=local_time_zone).utcoffset().total_seconds()
+            pandas.Timestamp(str(year), tz=local_time_zone).utcoffset().total_seconds()
             / 3600
         )
 

@@ -1,13 +1,13 @@
 import os
 
-import geopandas as gpd
-import matplotlib.pyplot as plt
+import geopandas
+import matplotlib.pyplot
 import util.general
-import xarray as xr
+import xarray
 
 
 def simple_plot(
-    data_to_plot: gpd.GeoDataFrame | xr.DataArray, figure_name: str
+    data_to_plot: geopandas.GeoDataFrame | xarray.DataArray, figure_name: str
 ) -> None:
     """
     Plot the data and save the figure.
@@ -25,9 +25,9 @@ def simple_plot(
     os.makedirs(figure_directory, exist_ok=True)
 
     # Plot the data.
-    fig, ax = plt.subplots()
+    fig, ax = matplotlib.pyplot.subplots()
     data_to_plot.plot(ax=ax)
     fig.savefig(
         figure_directory + "/" + figure_name + ".png", dpi=300, bbox_inches="tight"
     )
-    plt.close(fig)
+    matplotlib.pyplot.close(fig)

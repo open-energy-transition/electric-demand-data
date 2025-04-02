@@ -14,7 +14,7 @@ Description:
 
 import logging
 
-import pandas as pd
+import pandas
 import util.fetcher
 
 
@@ -29,8 +29,8 @@ def get_available_requests() -> list[tuple[int, int]]:
     """
 
     # Define the start and end date according to the data availability.
-    start_date = pd.Timestamp("2018-01-01")
-    end_date = pd.Timestamp.now()
+    start_date = pandas.Timestamp("2018-01-01")
+    end_date = pandas.Timestamp.now()
 
     # The available requests are the years and months from 2018 to the current year.
     available_requests = [
@@ -59,7 +59,7 @@ def get_url() -> str:
     return url
 
 
-def download_and_extract_data_for_request(year: int, month: int) -> pd.Series:
+def download_and_extract_data_for_request(year: int, month: int) -> pandas.Series:
     """
     Retrieve the electricity demand data from the New Brunswick Power Corporation website.
 
@@ -101,9 +101,9 @@ def download_and_extract_data_for_request(year: int, month: int) -> pd.Series:
 
     # Extract the electricity demand time series.
     # It is unclear whether the time values represent the start or end of the hour. Most likely, they represent the start of the hour but this is not confirmed.
-    electricity_demand_time_series = pd.Series(
+    electricity_demand_time_series = pandas.Series(
         dataset["NB_LOAD"].values,
-        index=pd.to_datetime(dataset["HOUR"].values, format="%Y-%m-%d %H:%M"),
+        index=pandas.to_datetime(dataset["HOUR"].values, format="%Y-%m-%d %H:%M"),
     )
 
     # Convert the time zone of the electricity demand time series to UTC.

@@ -16,31 +16,31 @@ import logging
 import os
 from pathlib import Path
 
-import pandas as pd
+import pandas
 import util.fetcher
 from dotenv import load_dotenv
 
 
-def get_available_requests() -> list[tuple[pd.Timestamp, pd.Timestamp]]:
+def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
     Get the list of available requests to retrieve the electricity demand data on the Energy Information Administration website.
 
     Returns
     -------
-    available_requests : list[pd.Timestamp, pd.Timestamp]
+    available_requests : list[pandas.Timestamp, pandas.Timestamp]
         The list of available requests
     """
 
     # Define the start and end date according to the data availability.
-    start_date_and_time = pd.Timestamp("2020-01-01 00:00:00")
-    end_date_and_time = pd.Timestamp.today()
+    start_date_and_time = pandas.Timestamp("2020-01-01 00:00:00")
+    end_date_and_time = pandas.Timestamp.today()
 
     # Define start and end dates and times for six-month retrieval periods. A six-month period avoids the limitation of the API to retrieve a maximum of 5000 data points.
-    start_date_and_time_of_period = pd.date_range(
+    start_date_and_time_of_period = pandas.date_range(
         start_date_and_time, end_date_and_time, freq="6MS"
     )
     end_date_and_time_of_period = start_date_and_time_of_period[1:].union(
-        pd.to_datetime([end_date_and_time])
+        pandas.to_datetime([end_date_and_time])
     )
 
     # The available requests are the beginning and end of each six-month period.
@@ -52,16 +52,18 @@ def get_available_requests() -> list[tuple[pd.Timestamp, pd.Timestamp]]:
 
 
 def get_url(
-    start_date_and_time: pd.Timestamp, end_date_and_time: pd.Timestamp, region_code: str
+    start_date_and_time: pandas.Timestamp,
+    end_date_and_time: pandas.Timestamp,
+    region_code: str,
 ) -> str:
     """
     Get the URL of the electricity demand data on the Energy Information Administration website.
 
     Parameters
     ----------
-    start_date_and_time : pd.Timestamp
+    start_date_and_time : pandas.Timestamp
         The start date and time of the data retrieval
-    end_date_and_time : pd.Timestamp
+    end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
     region_code : str
         The code of the region of interest
@@ -78,7 +80,7 @@ def get_url(
     )
 
     # Check that the beginning of the period is on or after 2020-01-01.
-    assert start_date_and_time >= pd.Timestamp("2020-01-01 00:00:00"), (
+    assert start_date_and_time >= pandas.Timestamp("2020-01-01 00:00:00"), (
         "The beginning of the data availability is 2020-01-01."
     )
 
@@ -99,16 +101,18 @@ def get_url(
 
 
 def download_and_extract_data_for_request(
-    start_date_and_time: pd.Timestamp, end_date_and_time: pd.Timestamp, region_code: str
-) -> pd.Series:
+    start_date_and_time: pandas.Timestamp,
+    end_date_and_time: pandas.Timestamp,
+    region_code: str,
+) -> pandas.Series:
     """
     Retrieve the electricity demand data from the Energy Information Administration (EIA).
 
     Parameters
     ----------
-    start_date_and_time : pd.Timestamp
+    start_date_and_time : pandas.Timestamp
         The start date and time of the data retrieval
-    end_date_and_time : pd.Timestamp
+    end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
     region_code : str
         The code of the region of interest
@@ -125,7 +129,7 @@ def download_and_extract_data_for_request(
     )
 
     # Check that the beginning of the period is on or after 2020-01-01.
-    assert start_date_and_time >= pd.Timestamp("2020-01-01 00:00:00"), (
+    assert start_date_and_time >= pandas.Timestamp("2020-01-01 00:00:00"), (
         "The beginning of the data availability is 2020-01-01."
     )
 
@@ -141,8 +145,8 @@ def download_and_extract_data_for_request(
     dataset = util.fetcher.fetch_data(url, "json", json_keys=["response", "data"])
 
     # Create the electricity demand time series.
-    electricity_demand_time_series = pd.Series(
-        dataset["value"].values, index=pd.to_datetime(dataset["period"])
+    electricity_demand_time_series = pandas.Series(
+        dataset["value"].values, index=pandas.to_datetime(dataset["period"])
     ).tz_localize("UTC")
 
     return electricity_demand_time_series

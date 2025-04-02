@@ -14,7 +14,7 @@ Description:
 
 import logging
 
-import pandas as pd
+import pandas
 import util.fetcher
 import util.general
 
@@ -30,7 +30,7 @@ def get_available_requests() -> list[int]:
     """
 
     # The available requests are the years from 2009 to the current year.
-    available_requests = list(range(2009, pd.Timestamp.now().year + 1))
+    available_requests = list(range(2009, pandas.Timestamp.now().year + 1))
 
     return available_requests
 
@@ -80,7 +80,7 @@ def get_url(year: int) -> str:
     return url
 
 
-def download_and_extract_data_for_request(year: int) -> pd.Series:
+def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
     Download the electricity demand time series from the website of the UK's National Energy System Operator.
 
@@ -110,9 +110,9 @@ def download_and_extract_data_for_request(year: int) -> pd.Series:
     local_time_zone = util.general.get_time_zone("GB")
 
     # Extract the electricity demand time series.
-    electricity_demand_time_series = pd.Series(
+    electricity_demand_time_series = pandas.Series(
         dataset["ND"].values,
-        index=pd.date_range(
+        index=pandas.date_range(
             start=f"{year}-01-01 00:30",
             periods=len(dataset),
             freq="30min",

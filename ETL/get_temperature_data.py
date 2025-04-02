@@ -1,20 +1,20 @@
 import logging
 import os
 
-import geopandas as gpd
-import pandas as pd
+import geopandas
+import pandas
 import pytz
 import util.general
 import util.geospatial
 import util.time_series
-import xarray as xr
+import xarray
 
 
 def get_largest_population_densities_in_region(
-    region_shape: gpd.GeoDataFrame,
-    population_density: xr.DataArray,
+    region_shape: geopandas.GeoDataFrame,
+    population_density: xarray.DataArray,
     number_of_grid_cells: int,
-) -> xr.DataArray:
+) -> xarray.DataArray:
     """
     Get the population density data in the given region, ready to be sorted.
 
@@ -54,8 +54,8 @@ def get_largest_population_densities_in_region(
 
 
 def get_temperature_in_largest_population_density_areas(
-    year: int, region_shape: gpd.GeoDataFrame, number_of_grid_cells: int
-) -> pd.Series:
+    year: int, region_shape: geopandas.GeoDataFrame, number_of_grid_cells: int
+) -> pandas.Series:
     """
     Get the temperature data for the largest population density areas in the given country.
 
@@ -115,8 +115,8 @@ def get_temperature_in_largest_population_density_areas(
 
 
 def add_temperature_statistics(
-    temperature_time_series: pd.Series, country_time_zone: pytz.timezone
-) -> pd.DataFrame:
+    temperature_time_series: pandas.Series, country_time_zone: pytz.timezone
+) -> pandas.DataFrame:
     """
     Add temperature statistics to the temperature time series.
 
@@ -165,13 +165,13 @@ def add_temperature_statistics(
     monthly_average_temperature_rank.index = temperature_time_series.index
 
     # Map the annual average temperature, 5 and 95 percentiles to the original temperature time series.
-    annual_average_temperature = pd.Series(
+    annual_average_temperature = pandas.Series(
         annual_average_temperature, index=temperature_time_series.index
     )
-    temperature_5_percentile = pd.Series(
+    temperature_5_percentile = pandas.Series(
         temperature_5_percentile, index=temperature_time_series.index
     )
-    temperature_95_percentile = pd.Series(
+    temperature_95_percentile = pandas.Series(
         temperature_95_percentile, index=temperature_time_series.index
     )
 

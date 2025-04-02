@@ -17,35 +17,35 @@ Description:
 import logging
 import re
 
-import pandas as pd
+import pandas
 import util.fetcher
 
 
-def get_available_requests() -> list[pd.Timestamp]:
+def get_available_requests() -> list[pandas.Timestamp]:
     """
     Get the list of available requests to retrieve the electricity generation data on the Transmission System Operator of Cyprus website.
 
     Returns
     -------
-    available_requests : list[pd.Timestamp]
+    available_requests : list[pandas.Timestamp]
         The list of available requests
     """
 
     # Define the start and end date according to the data availability.
-    start_date_and_time = pd.Timestamp(
+    start_date_and_time = pandas.Timestamp(
         "2008-01-01 00:00:00"
     )  # This is in local time (Asia/Nicosia).
-    end_date_and_time = pd.Timestamp.today()
+    end_date_and_time = pandas.Timestamp.today()
 
     # Define start dates for the data retrievals. We use 15-day intervals (the maximum available on the website) to minimize the number of requests.
     available_requests = list(
-        pd.date_range(start_date_and_time, end_date_and_time, freq="15D")
+        pandas.date_range(start_date_and_time, end_date_and_time, freq="15D")
     )
 
     return available_requests
 
 
-def get_url(start_date: pd.Timestamp) -> str:
+def get_url(start_date: pandas.Timestamp) -> str:
     """
     Get the URL of the electricity generation data on the Transmission System Operator of Cyprus website.
 
@@ -61,7 +61,7 @@ def get_url(start_date: pd.Timestamp) -> str:
     """
 
     # Check that the beginning of the period is on or after 2008-01-01.
-    assert start_date >= pd.Timestamp("2008-01-01 00:00:00"), (
+    assert start_date >= pandas.Timestamp("2008-01-01 00:00:00"), (
         "The beginning of the data availability is 2008-01-01."
     )
 
@@ -148,7 +148,7 @@ def _read_timestamp_and_generation(
 
 
 def download_and_extract_data_for_request(
-    start_date: pd.Timestamp,
+    start_date: pandas.Timestamp,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
     Download and extract the electricity generation data from the website of the Transmission System Operator of Cyprus.
@@ -165,7 +165,7 @@ def download_and_extract_data_for_request(
     """
 
     # Check that the beginning of the period is on or after 2008-01-01.
-    assert start_date >= pd.Timestamp("2008-01-01 00:00:00"), (
+    assert start_date >= pandas.Timestamp("2008-01-01 00:00:00"), (
         "The beginning of the data availability is 2008-01-01."
     )
 
@@ -181,11 +181,11 @@ def download_and_extract_data_for_request(
     dates, hours, minutes, generation = _read_timestamp_and_generation(page)
 
     # Construct datetime index with time zone.
-    date_time = pd.to_datetime(
+    date_time = pandas.to_datetime(
         [f"{date} {hour}:{minute}" for date, hour, minute in zip(dates, hours, minutes)]
     ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
 
     # Create a Pandas Series for the electricity generation data.
-    electricity_generation_time_series = pd.Series(data=generation, index=date_time)
+    electricity_generation_time_series = pandas.Series(data=generation, index=date_time)
 
     return electricity_generation_time_series

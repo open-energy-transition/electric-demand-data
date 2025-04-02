@@ -14,7 +14,7 @@ Description:
 
 import logging
 
-import pandas as pd
+import pandas
 import util.fetcher
 
 
@@ -43,7 +43,7 @@ def get_url() -> str:
     return url
 
 
-def download_and_extract_data() -> pd.Series:
+def download_and_extract_data() -> pandas.Series:
     """
     Retrieve the electricity demand data from the website of Hydro-Québec.
 
@@ -65,7 +65,7 @@ def download_and_extract_data() -> pd.Series:
     ).squeeze()
 
     # Convert the index to a datetime object.
-    electricity_demand_time_series.index = pd.to_datetime(
+    electricity_demand_time_series.index = pandas.to_datetime(
         electricity_demand_time_series.index, format="%Y-%m-%dT%H:%M:%S%z", utc=True
     )
 

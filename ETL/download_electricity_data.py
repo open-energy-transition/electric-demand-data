@@ -16,7 +16,7 @@ import argparse
 import logging
 import os
 
-import pandas as pd
+import pandas
 import retrieval.aeso
 import retrieval.bchydro
 import retrieval.ccei
@@ -147,7 +147,7 @@ def check_and_get_codes(
     return codes, one_code_on_platform
 
 
-def retrieve_data(data_source: str, code: str | None) -> pd.Series:
+def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
     Retrieve the electricity generation data from the specified data source and code.
 
@@ -206,7 +206,9 @@ def retrieve_data(data_source: str, code: str | None) -> pd.Series:
         ]
 
         # Concatenate the electricity demand time series of all periods.
-        electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
+        electricity_demand_time_series = pandas.concat(
+            electricity_demand_time_series_list
+        )
 
     # Clean the data.
     electricity_demand_time_series = util.time_series.clean_data(

@@ -14,7 +14,7 @@ Description:
 
 import logging
 
-import pandas as pd
+import pandas
 import util.fetcher
 
 
@@ -66,7 +66,7 @@ def get_url(region_code: str) -> str:
     return url
 
 
-def download_and_extract_data(region_code: str) -> pd.Series:
+def download_and_extract_data(region_code: str) -> pandas.Series:
     """
     Retrieve the electricity demand data of a Canadian province or territory from the Canadian Centre for Energy Information.
 
@@ -98,8 +98,9 @@ def download_and_extract_data(region_code: str) -> pd.Series:
         dataset = dataset[~dataset["TIME_PERIOD"].str.contains("06:59:59")]
 
     # Extract the electricity demand time series with UTC time zone.
-    electricity_demand_time_series = pd.Series(
-        data=dataset["OBS_VALUE"].values, index=pd.to_datetime(dataset["TIME_PERIOD"])
+    electricity_demand_time_series = pandas.Series(
+        data=dataset["OBS_VALUE"].values,
+        index=pandas.to_datetime(dataset["TIME_PERIOD"]),
     ).tz_localize("UTC")
 
     return electricity_demand_time_series

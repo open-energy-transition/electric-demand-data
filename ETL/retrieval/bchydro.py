@@ -14,8 +14,8 @@ Description:
 
 import logging
 
-import numpy as np
-import pandas as pd
+import numpy
+import pandas
 import util.fetcher
 
 
@@ -30,7 +30,7 @@ def get_available_requests() -> list[int]:
     """
 
     # The available requests are the years from 2001 to current year.
-    available_requests = list(range(2001, pd.Timestamp.now().year + 1))
+    available_requests = list(range(2001, pandas.Timestamp.now().year + 1))
 
     return available_requests
 
@@ -146,7 +146,7 @@ def _get_excel_information(
     return rows_to_skip, header, index_columns, load_column
 
 
-def download_and_extract_data_for_request(year: int) -> pd.Series:
+def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
     Read the Excel files on the British Columbia Hydro and Power Authority website.
 
@@ -183,30 +183,36 @@ def download_and_extract_data_for_request(year: int) -> pd.Series:
     )
 
     # Extract the first and last time steps of the electricity demand time series.
-    first_time_step = pd.to_datetime(
+    first_time_step = pandas.to_datetime(
         str(dataset[index_columns[0]].iloc[0])
         + " "
         + str(int(dataset[index_columns[1]].iloc[0]) - 1)
         + ":00"
-    ) + pd.Timedelta("1h")
-    last_time_step = pd.to_datetime(
+    ) + pandas.Timedelta("1h")
+    last_time_step = pandas.to_datetime(
         str(dataset[index_columns[0]].iloc[-1])
         + " "
         + str(int(dataset[index_columns[1]].iloc[-1]) - 1)
         + ":00"
-    ) + pd.Timedelta("1h")
+    ) + pandas.Timedelta("1h")
 
     # Remove NaN and zero values where daylight saving time switch occurs. The other data points are typically nice and clean.
     available_data = dataset[load_column[0]][
-        (np.logical_and(dataset[load_column[0]] != 0, dataset[load_column[0]].notna()))
+        (
+            numpy.logical_and(
+                dataset[load_column[0]] != 0, dataset[load_column[0]].notna()
+            )
+        )
     ]
 
     # Construct the index of the electricity demand time series.
-    timestamps = pd.date_range(
+    timestamps = pandas.date_range(
         start=first_time_step, end=last_time_step, freq="h", tz="America/Vancouver"
     )
 
     # Extract the electricity demand time series.
-    electricity_demand_time_series = pd.Series(available_data.values, index=timestamps)
+    electricity_demand_time_series = pandas.Series(
+        available_data.values, index=timestamps
+    )
 
     return electricity_demand_time_series

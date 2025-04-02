@@ -17,31 +17,31 @@ import logging
 import os
 from pathlib import Path
 
-import pandas as pd
+import pandas
 import util.fetcher
 from dotenv import load_dotenv
 
 
-def get_available_requests() -> list[tuple[pd.Timestamp, pd.Timestamp]]:
+def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
     Get the list of available requests to retrieve the electricity load data on the ENTSO-E transparency platform.
 
     Returns
     -------
-    available_requests : list[tuple[pd.Timestamp, pd.Timestamp]]
+    available_requests : list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
 
     # Define the start and end date according to the data availability.
-    start_date_and_time = pd.Timestamp("2014-01-01 00:00:00")
-    end_date_and_time = pd.Timestamp.today()
+    start_date_and_time = pandas.Timestamp("2014-01-01 00:00:00")
+    end_date_and_time = pandas.Timestamp.today()
 
     # Define start and end dates and times for one-year retrieval periods. A one-year period is the maximum available on the platform.
-    start_date_and_time_of_period = pd.date_range(
+    start_date_and_time_of_period = pandas.date_range(
         start_date_and_time, end_date_and_time, freq="YS"
     )
     end_date_and_time_of_period = start_date_and_time_of_period[1:].union(
-        pd.to_datetime([end_date_and_time])
+        pandas.to_datetime([end_date_and_time])
     )
 
     # The available requests are the beginning and end of each one-year period.
@@ -53,8 +53,8 @@ def get_available_requests() -> list[tuple[pd.Timestamp, pd.Timestamp]]:
 
 
 def get_url(
-    start_date_and_time: pd.Timestamp,
-    end_date_and_time: pd.Timestamp,
+    start_date_and_time: pandas.Timestamp,
+    end_date_and_time: pandas.Timestamp,
     iso_alpha_2_code: str = "",
 ) -> str:
     """
@@ -62,9 +62,9 @@ def get_url(
 
     Parameters
     ----------
-    start_date_and_time : pd.Timestamp
+    start_date_and_time : pandas.Timestamp
         The start date and time of the data retrieval
-    end_date_and_time : pd.Timestamp
+    end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
     iso_alpha_2_code : str
         The ISO Alpha-2 code of the country
@@ -99,18 +99,18 @@ def get_url(
 
 
 def download_and_extract_data_for_request(
-    start_date_and_time: pd.Timestamp,
-    end_date_and_time: pd.Timestamp,
+    start_date_and_time: pandas.Timestamp,
+    end_date_and_time: pandas.Timestamp,
     iso_alpha_2_code: str,
-) -> pd.Series:
+) -> pandas.Series:
     """
     Download the electricity demand time series from the ENTSO-E API.
 
     Parameters
     ----------
-    start_date_and_time : pd.Timestamp
+    start_date_and_time : pandas.Timestamp
         The start date and time of the data retrieval period
-    end_date_and_time : pd.Timestamp
+    end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval period
     iso_alpha_2_code : str
         The ISO Alpha-2 code of the country
@@ -147,7 +147,7 @@ def download_and_extract_data_for_request(
             )
         else:
             # Assume a one-hour time difference if there is only one time value.
-            time_difference = pd.Timedelta("1h")
+            time_difference = pandas.Timedelta("1h")
 
         # Add the time difference to the time values.
         electricity_demand_time_series.index = (

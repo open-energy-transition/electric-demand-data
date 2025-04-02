@@ -14,7 +14,7 @@ Description:
 
 import logging
 
-import pandas as pd
+import pandas
 import util.fetcher
 
 
@@ -146,7 +146,7 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
     return sheet_name, rows_to_skip, index_columns, load_columns
 
 
-def download_and_extract_data_for_request(file_number: int) -> pd.Series:
+def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     """
     Read the Excel files on the Alberta Electric System Operator website.
     There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
@@ -193,7 +193,7 @@ def download_and_extract_data_for_request(file_number: int) -> pd.Series:
     if file_number == 1 or file_number == 2:
         # Define starting time index.
         first_local_time_index = (
-            dataset["DATE"][0] + pd.Timedelta(hours=int(dataset["HOUR ENDING"][0]))
+            dataset["DATE"][0] + pandas.Timedelta(hours=int(dataset["HOUR ENDING"][0]))
         ).tz_localize("America/Edmonton")
 
     elif file_number == 3 or file_number == 4:
@@ -206,10 +206,10 @@ def download_and_extract_data_for_request(file_number: int) -> pd.Series:
         first_local_time_index = first_local_time_index + first_local_time_index.dst()
 
         # The Excel files seem to report the beginning of the hour, so we need to add 1 hour.
-        first_local_time_index = first_local_time_index + pd.Timedelta(hours=1)
+        first_local_time_index = first_local_time_index + pandas.Timedelta(hours=1)
 
     # Define the local time index.
-    local_time_index = pd.date_range(
+    local_time_index = pandas.date_range(
         start=first_local_time_index,
         periods=len(dataset),
         freq="1h",
@@ -217,7 +217,7 @@ def download_and_extract_data_for_request(file_number: int) -> pd.Series:
     )
 
     # Extract the electricity demand time series in the local time zone.
-    electricity_demand_time_series = pd.Series(
+    electricity_demand_time_series = pandas.Series(
         data=dataset[load_columns].sum(axis=1).values, index=local_time_index
     )
 

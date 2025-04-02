@@ -15,7 +15,7 @@ Description:
 
 import logging
 
-import pandas as pd
+import pandas
 import util.fetcher
 
 
@@ -36,7 +36,7 @@ def get_available_requests() -> list[tuple[int, bool] | tuple[None, bool]]:
     #                       ...
     #                       (year = current year, before_Apr_2002 = False)]
     available_requests = [(None, True)] + [
-        (year, False) for year in range(2002, pd.Timestamp.now().year + 1)
+        (year, False) for year in range(2002, pandas.Timestamp.now().year + 1)
     ]
 
     return available_requests
@@ -66,7 +66,7 @@ def get_url(year: int | None, before_Apr_2002: bool) -> str:
     # Define the URL of the electricity demand data.
     if before_Apr_2002:
         url = "https://www.ieso.ca/-/media/Files/IESO/Power-Data/data-directory/HourlyDemands_1994-2002.csv"
-    elif year is not None and year >= 2002 and year <= pd.Timestamp.now().year:
+    elif year is not None and year >= 2002 and year <= pandas.Timestamp.now().year:
         url = f"https://reports-public.ieso.ca/public/Demand/PUB_Demand_{year}.csv"
 
     return url
@@ -74,7 +74,7 @@ def get_url(year: int | None, before_Apr_2002: bool) -> str:
 
 def download_and_extract_data_for_request(
     year: int | None, before_Apr_2002: bool
-) -> pd.Series:
+) -> pandas.Series:
     """
     Read the CSV files from Ontario's Independent Electricity System Operator website.
 
@@ -105,8 +105,9 @@ def download_and_extract_data_for_request(
         dataset = util.fetcher.fetch_data(url, "text", verify_ssl=False)
 
         # Extract the electricity demand time series.
-        electricity_demand_time_series = pd.Series(
-            dataset["OntarioDemand"].values, index=pd.to_datetime(dataset["DateTime"])
+        electricity_demand_time_series = pandas.Series(
+            dataset["OntarioDemand"].values,
+            index=pandas.to_datetime(dataset["DateTime"]),
         )
 
         # Convert the time zone of the electricity demand time series to UTC.
@@ -117,7 +118,7 @@ def download_and_extract_data_for_request(
         )
 
         # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
-        electricity_demand_time_series.index += pd.Timedelta(hours=1)
+        electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
     else:
         logging.info(f"Retrieving electricity demand data for the year {year}.")
@@ -126,7 +127,7 @@ def download_and_extract_data_for_request(
         dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"skiprows": 3})
 
         # Extract the index of the electricity demand time series.
-        index = pd.to_datetime(
+        index = pandas.to_datetime(
             [
                 date + " " + str(time - 1) + ":00"
                 for date, time in zip(dataset["Date"], dataset["Hour"])
@@ -134,7 +135,7 @@ def download_and_extract_data_for_request(
         ).tz_localize("America/Toronto", ambiguous="NaT", nonexistent="NaT")
 
         # Extract the electricity demand time series.
-        electricity_demand_time_series = pd.Series(
+        electricity_demand_time_series = pandas.Series(
             dataset["Ontario Demand"].values, index=index
         )
 

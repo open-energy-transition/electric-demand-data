@@ -1,13 +1,13 @@
 import datetime
 import logging
 
-import pandas as pd
+import pandas
 import pytz
 
 
 def add_missing_time_steps(
-    time_series: pd.Series, local_time_zone: pytz.timezone
-) -> pd.Series:
+    time_series: pandas.Series, local_time_zone: pytz.timezone
+) -> pandas.Series:
     """
     Add the missing time steps to a time series.
 
@@ -32,7 +32,7 @@ def add_missing_time_steps(
 
     # Calculate the expected number of time steps in the time series.
     expected_number_of_time_steps = int(
-        (8760 if year % 4 != 0 else 8784) * pd.Timedelta("1h") / time_resolution
+        (8760 if year % 4 != 0 else 8784) * pandas.Timedelta("1h") / time_resolution
     )
 
     # Check if there are less time steps than expected.
@@ -42,7 +42,7 @@ def add_missing_time_steps(
         )
 
         # Define the full time index for the time series in the local time zone.
-        full_local_time_index = pd.date_range(
+        full_local_time_index = pandas.date_range(
             start=str(year), end=str(year + 1), freq=time_resolution, tz=local_time_zone
         )[:-1]
 
@@ -53,8 +53,8 @@ def add_missing_time_steps(
 
 
 def resample_time_resolution(
-    time_series: pd.Series, target_time_resolution: str = "1h"
-) -> pd.Series:
+    time_series: pandas.Series, target_time_resolution: str = "1h"
+) -> pandas.Series:
     """
     Resample the time resolution of a time series to a given time resolution.
 
@@ -75,7 +75,7 @@ def resample_time_resolution(
     time_resolution = time_series.index.to_series().diff().min()
 
     # Check if the time resolution of the time series is less than the target time resolution.
-    if time_resolution < pd.Timedelta(target_time_resolution):
+    if time_resolution < pandas.Timedelta(target_time_resolution):
         # Resample the time series to the target time resolution.
         time_series = time_series.resample(target_time_resolution).mean()
 
@@ -87,7 +87,7 @@ def resample_time_resolution(
     return time_series
 
 
-def linearly_interpolate(time_series: pd.Series) -> pd.Series:
+def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
     """
     Linearly interpolate the missing values in a time series only if they are isolated.
 
@@ -120,7 +120,7 @@ def linearly_interpolate(time_series: pd.Series) -> pd.Series:
     return time_series
 
 
-def check_time_series_data_quality(time_series: pd.Series) -> None:
+def check_time_series_data_quality(time_series: pandas.Series) -> None:
     """
     Check the data quality of a time series.
 
@@ -161,12 +161,12 @@ def check_time_series_data_quality(time_series: pd.Series) -> None:
 
 
 def harmonize_time_series(
-    time_series: pd.Series,
+    time_series: pandas.Series,
     local_time_zone: pytz.timezone,
     resample: bool = True,
     target_time_resolution: str = "1h",
     interpolate_missing_values: bool = True,
-) -> pd.Series:
+) -> pandas.Series:
     """
     Harmonize a given time series by adding the missing time steps, resampling the time resolution, and interpolating the missing values.
 
@@ -206,7 +206,7 @@ def harmonize_time_series(
 
 
 def save_time_series(
-    time_series: pd.Series | pd.DataFrame,
+    time_series: pandas.Series | pandas.DataFrame,
     full_file_name: str,
     variable_name: str | list[str],
     local_time_zone: pytz.timezone = None,
@@ -236,7 +236,7 @@ def save_time_series(
             raise ValueError("The time zone of the time series must be specified.")
 
     # Create an empty DataFrame to store the time series and set the index to UTC time.
-    time_series_data = pd.DataFrame(
+    time_series_data = pandas.DataFrame(
         index=time_series.index.tz_convert("UTC").tz_localize(None)
     )
 
@@ -250,10 +250,10 @@ def save_time_series(
     time_series.index = time_series.index.tz_convert("UTC").tz_localize(None)
 
     # Add the time series to the DataFrame.
-    if isinstance(time_series, pd.Series):
+    if isinstance(time_series, pandas.Series):
         time_series_data[variable_name] = time_series
-    elif isinstance(time_series, pd.DataFrame):
-        time_series_data = pd.concat([time_series_data, time_series], axis=1)
+    elif isinstance(time_series, pandas.DataFrame):
+        time_series_data = pandas.concat([time_series_data, time_series], axis=1)
 
     # Rename the index.
     time_series_data.index.name = "Time (UTC)"
@@ -267,7 +267,7 @@ def save_time_series(
         raise ValueError("The file name must end with .parquet or .csv.")
 
 
-def clean_data(time_series: pd.Series) -> pd.Series:
+def clean_data(time_series: pandas.Series) -> pandas.Series:
     """
     Clean the time series data by setting the time zone to UTC and removing NaN and zero values.
 
@@ -299,7 +299,10 @@ def clean_data(time_series: pd.Series) -> pd.Series:
 
 
 def simple_save(
-    time_series: pd.Series, variable_name: str, result_directory: str, identifier: str
+    time_series: pandas.Series,
+    variable_name: str,
+    result_directory: str,
+    identifier: str,
 ) -> None:
     """
     Save the time series to parquet and csv files.
@@ -327,7 +330,7 @@ def simple_save(
     time_series.name = variable_name
 
     # Save the time series.
-    date_of_retrieval = pd.Timestamp.today().strftime("%Y-%m-%d")
+    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
     time_series.to_frame().to_parquet(
         result_directory + "/" + identifier + "_" + date_of_retrieval + ".parquet"
     )
