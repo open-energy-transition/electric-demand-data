@@ -172,29 +172,32 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     # If there is only one code on the platform (code is None), there is no need to specify the code.
     # If there are multiple codes on the platform (code is not None), the code needs to be specified.
     if requests is None:
+        # Get the retrieval function to download and extract the data.
+        retrieval_function = retrieval_module[data_source].download_and_extract_data
+
         if code is None:
-            electricity_demand_time_series = retrieval_module[
-                data_source
-            ].download_and_extract_data()
+            electricity_demand_time_series = retrieval_function()
         else:
-            electricity_demand_time_series = retrieval_module[
-                data_source
-            ].download_and_extract_data(code)
+            electricity_demand_time_series = retrieval_function(code)
 
     else:
+        # Get the retrieval function to download and extract the data.
+        retrieval_function = retrieval_module[
+            data_source
+        ].download_and_extract_data_for_request
+
         if code is None:
             electricity_demand_time_series_list = [
-                retrieval_module[data_source].download_and_extract_data_for_request(
-                    *request if isinstance(request, tuple) else request
-                )
+                retrieval_function(*request)
+                if isinstance(request, tuple)
+                else retrieval_function(request)
                 for request in requests
             ]
-
         else:
             electricity_demand_time_series_list = [
-                retrieval_module[data_source].download_and_extract_data_for_request(
-                    *request if isinstance(request, tuple) else request, code
-                )
+                retrieval_function(*request, code)
+                if isinstance(request, tuple)
+                else retrieval_function(request, code)
                 for request in requests
             ]
 
