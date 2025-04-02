@@ -40,6 +40,11 @@ uvx ruff check
 uvx ruff check --fix
 ```
 
+Check the code coverage:
+```bash
+uv run pytest --cov
+```
+
 ## Documentation
 
 The documentation uses [mkdocs](https://github.com/squidfunk/mkdocs-material).
