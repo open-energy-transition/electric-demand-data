@@ -1,5 +1,21 @@
 items:
-  - region_name: Australia
-    region_code: AS
-    country_name: Canada
-    country_code: CA
+  - region_name: New South Wales
+    region_code: NSW1
+    country_name: Australia
+    country_code: AS
+  - region_name: Queensland
+    region_code: QS1
+    country_name: Australia
+    country_code: AS
+  - region_name: Victoria
+    region_code: VIC1
+    country_name: Australia
+    country_code: AS
+  - region_name: South Australia
+    region_code: SA1
+    country_name: Australia
+    country_code: AS
+  - region_name: Tasmania
+    region_code: TSA1
+    country_name: Australia
+    country_code: AS
