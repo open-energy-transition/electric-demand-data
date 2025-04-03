@@ -1,6 +1,12 @@
 version = 1
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "electric-demand-data",
+    "etl",
+]
+
 [[package]]
 name = "affine"
 version = "2.4.0"
@@ -546,6 +552,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/39/08/2cf5d85356e45b10b
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c4/64/7d344cfcef5efddf9cf32f59af7f855828e9d74b5f862eddf5bfd9f25323/geopandas-1.0.1-py3-none-any.whl", hash = "sha256:01e147d9420cc374d26f51fc23716ac307f32b49406e4bd8462c07e82ed1d3d6", size = 323587 },
 ]
+
+[[package]]
+name = "etl"
+version = "0.1.0"
+source = { virtual = "ETL" }
 
 [[package]]
 name = "ghp-import"

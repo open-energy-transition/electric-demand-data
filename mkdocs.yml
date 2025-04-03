@@ -1,4 +1,4 @@
-site_name: Electric demand data
+site_name: Electric demand data documentation
 theme:
   name: material
   palette:
