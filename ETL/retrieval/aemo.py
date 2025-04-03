@@ -7,8 +7,8 @@ Description:
 
     This script retrieves the electricity load data from the transparency platform of the Australian Energy Market Operator (AEMO).
 
-    The data is retrieved for the years from 2014 (end of year) to 2024. 
-    
+    The data is retrieved for the years from 2014 (end of year) to 2024.
+
 """
 
 import os
