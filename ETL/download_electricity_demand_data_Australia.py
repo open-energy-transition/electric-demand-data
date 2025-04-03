@@ -27,8 +27,8 @@ def download_and_process(region):
     # Initialize a list to collect all dataframes for merging
     dfs = []
 
-    # Loop through the years from 2018 to 2024
-    for year in range(2018, 2025):
+    # Loop through the years from 2015 to 2024
+    for year in range(2015, 2025):
         for month in range(1, 13):
             # Format the month-year string
             month_str = f"{year}{month:02d}"
