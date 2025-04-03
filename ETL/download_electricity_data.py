@@ -167,26 +167,28 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     # Get the list of requests to retrieve the electricity demand time series.
     requests = retrieval_module[data_source].get_available_requests()
 
-    # If there are no requests (requests is None), it means that the electricity demand time series can be retrieved all at once.
-    # If there are multiple requests (request is not None), loop over the requests to retrieve the electricity demand time series of each request.
-    # If there is only one code on the platform (code is None), there is no need to specify the code.
-    # If there are multiple codes on the platform (code is not None), the code needs to be specified.
     if requests is None:
+        # If there are no requests (requests is None), it means that the electricity demand time series can be retrieved all at once.
         # Get the retrieval function to download and extract the data.
         retrieval_function = retrieval_module[data_source].download_and_extract_data
 
         if code is None:
+            # If there is only one code on the platform (code is None), there is no need to specify the code.
             electricity_demand_time_series = retrieval_function()
         else:
+            # If there are multiple codes on the platform (code is not None), the code needs to be specified.
             electricity_demand_time_series = retrieval_function(code)
 
     else:
+        # If there are multiple requests (request is not None), loop over the requests to retrieve the electricity demand time series of each request.
         # Get the retrieval function to download and extract the data.
         retrieval_function = retrieval_module[
             data_source
         ].download_and_extract_data_for_request
 
         if code is None:
+            # If there is only one code on the platform (code is None), there is no need to specify the code.
+            # Loop over the requests to retrieve the electricity demand time series of each request.
             electricity_demand_time_series_list = [
                 retrieval_function(*request)
                 if isinstance(request, tuple)
@@ -194,6 +196,8 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
                 for request in requests
             ]
         else:
+            # If there are multiple codes on the platform (code is not None), the code needs to be specified.
+            # Loop over the requests to retrieve the electricity demand time series of each request.
             electricity_demand_time_series_list = [
                 retrieval_function(*request, code)
                 if isinstance(request, tuple)
