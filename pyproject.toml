@@ -41,3 +41,6 @@ disable_error_code = [
 files = [
   "ETL/**/*.py",
 ]
+
+[tool.uv.workspace]
+members = ["ETL"]
