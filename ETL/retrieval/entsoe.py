@@ -75,6 +75,16 @@ def get_url(
         The URL of the electricity load data
     """
 
+    # Check if the retrieval period is less than 1 year.
+    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("1y"), (
+        "The retrieval period must be less than or equal to 1 year."
+    )
+
+    # Check if the retrieval period starts before 2014.
+    assert start_date_and_time >= pandas.Timestamp("2014-01-01 00:00:00"), (
+        "The retrieval period must start after 2014-01-01 00:00:00."
+    )
+
     # Convert the start and end dates and times to the required format.
     start = start_date_and_time.strftime("%Y%m%d%H00")
     end = end_date_and_time.strftime("%Y%m%d%H00")
@@ -120,6 +130,16 @@ def download_and_extract_data_for_request(
     pandas.Series
         The electricity demand time series in MW
     """
+
+    # Check if the retrieval period is less than 1 year.
+    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("1y"), (
+        "The retrieval period must be less than or equal to 1 year."
+    )
+
+    # Check if the retrieval period starts before 2014.
+    assert start_date_and_time >= pandas.Timestamp("2014-01-01 00:00:00"), (
+        "The retrieval period must start after 2014-01-01 00:00:00."
+    )
 
     logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 
