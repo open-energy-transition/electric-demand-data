@@ -19,6 +19,7 @@ import os
 import pandas
 import retrieval.aeso
 import retrieval.bchydro
+import retrieval.cammesa
 import retrieval.ccei
 import retrieval.eia
 import retrieval.entsoe
@@ -33,13 +34,17 @@ import util.time_series
 retrieval_module = {
     "AESO": retrieval.aeso,
     "BCHYDRO": retrieval.bchydro,
+    "CAMMESA": retrieval.cammesa,
     "CCEI": retrieval.ccei,
+    "CEN": retrieval.cen,
     "EIA": retrieval.eia,
     "ENTSOE": retrieval.entsoe,
     "HYDROQUEBEC": retrieval.hydroquebec,
     "IESO": retrieval.ieso,
     "NBPOWER": retrieval.nbpower,
     "NESO": retrieval.neso,
+    "ONS": retrieval.ons,
+    "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
 }
 
