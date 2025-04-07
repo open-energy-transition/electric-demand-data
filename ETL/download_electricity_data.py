@@ -21,6 +21,7 @@ import retrieval.aeso
 import retrieval.bchydro
 import retrieval.cammesa
 import retrieval.ccei
+import retrieval.cen
 import retrieval.eia
 import retrieval.entsoe
 import retrieval.hydroquebec
