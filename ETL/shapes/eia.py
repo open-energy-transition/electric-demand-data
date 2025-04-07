@@ -15,16 +15,12 @@ Description:
 import os
 
 import geopandas
-import requests
 
 # Define the URL of the shapefile of the balancing authorities.
 url = "https://hub.arcgis.com/api/v3/datasets/09550598922b429ca9f06b9a067257bd_255/downloads/data?format=shp&spatialRefId=3857&where=1%3D1"
 
-# Download the shapefile of the balancing authorities.
-response = requests.get(url)
-
 # Read the shapefile of the balancing authorities as a GeoDataFrame.
-balancing_authorities = geopandas.read_file(response.content)
+balancing_authorities = geopandas.read_file(url)
 
 # Change the projection of the shapefile to EPSG 4326.
 balancing_authorities = balancing_authorities.to_crs(epsg=4326)
