@@ -7,7 +7,7 @@ Description:
 
     This script retrieves the electricity load data from the website of the UK's National Energy System Operator (NESO).
 
-    The data is retrieved for the years from 2009 to the current year. The data is retrieved in one-year intervals.
+    The data is retrieved for the years from 2009 to 2025. The data is retrieved in one-year intervals.
 
     Source: https://www.neso.energy/data-portal/historic-demand-data
 """
@@ -29,8 +29,8 @@ def get_available_requests() -> list[int]:
         The list of available requests
     """
 
-    # The available requests are the years from 2009 to the current year.
-    available_requests = list(range(2009, pandas.Timestamp.now().year + 1))
+    # The available requests are the years from 2009 to 2025.
+    available_requests = list(range(2009, 2026))
 
     return available_requests
 
