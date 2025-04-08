@@ -25,6 +25,7 @@ import pandas
 import requests
 from shapely.geometry import Polygon
 
+# Define the URL of the zip file containing the shapefile of the prefectures.
 url = "https://data.humdata.org/dataset/6ba099c6-350b-4711-9a65-d85a1c5e519c/resource/f82faadf-a608-42cf-ae15-75ce672d7e69/download/jpn_adm_2019_shp.zip"
 
 # Download the zip file.
