@@ -153,7 +153,7 @@ def get_us_region_shape(region_code: str) -> geopandas.GeoDataFrame:
     """
 
     # Load the shapefile of the US regions.
-    region_shapes = geopandas.read_file("data/us_balancing_authorities/regions.shp")
+    region_shapes = geopandas.read_file("shapes/eia/eia.shp")
 
     # Get the shape of the region of interest.
     region_shape = region_shapes[region_shapes["EIAcode"] == region_code]
