@@ -287,7 +287,7 @@ def run_weather_data_retrieval() -> None:
                 # Check if the file does not exist.
                 if not os.path.exists(era5_data_file_path):
                     # Get the region of interest.
-                    region_shape = util.geospatial.get_geopandas_region(region_code)
+                    region_shape = util.geospatial.get_region_shape(region_code)
 
                     # Get the lateral bounds of the region of interest.
                     region_bounds = util.geospatial.get_region_bounds(

@@ -108,7 +108,15 @@ def _get_standard_shape(
         GeoDataFrame containing the shape of the country
     """
 
-    if "_" in code:
+    # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country, and the region is the whole country.
+    # If there is an underscore in the code, it is a combination of ISO Alpha-2 code and region code, and the region is a subdivision of the country.
+    if "_" not in code:
+        # Define the relevant parameters for the shapefile retrieval.
+        shapefile_name = "admin_0_countries"
+        main_key = "ISO_A2"
+        secondary_keys = ["NAME", "NAME_LONG"]
+        target_key = code
+    else:
         # Split the code into the ISO Alpha-2 code and the region code.
         iso_alpha_2_code, region_code = code.split("_")
 
@@ -117,14 +125,8 @@ def _get_standard_shape(
         main_key = "iso_3166_2"
         secondary_keys = "name"
         target_key = iso_alpha_2_code + "-" + region_code
-    else:
-        # Define the relevant parameters for the shapefile retrieval.
-        shapefile_name = "admin_0_countries"
-        main_key = "ISO_A2"
-        secondary_keys = ["NAME", "NAME_LONG"]
-        target_key = code
 
-    # Load the shapefile containing the world countries.
+    # Load the shapefile containing the shapes of the regions from the Natural Earth database.
     region_shapes = cartopy.io.shapereader.natural_earth(
         resolution="50m", category="cultural", name=shapefile_name
     )
@@ -139,10 +141,10 @@ def _get_standard_shape(
         ][0]
     except IndexError:
         # Read the shape of the region of interest by searching for its name.
-        if "_" in code:
-            name = pycountry.subdivisions.get(code=target_key).name
-        else:
+        if "_" not in code:
             name = pycountry.countries.get(alpha_2=target_key).name
+        else:
+            name = pycountry.subdivisions.get(code=target_key).name
         region_shape = [
             ii
             for ii in list(reader.records())
@@ -196,11 +198,11 @@ def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFra
     return region_shape
 
 
-def get_geopandas_region(
+def get_region_shape(
     code: str, make_plot: bool = True, remove_remote_islands: bool = True
 ) -> geopandas.GeoDataFrame:
     """
-    Get region shape, convert it to a geoDataFrame, and plot it.
+    Get the region shape of a country or region of interest.
 
     Parameters
     ----------
