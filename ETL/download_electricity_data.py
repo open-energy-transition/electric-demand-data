@@ -17,6 +17,7 @@ import logging
 import os
 
 import pandas
+import retrieval.aemo
 import retrieval.aeso
 import retrieval.bchydro
 import retrieval.ccei
@@ -31,6 +32,7 @@ import util.general
 import util.time_series
 
 retrieval_module = {
+    "AEMO": retrieval.aemo,
     "AESO": retrieval.aeso,
     "BCHYDRO": retrieval.bchydro,
     "CCEI": retrieval.ccei,

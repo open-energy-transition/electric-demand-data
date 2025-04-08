@@ -1,0 +1,21 @@
+items:
+  - region_name: New South Wales
+    region_code: NSW
+    country_name: Australia
+    country_code: AU
+  - region_name: Queensland
+    region_code: QS
+    country_name: Australia
+    country_code: AU
+  - region_name: Victoria
+    region_code: VIC
+    country_name: Australia
+    country_code: AU
+  - region_name: South Australia
+    region_code: SA
+    country_name: Australia
+    country_code: AU
+  - region_name: Tasmania
+    region_code: TSA
+    country_name: Australia
+    country_code: AU
