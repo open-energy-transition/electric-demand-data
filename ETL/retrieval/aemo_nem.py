@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the Australian Energy Market Operator (AEMO) website.
+    This script retrieves the electricity load data for the National Electricity Market (NEM) from the Australian Energy Market Operator (AEMO) website.
 
     The data is retrieved for the years from December of 1998 to the current month. The data is retrieved from the available CSV files on the AEMO website.
 
