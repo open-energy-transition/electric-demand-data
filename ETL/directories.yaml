@@ -1,7 +1,8 @@
 log_files_folder: logs
 settings_folder: settings
 figures_folder: figures
-electricity_demand_folder: data/electricity_demand
-population_density_folder: data/population_density
-weather_folder: data/weather
-temperature_folder: data/temperature
+data_folder: data
+electricity_demand_subfolder: electricity_demand
+population_density_subfolder: population_density
+weather_subfolder: weather
+temperature_subfolder: temperature
