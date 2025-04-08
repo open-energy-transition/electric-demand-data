@@ -52,6 +52,12 @@ for region_name in regions.index:
 # Select the columns of interest.
 regions = regions[["EIAcode", "geometry"]]
 
+# Reset the index.
+regions = regions.reset_index()
+
+# Rename the columns.
+regions = regions.rename(columns={"EIAregion": "name", "EIAcode": "code"})
+
 # Save the regions shapefile into ETL/shapes/eia.
 shapes_dir = os.path.join(os.path.dirname(__file__), "eia")
 os.makedirs(shapes_dir, exist_ok=True)

@@ -110,6 +110,18 @@ new_bounds = geopandas.GeoDataFrame.from_features(new_bounds, crs=4326)
 # Cut the remote islands.
 all_prefectures = all_prefectures.overlay(new_bounds, how="intersection")
 
+# Select the columns of interest.
+all_prefectures = all_prefectures[["ADM1_EN", "ADM1_PCODE", "geometry"]]
+
+# Rename columns.
+all_prefectures = all_prefectures.rename(
+    columns={"ADM1_EN": "name", "ADM1_PCODE": "code"}
+)
+
+# Rename the region name and code.
+all_prefectures["name"] = ["Kantō"]
+all_prefectures["code"] = ["Kantō"]
+
 # Save the shapes of the region to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "tepco")
 os.makedirs(shapes_dir, exist_ok=True)
