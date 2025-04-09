@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0
+
+Description:
+
+    This script retrieves standard shapes of countries and regions from the Natural Earth shapefile database.
+
+    It also retrieves non-standard shapes of regions from the shapes directory.
+"""
+
 import os
 
 import cartopy.io.shapereader
@@ -85,8 +97,8 @@ def _get_standard_shape(
 
     Returns
     -------
-    country_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the shape of the country
+    region_shape : geopandas.GeoDataFrame
+        GeoDataFrame containing the shape of the country or region
     """
 
     # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country, and the region is therefore the country.
@@ -150,7 +162,7 @@ def _read_non_standard_shape_codes() -> dict[str, list[str]]:
 
     Returns
     -------
-    non_standard_shapes : dict
+    non_standard_shape_codes : dict
         Dictionary containing the non-standard shapes and their respective codes
     """
 
@@ -158,7 +170,7 @@ def _read_non_standard_shape_codes() -> dict[str, list[str]]:
     shapes_path = os.path.join(os.path.dirname(__file__), "..", "shapes")
 
     # Create a dictionary to store the non-standard shapes and their respective codes.
-    non_standard_shapes = {}
+    non_standard_shape_codes = {}
 
     # Iterate over the folders in the shapes directory.
     for folder in os.listdir(shapes_path):
@@ -174,9 +186,9 @@ def _read_non_standard_shape_codes() -> dict[str, list[str]]:
             region_codes = region_shapes["code"].unique()
 
             # Add the non-standard shapes and their respective codes to the dictionary.
-            non_standard_shapes[folder] = list(region_codes)
+            non_standard_shape_codes[folder] = list(region_codes)
 
-    return non_standard_shapes
+    return non_standard_shape_codes
 
 
 def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFrame:
