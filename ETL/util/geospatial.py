@@ -1,19 +1,19 @@
 import logging
 
 import atlite
-import cartopy.io.shapereader as shpreader
-import geopandas as gpd
-import numpy as np
-import pandas as pd
+import cartopy.io.shapereader
+import geopandas
+import numpy
+import pandas
 import pycountry
-import util.figures as figure_utilities
-import xarray as xr
+import util.figures
+import xarray
 from shapely.geometry import Polygon
 
 
 def remove_islands(
-    region_shape: gpd.GeoDataFrame, iso_alpha_2_code: str
-) -> gpd.GeoDataFrame:
+    region_shape: geopandas.GeoDataFrame, iso_alpha_2_code: str
+) -> geopandas.GeoDataFrame:
     """
     Remove small remote islands from the shape of some countries.
 
@@ -35,33 +35,37 @@ def remove_islands(
     # Create a GeoSeries containing the new bounds of the region of interest.
     match iso_alpha_2_code:
         case "CL":  # Chile
-            new_bounds = gpd.GeoSeries(
+            new_bounds = geopandas.GeoSeries(
                 Polygon([(-80, -60), (-60, -60), (-60, 0), (-80, 0)])
             )
         case "ES":  # Spain
-            new_bounds = gpd.GeoSeries(
+            new_bounds = geopandas.GeoSeries(
                 Polygon([(-10, 35), (5, 35), (5, 45), (-10, 45)])
             )
         case "FR":  # France
-            new_bounds = gpd.GeoSeries(
+            new_bounds = geopandas.GeoSeries(
                 Polygon([(-5, 40), (10, 40), (10, 55), (-5, 55)])
             )
         case "NL":  # Netherlands
-            new_bounds = gpd.GeoSeries(Polygon([(0, 50), (10, 50), (10, 55), (0, 55)]))
+            new_bounds = geopandas.GeoSeries(
+                Polygon([(0, 50), (10, 50), (10, 55), (0, 55)])
+            )
         case "NO":  # Norway
-            new_bounds = gpd.GeoSeries(Polygon([(0, 55), (35, 55), (35, 73), (0, 73)]))
+            new_bounds = geopandas.GeoSeries(
+                Polygon([(0, 55), (35, 55), (35, 73), (0, 73)])
+            )
         case "NZ":  # New Zealand
-            new_bounds = gpd.GeoSeries(
+            new_bounds = geopandas.GeoSeries(
                 Polygon([(165, -50), (180, -50), (180, -30), (165, -30)])
             )
         case "PT":  # Portugal
-            new_bounds = gpd.GeoSeries(
+            new_bounds = geopandas.GeoSeries(
                 Polygon([(-10, 35), (0, 35), (0, 45), (-10, 45)])
             )
 
     if new_bounds is not None:
         # Convert the GeoSeries to a GeoDataFrame and set the coordinate reference system to EPSG 4326.
-        new_bounds = gpd.GeoDataFrame.from_features(new_bounds, crs=4326)
+        new_bounds = geopandas.GeoDataFrame.from_features(new_bounds, crs=4326)
 
         # Remove any region outside the new bounds.
         region_shape = region_shape.overlay(new_bounds, how="intersection")
@@ -71,7 +75,7 @@ def remove_islands(
 
 def get_country_shape(
     iso_alpha_2_code: str, remove_remote_islands: bool
-) -> gpd.GeoDataFrame | None:
+) -> geopandas.GeoDataFrame | None:
     """
     Retrieve the shape of a country using its ISO Alpha-2 code.
 
@@ -89,12 +93,12 @@ def get_country_shape(
     """
 
     # Load the shapefile containing the world countries.
-    region_shapes = shpreader.natural_earth(
+    region_shapes = cartopy.io.shapereader.natural_earth(
         resolution="50m", category="cultural", name="admin_0_countries"
     )
 
     # Define a reader for the shapefile.
-    reader = shpreader.Reader(region_shapes)
+    reader = cartopy.io.shapereader.Reader(region_shapes)
 
     try:
         try:
@@ -114,9 +118,9 @@ def get_country_shape(
             ][0]
 
         # Convert the shape to a GeoDataFrame.
-        region_shape = pd.Series({"geometry": region_shape.geometry})
-        region_shape = gpd.GeoSeries(region_shape)
-        region_shape = gpd.GeoDataFrame.from_features(region_shape, crs=4326)
+        region_shape = pandas.Series({"geometry": region_shape.geometry})
+        region_shape = geopandas.GeoSeries(region_shape)
+        region_shape = geopandas.GeoDataFrame.from_features(region_shape, crs=4326)
 
         # Remove small remote islands from the shape of some countries.
         if remove_remote_islands:
@@ -133,7 +137,7 @@ def get_country_shape(
     return region_shape
 
 
-def get_us_region_shape(region_code: str) -> gpd.GeoDataFrame:
+def get_us_region_shape(region_code: str) -> geopandas.GeoDataFrame:
     """
     Retrieve the shape of a US region defined by the Energy Information Administration (EIA).
 
@@ -149,16 +153,16 @@ def get_us_region_shape(region_code: str) -> gpd.GeoDataFrame:
     """
 
     # Load the shapefile of the US regions.
-    region_shapes = gpd.read_file("data/us_balancing_authorities/regions.shp")
+    region_shapes = geopandas.read_file("data/us_balancing_authorities/regions.shp")
 
     # Get the shape of the region of interest.
     region_shape = region_shapes[region_shapes["EIAcode"] == region_code]
-    region_shape = gpd.GeoDataFrame.from_features(region_shape["geometry"])
+    region_shape = geopandas.GeoDataFrame.from_features(region_shape["geometry"])
 
     return region_shape
 
 
-def get_region_shape(code: str) -> gpd.GeoDataFrame | None:
+def get_region_shape(code: str) -> geopandas.GeoDataFrame | None:
     """
     Get the shape of a region based on its code.
 
@@ -196,7 +200,7 @@ def get_region_shape(code: str) -> gpd.GeoDataFrame | None:
 
 def get_geopandas_region(
     code: str, make_plot: bool = True, remove_remote_islands: bool = True
-) -> gpd.GeoDataFrame:
+) -> geopandas.GeoDataFrame:
     """
     Get region shape from cartopy, convert it to a geoDataFrame, and plot it.
 
@@ -223,12 +227,12 @@ def get_geopandas_region(
         region_shape = get_region_shape(code)
 
     if region_shape is not None and make_plot:
-        figure_utilities.simple_plot(region_shape, f"region_shape_{code}")
+        util.figures.simple_plot(region_shape, f"region_shape_{code}")
 
     return region_shape
 
 
-def get_region_bounds(region_shape: gpd.GeoDataFrame) -> list[float]:
+def get_region_bounds(region_shape: geopandas.GeoDataFrame) -> list[float]:
     """
     Get the lateral bounds of the region of interest including a buffer layer of one degree.
 
@@ -254,7 +258,9 @@ def get_region_bounds(region_shape: gpd.GeoDataFrame) -> list[float]:
     return region_bounds
 
 
-def harmonize_coords(ds: xr.DataArray | xr.Dataset) -> xr.DataArray | xr.Dataset:
+def harmonize_coords(
+    ds: xarray.DataArray | xarray.Dataset,
+) -> xarray.DataArray | xarray.Dataset:
     """
     Rename coordinates to "x" and "y" and reset longitudes from the range [0, 360] to [-180, 180].
 
@@ -286,8 +292,10 @@ def harmonize_coords(ds: xr.DataArray | xr.Dataset) -> xr.DataArray | xr.Dataset
 
 
 def get_fraction_of_grid_cells_in_shape(
-    region_shape: gpd.GeoDataFrame, resolution: float = 0.25, make_plot: bool = True
-) -> xr.DataArray:
+    region_shape: geopandas.GeoDataFrame,
+    resolution: float = 0.25,
+    make_plot: bool = True,
+) -> xarray.DataArray:
     """
     Calculate the fraction of each grid cell that is in the given shape.
 
@@ -325,7 +333,7 @@ def get_fraction_of_grid_cells_in_shape(
     ).toarray()
 
     # Fix NaN and Inf values to 0.0 to avoid numerical issues.
-    fraction_of_grid_cells_in_shape_np = np.nan_to_num(
+    fraction_of_grid_cells_in_shape_np = numpy.nan_to_num(
         (
             fraction_of_grid_cells_in_shape_np.T
             / fraction_of_grid_cells_in_shape_np.sum(axis=1)
@@ -336,7 +344,7 @@ def get_fraction_of_grid_cells_in_shape(
     )
 
     # Convert the numpy array to a xarray DataArray.
-    fraction_of_grid_cells_in_shape = xr.DataArray(
+    fraction_of_grid_cells_in_shape = xarray.DataArray(
         fraction_of_grid_cells_in_shape_np.reshape(
             len(cutout.data["y"]), len(cutout.data["x"])
         ),
@@ -349,7 +357,7 @@ def get_fraction_of_grid_cells_in_shape(
     )
 
     if make_plot:
-        figure_utilities.simple_plot(
+        util.figures.simple_plot(
             fraction_of_grid_cells_in_shape,
             f"fraction_of_grid_cells_in_shape_{region_shape.index[0]}",
         )
@@ -359,7 +367,7 @@ def get_fraction_of_grid_cells_in_shape(
 
 def load_xarray(
     file_path: str, engine: str = "netcdf4", dataarray_or_dataset: str = "dataarray"
-) -> xr.DataArray | xr.Dataset:
+) -> xarray.DataArray | xarray.Dataset:
     """
     Load an xarray dataset from a file.
 
@@ -380,9 +388,9 @@ def load_xarray(
 
     # Load the xarray.
     if dataarray_or_dataset == "dataarray":
-        xarray_data = xr.open_dataarray(file_path, engine=engine)
+        xarray_data = xarray.open_dataarray(file_path, engine=engine)
     elif dataarray_or_dataset == "dataset":
-        xarray_data = xr.open_dataset(file_path, engine=engine)
+        xarray_data = xarray.open_dataset(file_path, engine=engine)
 
     # Harmonize the coordinates of the xarray dataset.
     xarray_data = harmonize_coords(xarray_data)
