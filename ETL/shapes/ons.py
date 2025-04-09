@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script generates the shape of four major subsystems of the Brazilian electricity sector.
+    This script generates the shape of the four major subsystems of the Brazilian electricity sector.
 
     Source: https://pt.wikipedia.org/wiki/Sistema_Interligado_Nacional
 """
