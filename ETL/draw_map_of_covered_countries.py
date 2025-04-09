@@ -26,14 +26,16 @@ ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
 # Loop over the countries.
 for region_code in region_codes:
     # Get the shape of the region.
-    region_shape = util.shapes.get_region_shape(region_code)
+    region_shape = util.shapes.get_region_shape(region_code, make_plot=False)
 
     # Plot the region.
     region_shape.plot(
         ax=ax,
         transform=data_crs,
         facecolor="red",
-        edgecolor="none",
+        edgecolor="black",
+        linewidth=0.5,
+        alpha=0.5,
         aspect=None,
         autolim=False,
     )
