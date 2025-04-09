@@ -106,7 +106,7 @@ def _get_standard_shape(
     if "_" not in code:
         # Define the relevant parameters for the shapefile retrieval.
         shapefile_name = "admin_0_countries"
-        main_key = "ISO_A2"
+        main_keys = ["ISO_A2", "ISO_A2_EH"]
         secondary_keys = ["NAME", "NAME_LONG"]
         target_key = code
     else:
@@ -115,7 +115,7 @@ def _get_standard_shape(
 
         # Define the relevant parameters for the shapefile retrieval.
         shapefile_name = "admin_1_states_provinces"
-        main_key = "iso_3166_2"
+        main_keys = ["iso_3166_2"]
         secondary_keys = ["name"]
         target_key = iso_alpha_2_code + "-" + region_code
 
@@ -130,14 +130,18 @@ def _get_standard_shape(
     try:
         # Read the shape of the region of interest by searching for its code.
         region_shape = [
-            ii for ii in list(reader.records()) if ii.attributes[main_key] == target_key
+            ii
+            for ii in list(reader.records())
+            if target_key in [ii.attributes[key] for key in main_keys]
         ][0]
     except IndexError:
-        # Read the shape of the region of interest by searching for its name.
+        # Get the name of the region of interest based on its code.
         if "_" not in code:
             name = pycountry.countries.get(alpha_2=target_key).name
         else:
             name = pycountry.subdivisions.get(code=target_key).name
+
+        # Read the shape of the region of interest by searching for its name.
         region_shape = [
             ii
             for ii in list(reader.records())
