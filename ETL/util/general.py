@@ -1,3 +1,5 @@
+import os
+
 import pycountry
 import pytz
 import yaml
@@ -23,6 +25,15 @@ def read_folders_structure(file_path: str = "directories.yaml") -> dict[str, str
     # Read the folders structure from the file.
     with open(file_path, "r") as file:
         folders_structure = yaml.safe_load(file)
+
+    # Iterate over the folders structure, concatenate the paths if multiple folders are defined, and normalize the paths.
+    for key, value in folders_structure.items():
+        # If multiple folders are defined, concatenate them.
+        if isinstance(value, list):
+            folders_structure[key] = os.path.join(*value)
+
+        # Normalize the path.
+        folders_structure[key] = os.path.normpath(folders_structure[key])
 
     return folders_structure
 
