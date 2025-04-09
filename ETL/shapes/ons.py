@@ -80,8 +80,7 @@ for region in region_shapes:
     regions = pandas.concat([regions, region_shape.to_frame().T], ignore_index=True)
 
 # Add the coordinate reference system to the GeoDataFrame.
-regions = geopandas.GeoDataFrame(regions, geometry="geometry")
-regions.crs = "EPSG:4326"
+regions = geopandas.GeoDataFrame(regions, geometry="geometry", crs="EPSG:4326")
 
 # Merge the states belonging to the same region.
 regions = regions.dissolve(by="parent")
