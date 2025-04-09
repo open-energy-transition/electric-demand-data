@@ -84,7 +84,7 @@ def _remove_islands(
 
 def _get_standard_shape(
     code: str, remove_remote_islands: bool = True
-) -> geopandas.GeoDataFrame | None:
+) -> geopandas.GeoDataFrame:
     """
     Retrieve the shape of a country or region from the Natural Earth shapefile database.
 
@@ -250,9 +250,9 @@ def get_region_shape(
         # Get the shape of the country based on the ISO Alpha-2 code.
         region_shape = _get_standard_shape(code, remove_remote_islands)
     else:
-        # Define a flag to check if the region code is in the list of non-standard shapes.
+        # Define a flag to check if the region is in the list of non-standard shapes.
         is_non_standard_shape = False
-        selected_data_source = None
+        selected_data_source = ""
 
         # Read the codes of the non-standard shapes contained in the shapes directory.
         non_standard_shape_codes = _read_non_standard_shape_codes()
