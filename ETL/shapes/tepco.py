@@ -120,7 +120,7 @@ all_prefectures = all_prefectures.rename(
 
 # Rename the region name and code.
 all_prefectures["name"] = ["Kantō"]
-all_prefectures["code"] = ["Kantō"]
+all_prefectures["code"] = ["JP_Kantō"]
 
 # Save the shapes of the region to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "tepco")

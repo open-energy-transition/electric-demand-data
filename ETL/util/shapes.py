@@ -7,25 +7,6 @@ import pycountry
 import util.figures
 from shapely.geometry import Polygon
 
-non_standard_shapes = {
-    "eia": [
-        "US_CAL",
-        "US_CAR",
-        "US_CENT",
-        "US_FLA",
-        "US_MIDA",
-        "US_MIDW",
-        "US_NE",
-        "US_NY",
-        "US_NW",
-        "US_SE",
-        "US_SW",
-        "US_TEN",
-        "US_TEX",
-    ],
-    "tepco": ["JP_Kantō"],
-}
-
 
 def _remove_islands(
     region_shape: geopandas.GeoDataFrame, iso_alpha_2_code: str
@@ -108,7 +89,7 @@ def _get_standard_shape(
         GeoDataFrame containing the shape of the country
     """
 
-    # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country, and the region is the whole country.
+    # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country, and the region is therefore the country.
     # If there is an underscore in the code, it is a combination of ISO Alpha-2 code and region code, and the region is a subdivision of the country.
     if "_" not in code:
         # Define the relevant parameters for the shapefile retrieval.
@@ -123,7 +104,7 @@ def _get_standard_shape(
         # Define the relevant parameters for the shapefile retrieval.
         shapefile_name = "admin_1_states_provinces"
         main_key = "iso_3166_2"
-        secondary_keys = "name"
+        secondary_keys = ["name"]
         target_key = iso_alpha_2_code + "-" + region_code
 
     # Load the shapefile containing the shapes of the regions from the Natural Earth database.
@@ -163,6 +144,41 @@ def _get_standard_shape(
     return region_shape
 
 
+def _read_non_standard_shape_codes() -> dict[str, list[str]]:
+    """
+    Read the non-standard shapes contained in the shapes directory.
+
+    Returns
+    -------
+    non_standard_shapes : dict
+        Dictionary containing the non-standard shapes and their respective codes
+    """
+
+    # Define the path to the shapes directory.
+    shapes_path = os.path.join(os.path.dirname(__file__), "..", "shapes")
+
+    # Create a dictionary to store the non-standard shapes and their respective codes.
+    non_standard_shapes = {}
+
+    # Iterate over the folders in the shapes directory.
+    for folder in os.listdir(shapes_path):
+        # Check if folder is a directory.
+        if os.path.isdir(os.path.join(shapes_path, folder)):
+            # Define the path to the shapefile.
+            shapefile_path = os.path.join(shapes_path, folder, folder + ".shp")
+
+            # Read the shapefile of the regions of the data source.
+            region_shapes = geopandas.read_file(shapefile_path)
+
+            # Get the codes of the regions in the shapefile.
+            region_codes = region_shapes["code"].unique()
+
+            # Add the non-standard shapes and their respective codes to the dictionary.
+            non_standard_shapes[folder] = list(region_codes)
+
+    return non_standard_shapes
+
+
 def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFrame:
     """
     Retrieve the shape of a non-standard region as defined by the data source.
@@ -180,9 +196,6 @@ def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFra
         GeoDataFrame containing the shape of the region
     """
 
-    # Split the code into the ISO Alpha-2 code and the region code.
-    iso_alpha_2_code, region_code = code.split("_")
-
     # Define the path to the shapefile based on the data source.
     shapefile_path = os.path.join(
         os.path.dirname(__file__), "..", "shapes", data_source, data_source + ".shp"
@@ -192,7 +205,7 @@ def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFra
     region_shapes = geopandas.read_file(shapefile_path)
 
     # Get the shape of the region of interest.
-    region_shape = region_shapes[region_shapes["code"] == region_code]
+    region_shape = region_shapes[region_shapes["code"] == code]
     region_shape = geopandas.GeoDataFrame.from_features(region_shape["geometry"])
 
     return region_shape
@@ -228,8 +241,13 @@ def get_region_shape(
         # Define a flag to check if the region code is in the list of non-standard shapes.
         is_non_standard_shape = False
         selected_data_source = None
-        for data_source, codes in non_standard_shapes.items():
-            if code in codes:
+
+        # Read the codes of the non-standard shapes contained in the shapes directory.
+        non_standard_shape_codes = _read_non_standard_shape_codes()
+
+        # Iterate over the codes of the non-standard shapes and check if the region code is in the list of non-standard shapes.
+        for data_source, codes_of_data_source in non_standard_shape_codes.items():
+            if code in codes_of_data_source:
                 is_non_standard_shape = True
                 selected_data_source = data_source
                 break

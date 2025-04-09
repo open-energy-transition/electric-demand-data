@@ -30,19 +30,19 @@ regions = balancing_authorities.dissolve(by="EIAregion")
 
 # Define the codes of the regions.
 region_codes = {
-    "California": "CAL",
-    "Carolinas": "CAR",
-    "Central": "CENT",
-    "Florida": "FLA",
-    "Mid-Atlantic": "MIDA",
-    "Midwest": "MIDW",
-    "New England": "NE",
-    "New York": "NY",
-    "Northwest": "NW",
-    "Southeast": "SE",
-    "Southwest": "SW",
-    "Tennessee": "TEN",
-    "Texas": "TEX",
+    "California": "US_CAL",
+    "Carolinas": "US_CAR",
+    "Central": "US_CENT",
+    "Florida": "US_FLA",
+    "Mid-Atlantic": "US_MIDA",
+    "Midwest": "US_MIDW",
+    "New England": "US_NE",
+    "New York": "US_NY",
+    "Northwest": "US_NW",
+    "Southeast": "US_SE",
+    "Southwest": "US_SW",
+    "Tennessee": "US_TEN",
+    "Texas": "US_TEX",
 }
 
 # Add the codes to the regions shapefile.
