@@ -88,6 +88,9 @@ def read_all_codes() -> list[str]:
         file_path = os.path.join(retrieval_scripts_folder, yaml_file)
         codes += read_codes_from_file(file_path)
 
+    # Remove duplicates.
+    codes = list(set(codes))
+
     return codes
 
 

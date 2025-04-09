@@ -41,4 +41,4 @@ for region_code in region_codes:
     )
 
 # Save the figure.
-fig.savefig(figure_directory + "/available_countries.png", dpi=300, bbox_inches="tight")
+fig.savefig(figure_directory + "/available_countries.png", dpi=600, bbox_inches="tight")
