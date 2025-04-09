@@ -35,7 +35,6 @@ for region_code in region_codes:
         facecolor="red",
         edgecolor="black",
         linewidth=0.5,
-        alpha=0.5,
         aspect=None,
         autolim=False,
     )
