@@ -7,18 +7,43 @@ Description:
 
     This script retrieves the electricity load data from the website of Hydro-Québec.
 
-    The data is retrieved for the years from 2019 to 2023.
-
-    The data is saved in CSV and Parquet formats.
+    The data is retrieved for the years from 2019 to 2023. The data is retrieved all at once.
 
     Source: https://donnees.hydroquebec.com/explore/dataset/historique-demande-electricite-quebec/information/
 """
 
-import pandas as pd
-import util.time_series as time_series_utilities
+import logging
+
+import pandas
+import util.fetcher
 
 
-def download_and_extract_data() -> pd.Series:
+def get_available_requests() -> None:
+    """
+    Get the list of available requests to retrieve the electricity demand data on the Hydro-Québec website.
+    """
+
+    logging.info("The data is retrieved all at once.")
+    return None
+
+
+def get_url() -> str:
+    """
+    Get the URL of the electricity demand data on the Hydro-Québec website.
+
+    Returns
+    -------
+    url : str
+        The URL of the electricity demand data
+    """
+
+    # Define the URL of the electricity demand data.
+    url = "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/historique-demande-electricite-quebec/exports/csv?lang=en&timezone=America%2FToronto&use_labels=true&delimiter=%2C"
+
+    return url
+
+
+def download_and_extract_data() -> pandas.Series:
     """
     Retrieve the electricity demand data from the website of Hydro-Québec.
 
@@ -28,11 +53,11 @@ def download_and_extract_data() -> pd.Series:
         The electricity generation time series in MW
     """
 
-    # Define the URL of the electricity demand data.
-    url = "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/historique-demande-electricite-quebec/exports/csv?lang=en&timezone=America%2FToronto&use_labels=true&delimiter=%2C"
+    # Get the URL of the electricity demand data.
+    url = get_url()
 
     # Fetch the electricity demand data.
-    electricity_demand_time_series = pd.read_csv(url)
+    electricity_demand_time_series = util.fetcher.fetch_data(url, "csv")
 
     # Set the date as the index.
     electricity_demand_time_series = electricity_demand_time_series.set_index(
@@ -40,16 +65,11 @@ def download_and_extract_data() -> pd.Series:
     ).squeeze()
 
     # Convert the index to a datetime object.
-    electricity_demand_time_series.index = pd.to_datetime(
+    electricity_demand_time_series.index = pandas.to_datetime(
         electricity_demand_time_series.index, format="%Y-%m-%dT%H:%M:%S%z", utc=True
     )
 
     # Sort the index.
     electricity_demand_time_series = electricity_demand_time_series.sort_index()
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
-    )
 
     return electricity_demand_time_series

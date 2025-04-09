@@ -1,10 +1,10 @@
-import geopandas as gpd
+import geopandas
 
 # Define the path to the shapefile of the US balancing authorities.
 us_balancing_authorities_path = "data/us_balancing_authorities/"
 
 # Read the shapefile of the balancing authorities. Source: https://atlas.eia.gov/datasets/eia::balancing-authorities/about
-balancing_authorities = gpd.read_file(
+balancing_authorities = geopandas.read_file(
     us_balancing_authorities_path + "Balancing_Authorities.shp"
 )
 

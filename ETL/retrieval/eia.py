@@ -9,47 +9,80 @@ Description:
 
     The data is retrieved for the years from 2020 to the current year. The data is retrieved in six-month intervals.
 
-    The data is saved in CSV and Parquet formats.
-
     Source: https://www.eia.gov/opendata/browser/electricity/rto/region-data
 """
 
-import json
 import logging
 import os
-import urllib.request
 from pathlib import Path
 
-import pandas as pd
-import util.time_series as time_series_utilities
+import pandas
+import util.fetcher
 from dotenv import load_dotenv
 
 
-def download_and_extract_data_of_period(
-    start_date_and_time: pd.Timestamp, end_date_and_time: pd.Timestamp, region_code: str
-) -> pd.Series:
+def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
-    Retrieve the electricity demand data from the Energy Information Administration (EIA) for a specific region and period.
+    Get the list of available requests to retrieve the electricity demand data on the Energy Information Administration website.
+
+    Returns
+    -------
+    available_requests : list[pandas.Timestamp, pandas.Timestamp]
+        The list of available requests
+    """
+
+    # Define the start and end date according to the data availability.
+    start_date_and_time = pandas.Timestamp("2020-01-01 00:00:00")
+    end_date_and_time = pandas.Timestamp.today()
+
+    # Define start and end dates and times for six-month retrieval periods. A six-month period avoids the limitation of the API to retrieve a maximum of 5000 data points.
+    start_date_and_time_of_period = pandas.date_range(
+        start_date_and_time, end_date_and_time, freq="6MS"
+    )
+    end_date_and_time_of_period = start_date_and_time_of_period[1:].union(
+        pandas.to_datetime([end_date_and_time])
+    )
+
+    # The available requests are the beginning and end of each six-month period.
+    available_requests = list(
+        zip(start_date_and_time_of_period, end_date_and_time_of_period)
+    )
+
+    return available_requests
+
+
+def get_url(
+    start_date_and_time: pandas.Timestamp,
+    end_date_and_time: pandas.Timestamp,
+    region_code: str,
+) -> str:
+    """
+    Get the URL of the electricity demand data on the Energy Information Administration website.
 
     Parameters
     ----------
-    start_date_and_time : pd.Timestamp
+    start_date_and_time : pandas.Timestamp
         The start date and time of the data retrieval
-    end_date_and_time : pd.Timestamp
+    end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
     region_code : str
         The code of the region of interest
 
     Returns
     -------
-    electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+    url : str
+        The URL of the electricity demand data
     """
 
-    logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
+    # Check that the number of time points is less than 5000.
+    assert (end_date_and_time - start_date_and_time).days * 24 < 5000, (
+        "The number of time points is greater than 5000."
+    )
 
-    # Extract the region code.
-    region_code = region_code.split("_")[1]
+    # Check that the beginning of the period is on or after 2020-01-01.
+    assert start_date_and_time >= pandas.Timestamp("2020-01-01 00:00:00"), (
+        "The beginning of the data availability is 2020-01-01."
+    )
 
     # Load the environment variables.
     load_dotenv(dotenv_path=Path(".") / ".env")
@@ -64,30 +97,23 @@ def download_and_extract_data_of_period(
     # Define the URL.
     url = f"https://api.eia.gov/v2/electricity/rto/region-data/data/?api_key={api_key}&facets[type][]=D&facets[respondent][]={region_code}&start={start}&end={end}&frequency=hourly&data[0]=value&sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000"
 
-    # Retrieve the data.
-    response = urllib.request.urlopen(url).read().decode("utf-8")
-
-    # Convert the data to a JSON object.
-    region_data = json.loads(response)
-
-    # Extract the data.
-    index = [item["period"] for item in region_data["response"]["data"]]
-    values = [item["value"] for item in region_data["response"]["data"]]
-
-    # Create the electricity demand time series.
-    electricity_demand_time_series = pd.Series(
-        values, index=pd.to_datetime(index)
-    ).tz_localize("UTC")
-
-    return electricity_demand_time_series
+    return url
 
 
-def download_and_extract_data(region_code: str) -> pd.Series:
+def download_and_extract_data_for_request(
+    start_date_and_time: pandas.Timestamp,
+    end_date_and_time: pandas.Timestamp,
+    region_code: str,
+) -> pandas.Series:
     """
     Retrieve the electricity demand data from the Energy Information Administration (EIA).
 
     Parameters
     ----------
+    start_date_and_time : pandas.Timestamp
+        The start date and time of the data retrieval
+    end_date_and_time : pandas.Timestamp
+        The end date and time of the data retrieval
     region_code : str
         The code of the region of interest
 
@@ -97,32 +123,30 @@ def download_and_extract_data(region_code: str) -> pd.Series:
         The electricity generation time series in MW
     """
 
-    # Define the start and end date according to the data availability.
-    start_date_and_time = pd.Timestamp("2020-01-01 00:00:00")
-    end_date_and_time = pd.Timestamp.today()
-
-    # Define start and end dates and times for six-month retrieval periods.
-    start_date_and_time_of_period = pd.date_range(
-        start_date_and_time, end_date_and_time, freq="6MS"
-    )
-    end_date_and_time_of_period = start_date_and_time_of_period[1:].union(
-        pd.to_datetime([end_date_and_time])
+    # Check that the number of time points is less than 5000.
+    assert (end_date_and_time - start_date_and_time).days * 24 < 5000, (
+        "The number of time points is greater than 5000."
     )
 
-    # Retrieve the electricity demand time series of all periods.
-    electricity_demand_time_series_list = [
-        download_and_extract_data_of_period(period_start, period_end, region_code)
-        for period_start, period_end in zip(
-            start_date_and_time_of_period, end_date_and_time_of_period
-        )
-    ]
-
-    # Concatenate the electricity demand time series of all periods.
-    electricity_demand_time_series = pd.concat(electricity_demand_time_series_list)
-
-    # Clean the data.
-    electricity_demand_time_series = time_series_utilities.clean_data(
-        electricity_demand_time_series
+    # Check that the beginning of the period is on or after 2020-01-01.
+    assert start_date_and_time >= pandas.Timestamp("2020-01-01 00:00:00"), (
+        "The beginning of the data availability is 2020-01-01."
     )
+
+    logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
+
+    # Extract the region code.
+    region_code = region_code.split("_")[1]
+
+    # Get the URL of the electricity demand data.
+    url = get_url(start_date_and_time, end_date_and_time, region_code)
+
+    # Fetch the electricity demand data from the URL.
+    dataset = util.fetcher.fetch_data(url, "json", json_keys=["response", "data"])
+
+    # Create the electricity demand time series.
+    electricity_demand_time_series = pandas.Series(
+        dataset["value"].values, index=pandas.to_datetime(dataset["period"])
+    ).tz_localize("UTC")
 
     return electricity_demand_time_series
