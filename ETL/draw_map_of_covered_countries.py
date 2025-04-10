@@ -32,7 +32,7 @@ for region_code in region_codes:
     region_shape.plot(
         ax=ax,
         transform=data_crs,
-        facecolor="red",
+        facecolor="tomato",
         edgecolor="black",
         linewidth=0.5,
         aspect=None,
