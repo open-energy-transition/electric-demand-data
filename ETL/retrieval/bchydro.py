@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the website of British Columbia Hydro and Power Authority (BC Hydro).
+    This script retrieves the electricity demand data from the website of the British Columbia Hydro and Power Authority (BC Hydro) in Canada.
 
     The data is retrieved for the years from 2001 to current year. The data is retrieved from the available Excel files on the BC Hydro website.
 
@@ -21,23 +21,21 @@ import util.fetcher
 
 def get_available_requests() -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data on the British Columbia Hydro and Power Authority website.
+    Get the list of available requests to retrieve the electricity demand data from the BC Hydro website.
 
     Returns
     -------
-    available_requests : list[int]
+    list[int]
         The list of available requests
     """
 
-    # The available requests are the years from 2001 to current year.
-    available_requests = list(range(2001, pandas.Timestamp.now().year + 1))
-
-    return available_requests
+    # Return the available requests, which are the years from 2001 to current year.
+    return list(range(2001, pandas.Timestamp.now().year + 1))
 
 
 def get_url(year: int) -> str:
     """
-    Get the URL of the electricity demand data on the British Columbia Hydro and Power Authority website.
+    Get the URL of the electricity demand data on the BC Hydro website.
 
     Parameters
     ----------
@@ -79,7 +77,7 @@ def _get_excel_information(
     year: int,
 ) -> tuple[int, int | None, list[str] | list[int], list[str] | list[int]]:
     """
-    Get the Excel information of the electricity demand data on the British Columbia Hydro and Power Authority website.
+    Get the Excel information of the electricity demand data on the BC Hydro website.
 
     Parameters
     ----------
@@ -148,7 +146,7 @@ def _get_excel_information(
 
 def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
-    Read the Excel files on the British Columbia Hydro and Power Authority website.
+    Download and extract the electricity generation data from the BC Hydro website.
 
     Parameters
     ----------

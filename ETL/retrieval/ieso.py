@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the website of Ontario's Independent Electricity System Operator (IESO).
+    This script retrieves the electricity demand data from the website of Ontario's Independent Electricity System Operator (IESO) in Canada.
 
     The data is retrieved for the years from 1994 to current year. The data is retrieved from the available CSV files on the IESO website.
 
@@ -21,30 +21,28 @@ import util.fetcher
 
 def get_available_requests() -> list[tuple[int, bool] | tuple[None, bool]]:
     """
-    Get the available requests for the electricity demand data on the Ontario Independent Electricity System Operator website.
+    Get the list of available requests to retrieve the electricity demand data from the IESO website.
 
     Returns
     -------
-    available_requests : list of tuple
-        The available requests for the electricity demand data
+    list[tuple[int, bool] | tuple[None, bool]]
+        The list of available requests
     """
 
-    # The available requests are a combination of a year number and a boolean indicating whether the data is before April 2002.
+    # Return the available requests, which are a combination of a year number and a boolean indicating whether the data is before April 2002.
     # available_requests = [(year = None, before_Apr_2002 = True)
     #                       (year = 2002, before_Apr_2002 = False),
     #                       (year = 2003, before_Apr_2002 = False),
     #                       ...
     #                       (year = current year, before_Apr_2002 = False)]
-    available_requests = [(None, True)] + [
+    return [(None, True)] + [
         (year, False) for year in range(2002, pandas.Timestamp.now().year + 1)
     ]
-
-    return available_requests
 
 
 def get_url(year: int | None, before_Apr_2002: bool) -> str:
     """
-    Get the URL of the electricity demand data on the Ontario Independent Electricity System Operator website.
+    Get the URL of the electricity demand data on the IESO website.
 
     Parameters
     ----------
@@ -76,7 +74,7 @@ def download_and_extract_data_for_request(
     year: int | None, before_Apr_2002: bool
 ) -> pandas.Series:
     """
-    Read the CSV files from Ontario's Independent Electricity System Operator website.
+    Download and extract the electricity generation data from the IESO website.
 
     Parameters
     ----------
