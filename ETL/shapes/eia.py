@@ -64,7 +64,11 @@ regions = regions.reset_index()
 # Rename the columns.
 regions = regions.rename(columns={"EIAregion": "name", "EIAcode": "code"})
 
-# Fix some overlapping regions.
+#############################################################################
+# The following code fixes the overlaps between the regions.
+# The regions are not well defined and sometimes overlap each other.
+# This was a manual process and each step had to be checked visually.
+#############################################################################
 
 # Using the California region, cut the Northwest.
 regions.loc[regions["name"] == "Northwest", "geometry"] = regions.loc[
@@ -192,6 +196,8 @@ regions.loc[regions["name"] == "Mid-Atlantic", "geometry"] = regions.loc[
 regions.loc[regions["name"] == "New England", "geometry"] = regions.loc[
     regions["name"] == "New England", "geometry"
 ].difference(regions.loc[regions["name"] == "New York", "geometry"], align=False)
+
+#############################################################################
 
 # Save the regions shapefile into ETL/shapes/eia.
 shapes_dir = os.path.join(os.path.dirname(__file__), "eia")
