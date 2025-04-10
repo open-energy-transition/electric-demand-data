@@ -131,4 +131,10 @@ def get_available_requests_for_range(start_date: date, end_date: date):
 
 # --- Main execution: Download data for all dates from 2023-09-26 to today ---
 if __name__ == "__main__":
+    from datetime import datetime
+
+    start_date = datetime(2023, 9, 26).date()
+    end_date = datetime.today().date()
+
     get_available_requests_for_range(start_date, end_date)
+
