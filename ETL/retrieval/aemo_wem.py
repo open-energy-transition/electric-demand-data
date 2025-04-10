@@ -14,10 +14,11 @@ Description:
 """
 
 import logging
-import pandas as pd
-import util.fetcher
 import os
 from datetime import date, timedelta
+
+import pandas as pd
+import util.fetcher
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,7 +39,9 @@ def get_available_requests() -> list[tuple[int, int, int]]:
     current_date = start_date
 
     while current_date <= end_date:
-        available_requests.append((current_date.year, current_date.month, current_date.day))
+        available_requests.append(
+            (current_date.year, current_date.month, current_date.day)
+        )
         current_date += timedelta(days=1)
 
     return available_requests
@@ -89,17 +92,23 @@ def download_and_save_data(year: int, month: int, day: int) -> None:
         The day of the electricity demand data
     """
     url = get_url(year, month, day)
-    
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                      "AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/58.0.3029.110 Safari/537.36"
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/58.0.3029.110 Safari/537.36"
     }
-    
+
     try:
-        dataset = util.fetcher.fetch_data(url, "json", output="tabular", header_params=headers)
+        dataset = util.fetcher.fetch_data(
+            url, "json", output="tabular", header_params=headers
+        )
         # The JSON has a nested format: extract the actual table from ["data"]["data"]
-        if isinstance(dataset, dict) and "data" in dataset and "data" in dataset["data"]:
+        if (
+            isinstance(dataset, dict)
+            and "data" in dataset
+            and "data" in dataset["data"]
+        ):
             dataset = pd.DataFrame(dataset["data"]["data"])
         else:
             raise ValueError("Unexpected data format from AEMO server.")
@@ -119,6 +128,7 @@ def get_available_requests_for_range(start_date: date, end_date: date):
         download_and_save_data(current_date.year, current_date.month, current_date.day)
         current_date += timedelta(days=1)
 
-  # --- Main execution: Download data for all dates from 2023-09-26 to today ---
+
+# --- Main execution: Download data for all dates from 2023-09-26 to today ---
 if __name__ == "__main__":
     get_available_requests_for_range(start_date, end_date)
