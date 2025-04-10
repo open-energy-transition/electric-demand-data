@@ -78,7 +78,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-c",
         "--code",
         type=str,
-        help='The ISO Alpha-2 code (example: "US") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
+        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
         required=False,
     )
     parser.add_argument(

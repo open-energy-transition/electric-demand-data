@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the website of the Alberta Electric System Operator (AESO).
+    This script retrieves the electricity demand data from the website of the Alberta Electric System Operator (AESO) in Canada.
 
     The data is retrieved for the years from 2011 to 2024. The data is retrieved from the available Excel files on the AESO website.
 
@@ -20,23 +20,21 @@ import util.fetcher
 
 def get_available_requests() -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data on the Alberta Electric System Operator website.
+    Get the list of available requests to retrieve the electricity demand data from the AESO website.
 
     Returns
     -------
-    available_requests : list[int]
+    list[int]
         The list of available requests
     """
 
-    # The available requests are the numbers of the Excel files available on the AESO website.
-    available_requests = [1, 2, 3, 4]
-
-    return available_requests
+    # Return the available requests, which are the numbers of the Excel files available on the AESO website.
+    return [1, 2, 3, 4]
 
 
 def get_url(file_number: int) -> str:
     """
-    Get the URL of the electricity demand data on the Alberta Electric System Operator website.
+    Get the URL of the electricity demand data on the AESO website.
 
     Parameters
     ----------
@@ -69,7 +67,7 @@ def get_url(file_number: int) -> str:
 
 def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[str]]:
     """
-    Get the Excel information of the electricity demand data on the Alberta Electric System Operator website.
+    Get the Excel information of the electricity demand data on the AESO website.
 
     Parameters
     ----------
@@ -148,7 +146,7 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
 
 def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     """
-    Read the Excel files on the Alberta Electric System Operator website.
+    Download and extract the electricity generation data from the AESO website.
     There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
 
     Parameters

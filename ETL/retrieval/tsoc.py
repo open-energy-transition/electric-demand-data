@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity generation data from the website of the Transmission System Operator of Cyprus (TSOC).
+    This script retrieves the electricity demand data from the website of the Transmission System Operator of Cyprus (TSOC).
 
     The data seems to represent the total electricity generation in MW, which can be considered a proxy for the electricity demand.
 
@@ -23,11 +23,11 @@ import util.fetcher
 
 def get_available_requests() -> list[pandas.Timestamp]:
     """
-    Get the list of available requests to retrieve the electricity generation data on the Transmission System Operator of Cyprus website.
+    Get the list of available requests to retrieve the electricity demand data from the TSOC website.
 
     Returns
     -------
-    available_requests : list[pandas.Timestamp]
+    list[pandas.Timestamp]
         The list of available requests
     """
 
@@ -37,17 +37,13 @@ def get_available_requests() -> list[pandas.Timestamp]:
     )  # This is in local time (Asia/Nicosia).
     end_date_and_time = pandas.Timestamp.today()
 
-    # Define start dates for the data retrievals. We use 15-day intervals (the maximum available on the website) to minimize the number of requests.
-    available_requests = list(
-        pandas.date_range(start_date_and_time, end_date_and_time, freq="15D")
-    )
-
-    return available_requests
+    # Return the available requests, which are the start dates of the retrieval periods. We use 15-day intervals (the maximum available on the website) to minimize the number of requests.
+    return list(pandas.date_range(start_date_and_time, end_date_and_time, freq="15D"))
 
 
 def get_url(start_date: pandas.Timestamp) -> str:
     """
-    Get the URL of the electricity generation data on the Transmission System Operator of Cyprus website.
+    Get the URL of the electricity generation data on the TSOC website.
 
     Parameters
     ----------
@@ -56,7 +52,7 @@ def get_url(start_date: pandas.Timestamp) -> str:
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity generation data
     """
 
@@ -68,10 +64,8 @@ def get_url(start_date: pandas.Timestamp) -> str:
     # Convert the start and end dates and times to the required format.
     start_date = start_date.strftime("%d-%m-%Y")
 
-    # Construct the request URL.
-    url = f"https://tsoc.org.cy/electrical-system/archive-total-daily-system-generation-on-the-transmission-system/?startdt={start_date}&enddt=%2B15days"
-
-    return url
+    # Return the URL of the electricity generation data.
+    return f"https://tsoc.org.cy/electrical-system/archive-total-daily-system-generation-on-the-transmission-system/?startdt={start_date}&enddt=%2B15days"
 
 
 def _read_generation(generation_step):
@@ -151,7 +145,7 @@ def download_and_extract_data_for_request(
     start_date: pandas.Timestamp,
 ) -> tuple[list[str], list[str], list[str], list[float | None]]:
     """
-    Download and extract the electricity generation data from the website of the Transmission System Operator of Cyprus.
+    Download and extract the electricity generation data from the TSOC website.
 
     Parameters
     ----------

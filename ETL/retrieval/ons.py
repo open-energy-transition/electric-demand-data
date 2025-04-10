@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the Operador Nacional do Sistema Elétrico (ONS) website.
+    This script retrieves the electricity demand data from the website of the Operador Nacional do Sistema Elétrico (ONS) in Brazil.
 
     The data is retrieved for the years from 2000 to the current year. The data is retrieved from the available CSV files on the ONS website.
 
@@ -20,18 +20,16 @@ import util.fetcher
 
 def get_available_requests() -> list[int]:
     """
-    Get the available requests for the electricity demand data on the ONS website.
+    Get the list of available requests to retrieve the electricity demand data from the ONS website.
 
     Returns
     -------
-    available_requests : list[int]
-        The available requests for the electricity demand data
+    list[int]
+        The list of available requests
     """
 
-    # The available requests are the years from 2000 to current year.
-    available_requests = [year for year in range(2000, pandas.Timestamp.now().year + 1)]
-
-    return available_requests
+    # Return the available requests, which are the years from 2000 to current year.
+    return [year for year in range(2000, pandas.Timestamp.now().year + 1)]
 
 
 def get_url(year: int) -> str:
@@ -45,21 +43,19 @@ def get_url(year: int) -> str:
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity demand data
     """
 
     assert year in get_available_requests(), f"The year {year} is not available."
 
-    # Define the URL of the electricity demand data.
-    url = f"https://ons-aws-prod-opendata.s3.amazonaws.com/dataset/curva-carga-ho/CURVA_CARGA_{year}.csv"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return f"https://ons-aws-prod-opendata.s3.amazonaws.com/dataset/curva-carga-ho/CURVA_CARGA_{year}.csv"
 
 
 def download_and_extract_data_for_request(year: int, region_code: str) -> pandas.Series:
     """
-    Read the CSV files from the ONS website.
+    Download and extract the electricity generation data from the ONS website.
 
     Parameters
     ----------

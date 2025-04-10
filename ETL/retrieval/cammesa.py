@@ -5,9 +5,9 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the website of the Compañía Administradora del Mercado Mayorista Eléctrico S.A. (CAMMESA) in Argentina.
+    This script retrieves the electricity demand data from the website of the Compañía Administradora del Mercado Mayorista Eléctrico S.A. (CAMMESA) in Argentina.
 
-    The data is retrieved for the years
+    The data is retrieved from 2024-08-01 to current date. The data is retrieved in one-day intervals.
 
     Source: https://api.cammesa.com/demanda-svc/swagger-ui.html#/demanda-ws
     Source: https://api.cammesa.com/demanda-svc/demanda/RegionesDemanda
@@ -34,22 +34,20 @@ region_id = {
 
 def get_available_requests() -> list[str]:
     """
-    Get the available requests for the electricity demand data on the Tokyo Electric Power Company website.
+    Get the list of available requests to retrieve the electricity demand data from the CAMMESA website.
 
     Returns
     -------
-    available_requests : list[str]
-        The available requests for the electricity demand data
+    list[str]
+        The list of available requests
     """
 
-    # The available requests are the days from 2024-08-01 to current date.
-    available_requests = (
+    # Return the available requests, which are the days from 2024-08-01 to current date.
+    return (
         pandas.date_range(start="2024-08-01", end=pandas.Timestamp.today(), freq="D")
         .strftime("%Y-%m-%d")
         .to_list()
     )
-
-    return available_requests
 
 
 def get_url(date: str) -> str:
@@ -63,22 +61,20 @@ def get_url(date: str) -> str:
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity demand data
     """
 
     # Check if the date is supported.
     assert date in get_available_requests(), f"The date {date} is not available."
 
-    # Define the URL of the electricity demand data.
-    url = f"https://api.cammesa.com/demanda-svc/demanda/ObtieneDemandaYTemperaturaRegionByFecha?id_region=1002&fecha={date}"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return f"https://api.cammesa.com/demanda-svc/demanda/ObtieneDemandaYTemperaturaRegionByFecha?id_region=1002&fecha={date}"
 
 
 def download_and_extract_data_for_request(date: str) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the CAMMESA website.
+    Download and extract the electricity generation data from the CAMMESA website.
 
     Parameters
     ----------

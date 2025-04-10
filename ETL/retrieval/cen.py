@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the Coordinador Eléctrico Nacional (CEN) website.
+    This script retrieves the electricity demand data from the website of the Coordinador Eléctrico Nacional (CEN) in Chile.
 
     The data is retrieved for the years from 1999 to the current year. The data is retrieved in one-year intervals.
 
@@ -20,11 +20,11 @@ import util.fetcher
 
 def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
-    Get the available requests for the electricity demand data from the Coordinador Eléctrico Nacional (CEN) website.
+    Get the list of available requests to retrieve the electricity demand data from the CEN website.
 
     Returns
     -------
-    available_requests : list[tuple[pandas.Timestamp, pandas.Timestamp]]
+    list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
 
@@ -40,17 +40,13 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
         start_date_and_time_of_period[1:] - pandas.Timedelta("24h")
     ).union(pandas.to_datetime([end_date_and_time]))
 
-    # The available requests are the beginning and end of each one-year period.
-    available_requests = list(
-        zip(start_date_and_time_of_period, end_date_and_time_of_period)
-    )
-
-    return available_requests
+    # Return the available requests, which are the beginning and end of each one-year period.
+    return list(zip(start_date_and_time_of_period, end_date_and_time_of_period))
 
 
 def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     """
-    Get the URL of the electricity demand data.
+    Get the URL of the electricity demand data on the CEN website.
 
     Parameters
     ----------
@@ -61,7 +57,7 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity demand data
     """
 
@@ -79,17 +75,15 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     start_date = start_date.strftime("%Y-%m-%d")
     end_date = end_date.strftime("%Y-%m-%d")
 
-    # Define the URL of the electricity demand data.
-    url = f"https://sipub.coordinador.cl/api/v1/recursos/demandasistemareal?fecha__gte={start_date}&fecha__lte={end_date}"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return f"https://sipub.coordinador.cl/api/v1/recursos/demandasistemareal?fecha__gte={start_date}&fecha__lte={end_date}"
 
 
 def download_and_extract_data_for_request(
     start_date_and_time: pandas.Timestamp, end_date_and_time: pandas.Timestamp
 ) -> pandas.Series:
     """
-    Retrieve the electricity demand data from the Coordinador Eléctrico Nacional (CEN) website.
+    Download and extract the electricity generation data from the CEN website.
 
     Parameters
     ----------

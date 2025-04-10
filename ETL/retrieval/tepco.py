@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the Tokyo Electric Power Company (TEPCO) website.
+    This script retrieves the electricity demand data from the website of the Tokyo Electric Power Company (TEPCO) in Japan.
 
     The data is retrieved for the years from 2016 to the current year. The data is retrieved from the available CSV files on the TEPCO website.
 
@@ -20,23 +20,21 @@ import util.fetcher
 
 def get_available_requests() -> list[int]:
     """
-    Get the available requests for the electricity demand data on the Tokyo Electric Power Company website.
+    Get the list of available requests to retrieve the electricity demand data from the TEPCO website.
 
     Returns
     -------
-    available_requests : list[int]
-        The available requests for the electricity demand data
+    list[int]
+        The list of available requests
     """
 
-    # The available requests are the years from 2016 to current year.
-    available_requests = [year for year in range(2016, pandas.Timestamp.now().year + 1)]
-
-    return available_requests
+    # Return the available requests, which are the years from 2016 to current year.
+    return [year for year in range(2016, pandas.Timestamp.now().year + 1)]
 
 
 def get_url(year: int) -> str:
     """
-    Get the URL of the electricity demand data on the Tokyo Electric Power Company website.
+    Get the URL of the electricity demand data on the TEPCO website.
 
     Parameters
     ----------
@@ -45,21 +43,19 @@ def get_url(year: int) -> str:
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity demand data
     """
 
     assert year in get_available_requests(), f"The year {year} is not available."
 
-    # Define the URL of the electricity demand data.
-    url = f"https://www4.tepco.co.jp/forecast/html/images/juyo-{year}.csv"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return f"https://www4.tepco.co.jp/forecast/html/images/juyo-{year}.csv"
 
 
 def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
-    Read the CSV files from the Tokyo Electric Power Company website.
+    Download and extract the electricity generation data from the TEPCO website.
 
     Parameters
     ----------
