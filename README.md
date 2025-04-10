@@ -1,12 +1,22 @@
-# Electricity Demand data
+# Electricity Demand Data
 
-This repository will host the code related to the demand project.
+This project is aimed at improving the demand forecasts that are used in energy planning studies.
+It includes the process to obtain the open data from various sources (see ETL) and the models that use the data to predict electricity demand (see models).
+The project is in active development, we are always looking for suggestions and contributions!
 
 ## Development
 
 This project uses [uv](https://github.com/astral-sh/uv) as a pacakge manager.
 It can be used within the provided Dockerfile or installed standalone, see:
 [Installing uv](https://docs.astral.sh/uv/getting-started/installation/)
+
+Then clone the repository, and run:
+```bash
+git clone https://github.com/open-energy-transition/electric-demand-data.git
+uv sync
+```
+
+### Useful commands
 
 Jupyter [(details)](https://docs.astral.sh/uv/guides/integration/jupyter/#using-jupyter-within-a-project):
 ```bash

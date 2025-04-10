@@ -1,12 +1,13 @@
+import datetime
 import logging
 
-import pandas as pd
+import pandas
 import pytz
 
 
 def add_missing_time_steps(
-    time_series: pd.Series, local_time_zone: pytz.timezone
-) -> pd.Series:
+    time_series: pandas.Series, local_time_zone: pytz.timezone
+) -> pandas.Series:
     """
     Add the missing time steps to a time series.
 
@@ -31,7 +32,7 @@ def add_missing_time_steps(
 
     # Calculate the expected number of time steps in the time series.
     expected_number_of_time_steps = int(
-        (8760 if year % 4 != 0 else 8784) * pd.Timedelta("1h") / time_resolution
+        (8760 if year % 4 != 0 else 8784) * pandas.Timedelta("1h") / time_resolution
     )
 
     # Check if there are less time steps than expected.
@@ -41,7 +42,7 @@ def add_missing_time_steps(
         )
 
         # Define the full time index for the time series in the local time zone.
-        full_local_time_index = pd.date_range(
+        full_local_time_index = pandas.date_range(
             start=str(year), end=str(year + 1), freq=time_resolution, tz=local_time_zone
         )[:-1]
 
@@ -52,8 +53,8 @@ def add_missing_time_steps(
 
 
 def resample_time_resolution(
-    time_series: pd.Series, target_time_resolution: str = "1h"
-) -> pd.Series:
+    time_series: pandas.Series, target_time_resolution: str = "1h"
+) -> pandas.Series:
     """
     Resample the time resolution of a time series to a given time resolution.
 
@@ -74,7 +75,7 @@ def resample_time_resolution(
     time_resolution = time_series.index.to_series().diff().min()
 
     # Check if the time resolution of the time series is less than the target time resolution.
-    if time_resolution < pd.Timedelta(target_time_resolution):
+    if time_resolution < pandas.Timedelta(target_time_resolution):
         # Resample the time series to the target time resolution.
         time_series = time_series.resample(target_time_resolution).mean()
 
@@ -86,7 +87,7 @@ def resample_time_resolution(
     return time_series
 
 
-def linearly_interpolate(time_series: pd.Series) -> pd.Series:
+def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
     """
     Linearly interpolate the missing values in a time series only if they are isolated.
 
@@ -119,13 +120,53 @@ def linearly_interpolate(time_series: pd.Series) -> pd.Series:
     return time_series
 
 
+def check_time_series_data_quality(time_series: pandas.Series) -> None:
+    """
+    Check the data quality of a time series.
+
+    Parameters
+    ----------
+    time_series : pandas.Series
+        Original time series
+    """
+
+    # Check if there are any missing values in the time series.
+    if time_series.isnull().sum() > 0:
+        logging.warning(
+            f"There are {time_series.isnull().sum()} missing values in the time series."
+        )
+
+    # Check if there are any duplicated time steps in the time series.
+    if time_series.index.duplicated().sum() > 0:
+        logging.warning(
+            f"There are {time_series.index.duplicated().sum()} duplicated time steps in the time series."
+        )
+
+    # Chech the frequency of the time series.
+    time_step_difference_values = (
+        time_series.index.to_series()
+        .diff()
+        .value_counts()
+        .rename("Occurrences")
+        .rename_axis("Time step difference")
+    )
+    if len(time_step_difference_values) > 1:
+        logging.warning(
+            f"The time step differences are:\n{time_step_difference_values}."
+        )
+    else:
+        logging.info(
+            f"The time series has a constant frequency of {time_step_difference_values.index[0]}."
+        )
+
+
 def harmonize_time_series(
-    time_series: pd.Series,
+    time_series: pandas.Series,
     local_time_zone: pytz.timezone,
     resample: bool = True,
     target_time_resolution: str = "1h",
     interpolate_missing_values: bool = True,
-) -> pd.Series:
+) -> pandas.Series:
     """
     Harmonize a given time series by adding the missing time steps, resampling the time resolution, and interpolating the missing values.
 
@@ -165,7 +206,7 @@ def harmonize_time_series(
 
 
 def save_time_series(
-    time_series: pd.Series | pd.DataFrame,
+    time_series: pandas.Series | pandas.DataFrame,
     full_file_name: str,
     variable_name: str | list[str],
     local_time_zone: pytz.timezone = None,
@@ -195,7 +236,7 @@ def save_time_series(
             raise ValueError("The time zone of the time series must be specified.")
 
     # Create an empty DataFrame to store the time series and set the index to UTC time.
-    time_series_data = pd.DataFrame(
+    time_series_data = pandas.DataFrame(
         index=time_series.index.tz_convert("UTC").tz_localize(None)
     )
 
@@ -209,10 +250,10 @@ def save_time_series(
     time_series.index = time_series.index.tz_convert("UTC").tz_localize(None)
 
     # Add the time series to the DataFrame.
-    if isinstance(time_series, pd.Series):
+    if isinstance(time_series, pandas.Series):
         time_series_data[variable_name] = time_series
-    elif isinstance(time_series, pd.DataFrame):
-        time_series_data = pd.concat([time_series_data, time_series], axis=1)
+    elif isinstance(time_series, pandas.DataFrame):
+        time_series_data = pandas.concat([time_series_data, time_series], axis=1)
 
     # Rename the index.
     time_series_data.index.name = "Time (UTC)"
@@ -224,3 +265,75 @@ def save_time_series(
         time_series_data.to_csv(full_file_name)
     else:
         raise ValueError("The file name must end with .parquet or .csv.")
+
+
+def clean_data(time_series: pandas.Series) -> pandas.Series:
+    """
+    Clean the time series data by setting the time zone to UTC and removing NaN and zero values.
+
+    Parameters
+    ----------
+    time_series : pandas.Series
+        Original time series
+
+    Returns
+    -------
+    time_series : pandas.Series
+        Time series of interest without NaN and zero values
+    """
+
+    # Check if the time series is timezone-aware.
+    if time_series.index.tz is None:
+        raise ValueError("The time series must be timezone-aware.")
+    else:
+        # Convert the time zone of the electricity demand time series to UTC.
+        time_series.index = time_series.index.tz_convert("UTC")
+
+    # Remove timestamps with NaT values.
+    time_series = time_series[time_series.index.notnull()]
+
+    # Remove NaN and zero values from the time series.
+    time_series = time_series[time_series.notnull() & (time_series != 0)]
+
+    return time_series
+
+
+def simple_save(
+    time_series: pandas.Series,
+    variable_name: str,
+    result_directory: str,
+    identifier: str,
+) -> None:
+    """
+    Save the time series to parquet and csv files.
+
+    Parameters
+    ----------
+    time_series : pandas.Series
+        The time series in UTC time
+    variable_name : str
+        The name of the variable in the time series
+    result_directory : str
+        The directory to store the time series
+    identifier : str
+        The identifier of the time series
+    """
+
+    # The input time series must be in UTC time.
+    if time_series.index.tz != datetime.timezone.utc:
+        raise ValueError("The time series must be in UTC time.")
+    else:
+        time_series = time_series.tz_localize(None)
+
+    # Set the name of the index and the series.
+    time_series.index.name = "Time (UTC)"
+    time_series.name = variable_name
+
+    # Save the time series.
+    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
+    time_series.to_frame().to_parquet(
+        result_directory + "/" + identifier + "_" + date_of_retrieval + ".parquet"
+    )
+    time_series.to_csv(
+        result_directory + "/" + identifier + "_" + date_of_retrieval + ".csv"
+    )

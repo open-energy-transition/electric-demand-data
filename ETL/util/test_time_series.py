@@ -1,7 +1,7 @@
 import os
 
-import numpy as np
-import pandas as pd
+import numpy
+import pandas
 import pytest
 import pytz
 from time_series import (
@@ -18,7 +18,7 @@ local_time_zone = pytz.timezone("America/New_York")
 @pytest.fixture
 def sample_time_series():
     # Define a one-year-long time series with 30-minute resolution.
-    dates = pd.date_range("2023", "2024", freq="30min", tz=local_time_zone)[:-1]
+    dates = pandas.date_range("2023", "2024", freq="30min", tz=local_time_zone)[:-1]
 
     # Define the data.
     data = list(range(len(dates)))
@@ -28,7 +28,7 @@ def sample_time_series():
     data[3] = None
     data[10] = None
 
-    return pd.Series(data, index=dates)
+    return pandas.Series(data, index=dates)
 
 
 def test_add_missing_time_steps(sample_time_series):
@@ -61,7 +61,7 @@ def test_resample_time_resolution(sample_time_series):
 
 def test_linearly_interpolate(sample_time_series):
     # Check the data point expected to be interpolated.
-    assert np.isnan(sample_time_series.iloc[10])
+    assert numpy.isnan(sample_time_series.iloc[10])
 
     # Count the number of missing data points.
     missing_data_points = sample_time_series.isna().sum()
@@ -73,8 +73,8 @@ def test_linearly_interpolate(sample_time_series):
     assert interpolated_time_series.isna().sum() == missing_data_points - 1
 
     # Check correct interpolation.
-    assert np.isnan(interpolated_time_series.iloc[2])
-    assert np.isnan(interpolated_time_series.iloc[3])
+    assert numpy.isnan(interpolated_time_series.iloc[2])
+    assert numpy.isnan(interpolated_time_series.iloc[3])
     assert interpolated_time_series.iloc[10] == 10
 
 

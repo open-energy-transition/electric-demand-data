@@ -1,0 +1,53 @@
+items:
+  - region_name: California
+    region_code: CAL
+    country_name: United States
+    country_code: US
+  - region_name: Carolinas
+    region_code: CAR
+    country_name: United States
+    country_code: US
+  - region_name: Central
+    region_code: CENT
+    country_name: United States
+    country_code: US
+  - region_name: Florida
+    region_code: FLA
+    country_name: United States
+    country_code: US
+  - region_name: Mid-Atlantic
+    region_code: MIDA
+    country_name: United States
+    country_code: US
+  - region_name: Midwest
+    region_code: MIDW
+    country_name: United States
+    country_code: US
+  - region_name: New England
+    region_code: NE
+    country_name: United States
+    country_code: US
+  - region_name: New York
+    region_code: NY
+    country_name: United States
+    country_code: US
+  - region_name: Northwest
+    region_code: NW
+    country_name: United States
+    country_code: US
+  - region_name: Southeast
+    region_code: SE
+    country_name: United States
+    country_code: US
+  - region_name: Southwest
+    region_code: SW
+    country_name: United States
+    country_code: US
+  - region_name: Tennessee
+    region_code: TEN
+    country_name: United States
+    country_code: US
+  - region_name: Texas
+    region_code: TEX
+    country_name: United States
+    country_code: US
