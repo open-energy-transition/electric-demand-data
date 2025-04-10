@@ -29,7 +29,7 @@ uk_shape = pandas.Series({"geometry": uk_shape.geometry})
 uk_shape = geopandas.GeoSeries(uk_shape)
 uk_shape = geopandas.GeoDataFrame.from_features(uk_shape, crs=4326)
 
-# Define a poligon to exclude the Northern Ireland and remote islands from the UK shape.
+# Define a polygon to exclude the Northern Ireland and remote islands from the UK shape.
 new_bounds = geopandas.GeoSeries(
     Polygon(
         [
