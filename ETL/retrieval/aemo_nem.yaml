@@ -4,7 +4,7 @@ items:
     country_name: Australia
     country_code: AU
   - region_name: Queensland
-    region_code: QS
+    region_code: QLD
     country_name: Australia
     country_code: AU
   - region_name: Victoria
