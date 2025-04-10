@@ -137,4 +137,3 @@ if __name__ == "__main__":
     end_date = datetime.today().date()
 
     get_available_requests_for_range(start_date, end_date)
-
