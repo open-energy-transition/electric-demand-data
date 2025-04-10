@@ -18,7 +18,7 @@ map_projection = ccrs.Robinson(central_longitude=0)
 data_crs = ccrs.PlateCarree()
 
 # Initialize the figure.
-fig, ax = plt.subplots(figsize=(8, 10), subplot_kw={"projection": map_projection})
+fig, ax = plt.subplots(figsize=(12, 16), subplot_kw={"projection": map_projection})
 
 # Plot the land.
 ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
@@ -38,6 +38,11 @@ for region_code in region_codes:
         aspect=None,
         autolim=False,
     )
+
+# Add title.
+ax.set_title(
+    "Countries and regions with available data", fontsize=20, y=1.05, weight="bold"
+)
 
 # Save the figure.
 fig.savefig(figure_directory + "/available_countries.png", dpi=600, bbox_inches="tight")
