@@ -108,7 +108,7 @@ def download_and_extract_data_for_request(
     iso_alpha_2_code: str,
 ) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the ENTSO-E website.
+    Download and extract the electricity demand data from the ENTSO-E website.
 
     Parameters
     ----------

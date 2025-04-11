@@ -100,7 +100,7 @@ def download_and_extract_data_for_request(
     region_code: str,
 ) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the EIA website.
+    Download and extract the electricity demand data from the EIA website.
 
     Parameters
     ----------
@@ -114,7 +114,7 @@ def download_and_extract_data_for_request(
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Check that the number of time points is less than 5000.

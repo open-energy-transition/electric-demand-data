@@ -146,7 +146,7 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
 
 def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the AESO website.
+    Download and extract the electricity demand data from the AESO website.
     There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
 
     Parameters
@@ -157,7 +157,7 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Check if the file number is supported.

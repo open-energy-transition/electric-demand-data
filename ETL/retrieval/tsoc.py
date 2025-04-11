@@ -23,7 +23,7 @@ import util.fetcher
 
 def get_available_requests() -> list[pandas.Timestamp]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the TSOC website.
+    Get the list of available requests to retrieve the electricity generation data from the TSOC website.
 
     Returns
     -------

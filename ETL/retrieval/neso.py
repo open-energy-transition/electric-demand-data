@@ -78,7 +78,7 @@ def get_url(year: int) -> str:
 
 def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the NESO website.
+    Download and extract the electricity demand data from the NESO website.
 
     Parameters
     ----------

@@ -74,7 +74,7 @@ def get_url(date: str) -> str:
 
 def download_and_extract_data_for_request(date: str) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the CAMMESA website.
+    Download and extract the electricity demand data from the CAMMESA website.
 
     Parameters
     ----------
@@ -84,7 +84,7 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     assert date in get_available_requests(), f"The date {date} is not available."

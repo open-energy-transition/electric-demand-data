@@ -57,7 +57,7 @@ def get_url() -> str:
 
 def download_and_extract_data_for_request(year: int, month: int) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the NB Power website.
+    Download and extract the electricity demand data from the NB Power website.
 
     Parameters
     ----------
@@ -69,7 +69,7 @@ def download_and_extract_data_for_request(year: int, month: int) -> pandas.Serie
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Check if the year and month are supported.

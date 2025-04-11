@@ -86,7 +86,7 @@ def download_and_extract_data_for_request(
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     assert (year, before_Apr_2002) in get_available_requests(), (

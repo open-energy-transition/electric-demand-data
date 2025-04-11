@@ -43,12 +43,12 @@ def get_url() -> str:
 
 def download_and_extract_data() -> pandas.Series:
     """
-    Download and extract the electricity generation data from the Hydro-Québec website.
+    Download and extract the electricity demand data from the Hydro-Québec website.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Get the URL of the electricity demand data.

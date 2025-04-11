@@ -83,7 +83,7 @@ def download_and_extract_data_for_request(
     start_date_and_time: pandas.Timestamp, end_date_and_time: pandas.Timestamp
 ) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the CEN website.
+    Download and extract the electricity demand data from the CEN website.
 
     Parameters
     ----------
@@ -95,7 +95,7 @@ def download_and_extract_data_for_request(
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Check that the retrieval period is less than one year.

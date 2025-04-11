@@ -66,7 +66,7 @@ def get_url(region_code: str) -> str:
 
 def download_and_extract_data(region_code: str) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the CCEI website.
+    Download and extract the electricity demand data from the CCEI website.
 
     Parameters
     ----------
@@ -76,7 +76,7 @@ def download_and_extract_data(region_code: str) -> pandas.Series:
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Extract the region code.

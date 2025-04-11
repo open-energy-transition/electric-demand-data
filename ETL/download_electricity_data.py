@@ -157,7 +157,7 @@ def check_and_get_codes(
 
 def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
-    Retrieve the electricity generation data from the specified data source and code.
+    Retrieve the electricity demand data from the specified data source and code.
 
     Parameters
     ----------
@@ -168,8 +168,8 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
 
     Returns
     -------
-    electricity_generation_time_series : pandas.Series
-        The electricity generation time series in MW
+    electricity_demand_time_series : pandas.Series
+        The electricity demand time series in MW
     """
 
     # Get the list of requests to retrieve the electricity demand time series.
