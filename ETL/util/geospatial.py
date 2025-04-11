@@ -1,13 +1,10 @@
-import logging
-
 import atlite
-import cartopy.io.shapereader
 import geopandas
 import numpy
-import pandas
-import pycountry
 import util.figures
+import util.shapes
 import xarray
+<<<<<<< HEAD
 from shapely.geometry import Polygon
 
 
@@ -256,6 +253,8 @@ def get_region_bounds(region_shape: geopandas.GeoDataFrame) -> list[float]:
     region_bounds = [round(x * 4) / 4 for x in region_bounds]
 
     return region_bounds
+=======
+>>>>>>> origin/data/electricity_south_america
 
 
 def harmonize_coords(
@@ -315,7 +314,7 @@ def get_fraction_of_grid_cells_in_shape(
     """
 
     # Calculate the lateral bounds for the cutout based on the lateral bounds of the region of interest.
-    cutout_bounds = get_region_bounds(region_shape)
+    cutout_bounds = util.shapes.get_region_bounds(region_shape)
 
     # Create a temporary cutout to have the grid cell of the region of interest.
     cutout = atlite.Cutout(

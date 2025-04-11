@@ -19,13 +19,17 @@ import os
 import pandas
 import retrieval.aeso
 import retrieval.bchydro
+import retrieval.cammesa
 import retrieval.ccei
+import retrieval.cen
 import retrieval.eia
 import retrieval.entsoe
 import retrieval.hydroquebec
 import retrieval.ieso
 import retrieval.nbpower
 import retrieval.neso
+import retrieval.ons
+import retrieval.tepco
 import retrieval.tsoc
 import util.general
 import util.time_series
@@ -33,13 +37,17 @@ import util.time_series
 retrieval_module = {
     "AESO": retrieval.aeso,
     "BCHYDRO": retrieval.bchydro,
+    "CAMMESA": retrieval.cammesa,
     "CCEI": retrieval.ccei,
+    "CEN": retrieval.cen,
     "EIA": retrieval.eia,
     "ENTSOE": retrieval.entsoe,
     "HYDROQUEBEC": retrieval.hydroquebec,
     "IESO": retrieval.ieso,
     "NBPOWER": retrieval.nbpower,
     "NESO": retrieval.neso,
+    "ONS": retrieval.ons,
+    "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
 }
 
@@ -70,7 +78,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-c",
         "--code",
         type=str,
-        help='The ISO Alpha-2 code (example: "US") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
+        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
         required=False,
     )
     parser.add_argument(
@@ -152,7 +160,7 @@ def check_and_get_codes(
 
 def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
-    Retrieve the electricity generation data from the specified data source and code.
+    Retrieve the electricity demand data from the specified data source and code.
 
     Parameters
     ----------
@@ -163,8 +171,8 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
 
     Returns
     -------
-    electricity_generation_time_series : pandas.Series
-        The electricity generation time series in MW
+    electricity_demand_time_series : pandas.Series
+        The electricity demand time series in MW
     """
 
     # Get the list of requests to retrieve the electricity demand time series.
