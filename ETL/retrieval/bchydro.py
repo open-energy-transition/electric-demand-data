@@ -1,0 +1,218 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0
+
+Description:
+
+    This script retrieves the electricity load data from the website of British Columbia Hydro and Power Authority (BC Hydro).
+
+    The data is retrieved for the years from 2001 to current year. The data is retrieved from the available Excel files on the BC Hydro website.
+
+    Source: https://www.bchydro.com/energy-in-bc/operations/transmission/transmission-system/balancing-authority-load-data/historical-transmission-data.html
+"""
+
+import logging
+
+import numpy
+import pandas
+import util.fetcher
+
+
+def get_available_requests() -> list[int]:
+    """
+    Get the list of available requests to retrieve the electricity demand data on the British Columbia Hydro and Power Authority website.
+
+    Returns
+    -------
+    available_requests : list[int]
+        The list of available requests
+    """
+
+    # The available requests are the years from 2001 to current year.
+    available_requests = list(range(2001, pandas.Timestamp.now().year + 1))
+
+    return available_requests
+
+
+def get_url(year: int) -> str:
+    """
+    Get the URL of the electricity demand data on the British Columbia Hydro and Power Authority website.
+
+    Parameters
+    ----------
+    year : int
+        The year of the electricity demand data
+
+    Returns
+    -------
+    url : str
+        The URL of the electricity demand data
+    """
+
+    # Check if the year is supported.
+    assert year in get_available_requests(), f"The year {year} is not available."
+
+    # Define the URL of the electricity demand data.
+    url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/balancing_authority_load_data/Historical%20Transmission%20Data/"
+    if year == 2001:
+        url += "BalancingAuthorityLoadApr-Dec2001.xls"
+    elif (
+        (year >= 2002 and year <= 2006)
+        or year == 2013
+        or (year >= 2015 and year <= 2023)
+    ):
+        url += f"BalancingAuthorityLoad{year}.xls"
+    elif year >= 2007 and year <= 2008 or year == 2014:
+        url += f"{year}controlareaload.xls"
+    elif year >= 2009 and year <= 2012:
+        url += f"jandec{year}controlareaload.xls"
+    elif year == 2024:
+        url += "BalancingAuthorityLoad%202024.xls"
+    elif year == 2025:
+        url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/actual_flow_data/historical_data/BalancingAuthorityLoad%202025.xls"
+
+    return url
+
+
+def _get_excel_information(
+    year: int,
+) -> tuple[int, int | None, list[str] | list[int], list[str] | list[int]]:
+    """
+    Get the Excel information of the electricity demand data on the British Columbia Hydro and Power Authority website.
+
+    Parameters
+    ----------
+    year : int
+        The year of the electricity demand data
+
+    Returns
+    -------
+    rows_to_skip : int
+        The number of rows to skip in the Excel file
+    header : int or None
+        The header of the Excel file
+    index_columns : list[str] or list[int]
+        The names of the index columns in the Excel file
+    load_column : list[str] or list[int]
+        The names of the load columns in the Excel file
+    """
+
+    # Check if the year is supported.
+    assert year in get_available_requests(), f"The year {year} is not available."
+
+    # Define the number of rows to skip.
+    if (year >= 2001 and year <= 2006) or (year >= 2014 and year <= 2021):
+        rows_to_skip = 1
+    elif year >= 2007 and year <= 2011:
+        rows_to_skip = 2
+    elif (year >= 2012 and year <= 2013) or (year >= 2022 and year <= 2025):
+        rows_to_skip = 3
+
+    # Define the header of the Excel file.
+    if year == 2007:
+        header = None
+    elif year >= 2001 and year <= 2006 or year >= 2008 and year <= 2025:
+        header = 0
+
+    # Define the index columns of the Excel file.
+    index_columns: list[str] | list[int]
+    if (
+        (year >= 2001 and year <= 2006)
+        or (year >= 2008 and year <= 2011)
+        or (year >= 2016 and year <= 2020)
+    ):
+        index_columns = ["Date", "HE"]
+    elif year == 2007:
+        index_columns = [0, 1]
+    elif year >= 2012 and year <= 2015:
+        index_columns = ["Date ▲", "HE"]
+    elif year >= 2021 and year <= 2024:
+        index_columns = ["Date ?", "HE"]
+    elif year == 2025:
+        index_columns = ["Date ", "HE"]
+
+    # Define the column of the electricity demand data.
+    load_column: list[str] | list[int]
+    if (year >= 2001 and year <= 2006) or (year >= 2015 and year <= 2020):
+        load_column = ["Balancing Authority Load"]
+    elif year == 2007:
+        load_column = [2]
+    elif year >= 2008 and year <= 2011:
+        load_column = ["MWh"]
+    elif year >= 2012 and year <= 2014 or year >= 2021 and year <= 2025:
+        load_column = ["Control Area Load"]
+
+    return rows_to_skip, header, index_columns, load_column
+
+
+def download_and_extract_data_for_request(year: int) -> pandas.Series:
+    """
+    Read the Excel files on the British Columbia Hydro and Power Authority website.
+
+    Parameters
+    ----------
+    year : int
+        The year of the electricity demand data
+
+    Returns
+    -------
+    electricity_demand_time_series : pandas.Series
+        The electricity generation time series in MW
+    """
+
+    assert year in get_available_requests(), f"The year {year} is not available."
+
+    logging.info(f"Retrieving electricity demand data for the year {year}.")
+
+    # Get the URL of the electricity demand data.
+    url = get_url(year)
+
+    # Get the Excel information of the electricity demand data.
+    rows_to_skip, header, index_columns, load_column = _get_excel_information(year)
+
+    # Fetch HTML content from the URL.
+    dataset = util.fetcher.fetch_data(
+        url,
+        "excel",
+        excel_kwargs={
+            "skiprows": rows_to_skip,
+            "header": header,
+            "usecols": index_columns + load_column,
+        },
+    )
+
+    # Extract the first and last time steps of the electricity demand time series.
+    first_time_step = pandas.to_datetime(
+        str(dataset[index_columns[0]].iloc[0])
+        + " "
+        + str(int(dataset[index_columns[1]].iloc[0]) - 1)
+        + ":00"
+    ) + pandas.Timedelta("1h")
+    last_time_step = pandas.to_datetime(
+        str(dataset[index_columns[0]].iloc[-1])
+        + " "
+        + str(int(dataset[index_columns[1]].iloc[-1]) - 1)
+        + ":00"
+    ) + pandas.Timedelta("1h")
+
+    # Remove NaN and zero values where daylight saving time switch occurs. The other data points are typically nice and clean.
+    available_data = dataset[load_column[0]][
+        (
+            numpy.logical_and(
+                dataset[load_column[0]] != 0, dataset[load_column[0]].notna()
+            )
+        )
+    ]
+
+    # Construct the index of the electricity demand time series.
+    timestamps = pandas.date_range(
+        start=first_time_step, end=last_time_step, freq="h", tz="America/Vancouver"
+    )
+
+    # Extract the electricity demand time series.
+    electricity_demand_time_series = pandas.Series(
+        available_data.values, index=timestamps
+    )
+
+    return electricity_demand_time_series
