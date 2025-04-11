@@ -1,7 +1,0 @@
-[project]
-name = "etl"
-version = "0.1.0"
-description = "Extract Transform Load functionality for electric demand data"
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
