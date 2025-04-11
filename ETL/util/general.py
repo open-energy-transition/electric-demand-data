@@ -1,3 +1,5 @@
+import os
+
 import pycountry
 import pytz
 import yaml
@@ -56,6 +58,38 @@ def read_codes_from_file(file_path: str) -> list[str]:
         else item["country_code"]
         for item in items
     ]
+
+    return codes
+
+
+def read_all_codes() -> list[str]:
+    """
+    Read the codes of all countries and regions.
+
+    Returns
+    -------
+    codes : list of str
+        The ISO Alpha-2 codes of the countries or the combination of the ISO Alpha-2 codes and the region codes
+    """
+
+    # Get the path to retrieval scripts folder.
+    retrieval_scripts_folder = os.path.join(
+        os.path.dirname(__file__), "..", "retrieval"
+    )
+
+    # Get the path of all yaml files in the retrieval scripts folder.
+    yaml_files = [
+        file for file in os.listdir(retrieval_scripts_folder) if file.endswith(".yaml")
+    ]
+
+    # Read the codes from all yaml files.
+    codes = []
+    for yaml_file in yaml_files:
+        file_path = os.path.join(retrieval_scripts_folder, yaml_file)
+        codes += read_codes_from_file(file_path)
+
+    # Remove duplicates.
+    codes = list(set(codes))
 
     return codes
 

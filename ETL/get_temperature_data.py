@@ -255,7 +255,7 @@ def run_temperature_calculation() -> None:
                 temperature_file_path_top_3
             ):
                 # Get the shape of the region of interest.
-                region_shape = util.geospatial.get_geopandas_region(region_code)
+                region_shape = util.geospatial.get_region_shape(region_code)
 
                 # Get the time zone information for the region.
                 region_time_zone = util.general.get_time_zone(region_code)

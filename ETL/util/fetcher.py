@@ -26,6 +26,7 @@ def fetch_data(
     excel_kwargs: dict = {},
     verify_ssl: bool = True,
     response_params: dict = {},
+    header_params: dict = {},
     json_keys: list[str] = [],
     query_event_target: str = "",
     query_params: dict[str, str] = {},
@@ -53,6 +54,8 @@ def fetch_data(
         Verify the SSL certificate, by default True
     response_params : dict, optional
         The parameters for the response, by default {}
+    header_params : dict, optional
+        The headers for the request, by default {}
     json_keys : list[str], optional
         The keys to extract from the JSON response, by default []
     query_event_target : str, optional
@@ -79,7 +82,11 @@ def fetch_data(
             else:
                 # Send the GET request.
                 response = requests.get(
-                    url, timeout=10, verify=verify_ssl, params=response_params
+                    url,
+                    timeout=10,
+                    verify=verify_ssl,
+                    headers=header_params,
+                    params=response_params,
                 )
                 response.raise_for_status()
 

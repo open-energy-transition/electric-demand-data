@@ -201,7 +201,7 @@ def run_population_density_data_retrieval() -> None:
             logging.info(f"Extracting population density of {region_code}...")
 
             # Get the shape of the region of interest.
-            region_shape = util.geospatial.get_geopandas_region(region_code)
+            region_shape = util.geospatial.get_region_shape(region_code)
 
             # Extract the population density of the region.
             extract_population_density_of_region(

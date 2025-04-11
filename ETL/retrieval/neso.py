@@ -5,9 +5,9 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the website of the UK's National Energy System Operator (NESO).
+    This script retrieves the electricity demand data from the website of the National Energy System Operator (NESO) in the UK.
 
-    The data is retrieved for the years from 2009 to the current year. The data is retrieved in one-year intervals.
+    The data is retrieved for the years from 2009 to 2025. The data is retrieved in one-year intervals.
 
     Source: https://www.neso.energy/data-portal/historic-demand-data
 """
@@ -21,23 +21,21 @@ import util.general
 
 def get_available_requests() -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data on the UK's National Energy System Operator website.
+    Get the list of available requests to retrieve the electricity demand data from the NESO website.
 
     Returns
     -------
-    available_requests : list[int]
+    list[int]
         The list of available requests
     """
 
-    # The available requests are the years from 2009 to the current year.
-    available_requests = list(range(2009, pandas.Timestamp.now().year + 1))
-
-    return available_requests
+    # Return the available requests, which are the years from 2009 to 2025.
+    return list(range(2009, 2026))
 
 
 def get_url(year: int) -> str:
     """
-    Get the URL of the electricity demand data on the UK's National Energy System Operator website.
+    Get the URL of the electricity demand data on the NESO website.
 
     Parameters
     ----------
@@ -46,7 +44,7 @@ def get_url(year: int) -> str:
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity demand data
     """
 
@@ -74,15 +72,13 @@ def get_url(year: int) -> str:
         2025: "b2bde559-3455-4021-b179-dfe60c0337b0",
     }
 
-    # Define the URL of the electricity demand data.
-    url = f"https://api.neso.energy/api/3/action/datastore_search_sql?sql=SELECT%20*%20FROM%20%22{dataset_name[year]}%22%20ORDER%20BY%20%22_id%22%20ASC%20LIMIT%20100000"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return f"https://api.neso.energy/api/3/action/datastore_search_sql?sql=SELECT%20*%20FROM%20%22{dataset_name[year]}%22%20ORDER%20BY%20%22_id%22%20ASC%20LIMIT%20100000"
 
 
 def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
-    Download the electricity demand time series from the website of the UK's National Energy System Operator.
+    Download and extract the electricity demand data from the NESO website.
 
     Parameters
     ----------

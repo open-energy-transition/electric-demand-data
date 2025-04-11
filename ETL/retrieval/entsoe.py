@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the transparency platform of the European Network of Transmission System Operators for Electricity (ENTSO-E).
+    This script retrieves the electricity demand data from the website of the European Network of Transmission System Operators for Electricity (ENTSO-E).
 
     The data is retrieved for the years from 2014 (end of year) to the current year. The data is retrieved in one-year intervals.
 
@@ -24,11 +24,11 @@ from dotenv import load_dotenv
 
 def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
-    Get the list of available requests to retrieve the electricity load data on the ENTSO-E transparency platform.
+    Get the list of available requests to retrieve the electricity demand data from the ENTSO-E website.
 
     Returns
     -------
-    available_requests : list[tuple[pandas.Timestamp, pandas.Timestamp]]
+    list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
 
@@ -44,12 +44,8 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
         pandas.to_datetime([end_date_and_time])
     )
 
-    # The available requests are the beginning and end of each one-year period.
-    available_requests = list(
-        zip(start_date_and_time_of_period, end_date_and_time_of_period)
-    )
-
-    return available_requests
+    # Return the available requests, which are the beginning and end of each one-year period.
+    return list(zip(start_date_and_time_of_period, end_date_and_time_of_period))
 
 
 def get_url(
@@ -58,7 +54,7 @@ def get_url(
     iso_alpha_2_code: str = "",
 ) -> str:
     """
-    Get the URL of the electricity load data on the ENTSO-E transparency platform. Used only to check if the platform is available.
+    Get the URL of the electricity demand data on the ENTSO-E website. Used only to check if the platform is available.
 
     Parameters
     ----------
@@ -71,9 +67,19 @@ def get_url(
 
     Returns
     -------
-    url : str
-        The URL of the electricity load data
+    str
+        The URL of the electricity demand data
     """
+
+    # Check if the retrieval period is less than 1 year.
+    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("1y"), (
+        "The retrieval period must be less than or equal to 1 year."
+    )
+
+    # Check if the retrieval period starts before 2014.
+    assert start_date_and_time >= pandas.Timestamp("2014-01-01 00:00:00"), (
+        "The retrieval period must start after 2014-01-01 00:00:00."
+    )
 
     # Convert the start and end dates and times to the required format.
     start = start_date_and_time.strftime("%Y%m%d%H00")
@@ -92,10 +98,8 @@ def get_url(
     document_type = "A65"  # System total load
     process_type = "A16"  # Realised
 
-    # Define the URL of the electricity load data.
-    url = f"https://web-api.tp.entsoe.eu/api?securityToken={api_key}&documentType={document_type}&processType={process_type}&outBiddingZone_Domain={domain}&periodStart={start}&periodEnd={end}"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return f"https://web-api.tp.entsoe.eu/api?securityToken={api_key}&documentType={document_type}&processType={process_type}&outBiddingZone_Domain={domain}&periodStart={start}&periodEnd={end}"
 
 
 def download_and_extract_data_for_request(
@@ -104,7 +108,7 @@ def download_and_extract_data_for_request(
     iso_alpha_2_code: str,
 ) -> pandas.Series:
     """
-    Download the electricity demand time series from the ENTSO-E API.
+    Download and extract the electricity demand data from the ENTSO-E website.
 
     Parameters
     ----------
@@ -120,6 +124,16 @@ def download_and_extract_data_for_request(
     pandas.Series
         The electricity demand time series in MW
     """
+
+    # Check if the retrieval period is less than 1 year.
+    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("1y"), (
+        "The retrieval period must be less than or equal to 1 year."
+    )
+
+    # Check if the retrieval period starts before 2014.
+    assert start_date_and_time >= pandas.Timestamp("2014-01-01 00:00:00"), (
+        "The retrieval period must start after 2014-01-01 00:00:00."
+    )
 
     logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 

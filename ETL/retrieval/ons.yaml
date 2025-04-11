@@ -1,0 +1,17 @@
+items:
+  - region_name: North
+    region_code: N
+    country_name: Brazil
+    country_code: BR
+  - region_name: North-East
+    region_code: NE
+    country_name: Brazil
+    country_code: BR
+  - region_name: South-East
+    region_code: SE
+    country_name: Brazil
+    country_code: BR
+  - region_name: South
+    region_code: S
+    country_name: Brazil
+    country_code: BR
