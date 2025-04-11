@@ -18,7 +18,9 @@ map_projection = cartopy.crs.Robinson(central_longitude=0)
 data_crs = cartopy.crs.PlateCarree()
 
 # Initialize the figure.
-fig, ax = matplotlib.pyplot.subplots(figsize=(12, 16), subplot_kw={"projection": map_projection})
+fig, ax = matplotlib.pyplot.subplots(
+    figsize=(12, 16), subplot_kw={"projection": map_projection}
+)
 
 # Plot the land.
 ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
