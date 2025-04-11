@@ -1,8 +1,8 @@
 import os
 
-import cartopy.crs as ccrs
+import cartopy.crs
 import cartopy.feature
-import matplotlib.pyplot as plt
+import matplotlib.pyplot
 import util.general
 import util.shapes
 
@@ -14,11 +14,11 @@ os.makedirs(figure_directory, exist_ok=True)
 region_codes = util.general.read_all_codes()
 
 # Define the map projection and the coordinate reference system of the data to plot.
-map_projection = ccrs.Robinson(central_longitude=0)
-data_crs = ccrs.PlateCarree()
+map_projection = cartopy.crs.Robinson(central_longitude=0)
+data_crs = cartopy.crs.PlateCarree()
 
 # Initialize the figure.
-fig, ax = plt.subplots(figsize=(12, 16), subplot_kw={"projection": map_projection})
+fig, ax = matplotlib.pyplot.subplots(figsize=(12, 16), subplot_kw={"projection": map_projection})
 
 # Plot the land.
 ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
