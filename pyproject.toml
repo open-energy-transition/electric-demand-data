@@ -43,4 +43,4 @@ files = [
 ]
 
 [tool.uv.workspace]
-members = ["ETL"]
+members = ["ETL","models/xgboost"]
