@@ -148,6 +148,4 @@ def download_and_extract_data_for_request(
     # Add 1 hour to the index to match the original dataset.
     electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
-    electricity_demand_time_series[electricity_demand_time_series.index.notna()]
-
     return electricity_demand_time_series
