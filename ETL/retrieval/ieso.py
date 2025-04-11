@@ -74,7 +74,7 @@ def download_and_extract_data_for_request(
     year: int | None, before_Apr_2002: bool
 ) -> pandas.Series:
     """
-    Download and extract the electricity generation data from the IESO website.
+    Download and extract the electricity demand data from the IESO website.
 
     Parameters
     ----------
