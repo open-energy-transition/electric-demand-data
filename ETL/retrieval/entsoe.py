@@ -68,7 +68,7 @@ def get_url(
     Returns
     -------
     str
-        The URL of the electricity load data
+        The URL of the electricity demand data
     """
 
     # Check if the retrieval period is less than 1 year.
@@ -98,7 +98,7 @@ def get_url(
     document_type = "A65"  # System total load
     process_type = "A16"  # Realised
 
-    # Return the URL of the electricity load data.
+    # Return the URL of the electricity demand data.
     return f"https://web-api.tp.entsoe.eu/api?securityToken={api_key}&documentType={document_type}&processType={process_type}&outBiddingZone_Domain={domain}&periodStart={start}&periodEnd={end}"
 
 
