@@ -5,7 +5,7 @@ This document provides instructions on how to retrieve population density and we
 ## Population density data retrieval
 To retrieve population density data from the Socioeconomic Data and Applications Center (SEDAC), run:
 
-```uv run scripts/download_population_density_data.py```
+```uv run download_population_density_data.py```
 
 This Python scritp downloads population density data at 30-sec resolution (about 1 km on the Equator) from SEDAC. It then extracts the population density of a given region and coarsenes the data to the same resolution of the weather data (0.25°, or about 30 km on the Equator).
 
