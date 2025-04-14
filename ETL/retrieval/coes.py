@@ -7,7 +7,7 @@ Description:
 
     This script retrieves the electricity demand data from the website of the Comité de Operación Económica (COES) of Peru.
 
-    The data is retrieved from 2000 to current date. The data is retrieved in one-year intervals.
+    The data is retrieved from 1997 to current date. The data is retrieved in one-year intervals.
 
     Source: https://www.coes.org.pe/Portal/portalinformacion/demanda
 """
@@ -29,7 +29,7 @@ def get_available_requests() -> list[int]:
     """
 
     # Return the available requests, which are the years from 2000 to current date.
-    return [year for year in range(2000, pandas.Timestamp.today().year + 1)]
+    return [year for year in range(1997, pandas.Timestamp.today().year + 1)]
 
 
 def get_url() -> str:
