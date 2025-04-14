@@ -115,9 +115,14 @@ def check_and_get_codes(
         A flag to check if there is only one code on the platform
     """
 
+    # Get the directory of the retrieval scripts.
+    retrieval_scripts_directory = util.general.read_folders_structure()[
+        "retrieval_scripts_folder"
+    ]
+
     # Define the yaml file containing the list of codes.
     yaml_file_path = os.path.join(
-        os.path.dirname(__file__), "retrieval", args.data_source.lower() + ".yaml"
+        retrieval_scripts_directory, args.data_source.lower() + ".yaml"
     )
 
     # Get the list of codes available on the platform.
