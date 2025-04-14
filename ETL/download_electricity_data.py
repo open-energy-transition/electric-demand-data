@@ -22,6 +22,7 @@ import retrieval.bchydro
 import retrieval.cammesa
 import retrieval.ccei
 import retrieval.cen
+import retrieval.coes
 import retrieval.eia
 import retrieval.entsoe
 import retrieval.hydroquebec
@@ -40,6 +41,7 @@ retrieval_module = {
     "CAMMESA": retrieval.cammesa,
     "CCEI": retrieval.ccei,
     "CEN": retrieval.cen,
+    "COES": retrieval.coes,
     "EIA": retrieval.eia,
     "ENTSOE": retrieval.entsoe,
     "HYDROQUEBEC": retrieval.hydroquebec,
