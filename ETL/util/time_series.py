@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 
 import pandas
 import pytz
@@ -332,8 +333,10 @@ def simple_save(
     # Save the time series.
     date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
     time_series.to_frame().to_parquet(
-        result_directory + "/" + identifier + "_" + date_of_retrieval + ".parquet"
+        os.path.join(
+            result_directory, identifier + "_" + date_of_retrieval + ".parquet"
+        )
     )
     time_series.to_csv(
-        result_directory + "/" + identifier + "_" + date_of_retrieval + ".csv"
+        os.path.join(result_directory, identifier + "_" + date_of_retrieval + ".csv")
     )
