@@ -12,6 +12,7 @@ dependencies = [
     "countryinfo>=0.1.2",
     "entsoe-py>=0.6.18",
     "geopandas>=1.0.1",
+    "google-cloud-storage>=3.1.0",
     "logging>=0.4.9.6",
     "matplotlib>=3.10.0",
     "mkdocs-material>=9.5.50",
