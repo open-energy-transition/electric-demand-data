@@ -36,11 +36,6 @@ def get_url() -> str:
     """
     Get the URL of the electricity demand data on the COES website.
 
-    Parameters
-    ----------
-    date : str
-        The date of the electricity demand data in the format YYYY-MM-DD
-
     Returns
     -------
     str
