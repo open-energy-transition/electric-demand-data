@@ -47,4 +47,8 @@ ax.set_title(
 )
 
 # Save the figure.
-fig.savefig(figure_directory + "/available_countries.png", dpi=600, bbox_inches="tight")
+fig.savefig(
+    os.path.join(figure_directory, "available_countries.png"),
+    dpi=600,
+    bbox_inches="tight",
+)
