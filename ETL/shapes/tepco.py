@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -110,8 +109,6 @@ new_bounds = geopandas.GeoDataFrame.from_features(new_bounds, crs=4326)
 # Cut the remote islands.
 all_prefectures = all_prefectures.overlay(new_bounds, how="intersection")
 
-<<<<<<< HEAD
-=======
 # Select the columns of interest.
 all_prefectures = all_prefectures[["ADM1_EN", "ADM1_PCODE", "geometry"]]
 
@@ -124,7 +121,6 @@ all_prefectures = all_prefectures.rename(
 all_prefectures["name"] = ["Kantō"]
 all_prefectures["code"] = ["JP_Kantō"]
 
->>>>>>> origin/data/electricity_south_america
 # Save the shapes of the region to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "tepco")
 os.makedirs(shapes_dir, exist_ok=True)

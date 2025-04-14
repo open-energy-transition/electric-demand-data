@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -9,25 +8,18 @@ Description:
 
     It then merges the balancing authorities belonging to the same region and saves the shapefile.
 
-<<<<<<< HEAD
-    Source: https://atlas.eia.gov/datasets/eia::balancing-authorities/about
-=======
     Balancing authorities are electric entities and do not have well-defined geographical boundaries. As a result, the balancing authority shapefiles sometimes overlap each other.
 
     The script fixes some of these overlaps by cutting the overlapping regions.
 
     Source: https://atlas.eia.gov/datasets/eia::balancing-authorities/about
     Source: https://www.eia.gov/electricity/gridmonitor/expanded-view/electric_overview/US48/US48/ElectricStatusMap-1
->>>>>>> origin/data/electricity_south_america
 """
 
 import os
 
 import geopandas
-<<<<<<< HEAD
-=======
 from shapely.geometry import Polygon
->>>>>>> origin/data/electricity_south_america
 
 # Define the URL of the shapefile of the balancing authorities.
 url = "https://hub.arcgis.com/api/v3/datasets/09550598922b429ca9f06b9a067257bd_255/downloads/data?format=shp&spatialRefId=3857&where=1%3D1"
@@ -43,21 +35,6 @@ regions = balancing_authorities.dissolve(by="EIAregion")
 
 # Define the codes of the regions.
 region_codes = {
-<<<<<<< HEAD
-    "California": "CAL",
-    "Carolinas": "CAR",
-    "Central": "CENT",
-    "Florida": "FLA",
-    "Mid-Atlantic": "MIDA",
-    "Midwest": "MIDW",
-    "New England": "NE",
-    "New York": "NY",
-    "Northwest": "NW",
-    "Southeast": "SE",
-    "Southwest": "SW",
-    "Tennessee": "TEN",
-    "Texas": "TEX",
-=======
     "California": "US_CAL",
     "Carolinas": "US_CAR",
     "Central": "US_CENT",
@@ -71,7 +48,6 @@ region_codes = {
     "Southwest": "US_SW",
     "Tennessee": "US_TEN",
     "Texas": "US_TEX",
->>>>>>> origin/data/electricity_south_america
 }
 
 # Add the codes to the regions shapefile.
@@ -81,8 +57,6 @@ for region_name in regions.index:
 # Select the columns of interest.
 regions = regions[["EIAcode", "geometry"]]
 
-<<<<<<< HEAD
-=======
 # Reset the index.
 regions = regions.reset_index()
 
@@ -224,7 +198,6 @@ regions.loc[regions["name"] == "New England", "geometry"] = regions.loc[
 
 #############################################################################
 
->>>>>>> origin/data/electricity_south_america
 # Save the regions shapefile into ETL/shapes/eia.
 shapes_dir = os.path.join(os.path.dirname(__file__), "eia")
 os.makedirs(shapes_dir, exist_ok=True)
