@@ -169,7 +169,7 @@ def download_and_extract_data_for_request(
     url = get_url(start_date)
 
     # Fetch HTML content from the URL.
-    page = util.fetcher.fetch_data(url, "text", output="text")
+    page = util.fetcher.fetch_data(url, "text", output_content_type="text")
 
     # Extract time and generation data.
     dates, hours, minutes, generation = _read_timestamp_and_generation(page)
