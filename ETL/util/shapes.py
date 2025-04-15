@@ -129,9 +129,9 @@ def _get_standard_shape(
     try:
         # Read the shape of the region of interest by searching for its code.
         region_shape = [
-            ii
-            for ii in list(reader.records())
-            if target_key in [ii.attributes[key] for key in main_keys]
+            shape
+            for shape in list(reader.records())
+            if target_key in [shape.attributes[key] for key in main_keys]
         ][0]
     except IndexError:
         # Get the name of the region of interest based on its code.
@@ -142,9 +142,9 @@ def _get_standard_shape(
 
         # Read the shape of the region of interest by searching for its name.
         region_shape = [
-            ii
-            for ii in list(reader.records())
-            if name in [ii.attributes[key] for key in secondary_keys]
+            shape
+            for shape in list(reader.records())
+            if name in [shape.attributes[key] for key in secondary_keys]
         ][0]
 
     # Convert the shape to a GeoDataFrame.

@@ -62,8 +62,10 @@ region_shapes = cartopy.io.shapereader.natural_earth(
 # Define a reader for the shapefile.
 reader = cartopy.io.shapereader.Reader(region_shapes)
 
-# Read the shapefile of all Brazilian regions.
-region_shapes = [ii for ii in list(reader.records()) if ii.attributes["iso_a2"] == "BR"]
+# Read the shapefiles of all Brazilian regions.
+region_shapes = [
+    shape for shape in list(reader.records()) if shape.attributes["iso_a2"] == "BR"
+]
 
 # Create a DataFrame from the shapes of the regions.
 regions = pandas.DataFrame(columns=["name", "code", "parent", "geometry"])
