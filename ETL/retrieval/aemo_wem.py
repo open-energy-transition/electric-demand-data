@@ -12,6 +12,7 @@ Description:
 """
 
 import logging
+
 import pandas as pd
 import util.fetcher
 
@@ -72,7 +73,9 @@ def get_url(year: int, month: int, day: int) -> str:
     return url
 
 
-def download_and_extract_data_for_request(year: int, month: int, day: int) -> pd.DataFrame:
+def download_and_extract_data_for_request(
+    year: int, month: int, day: int
+) -> pd.DataFrame:
     """
     Download and extract the electricity demand data for a specific date from the AEMO website.
 
@@ -91,9 +94,7 @@ def download_and_extract_data_for_request(year: int, month: int, day: int) -> pd
         A pandas DataFrame containing the extracted data
     """
 
-  
-    
-     # Check if the year, month, and day are supported.
+    # Check if the year, month, and day are supported.
     assert (year, month, day) in get_available_requests(), (
         f"Year {year} and month {month} and day {day} are not supported."
     )
@@ -108,8 +109,9 @@ def download_and_extract_data_for_request(year: int, month: int, day: int) -> pd
 
     url = get_url(year, month, day)
 
-  
-    dataset = util.fetcher.fetch_data(url, "json", output="tabular", header_params=headers)
+    dataset = util.fetcher.fetch_data(
+        url, "json", output="tabular", header_params=headers
+    )
 
     # Extract the electricity demand data from the JSON response.
     if isinstance(dataset, dict) and "data" in dataset and "data" in dataset["data"]:
