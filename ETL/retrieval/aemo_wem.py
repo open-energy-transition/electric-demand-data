@@ -121,8 +121,8 @@ def download_and_extract_data_for_request(
 
     # Extract the time series for electricity demand
     electricity_demand_time_series = pd.Series(
-        dataset["TOTALDEMAND"].values,
-        index=pd.to_datetime(dataset["SETTLEMENTDATE"]),
+        dataset["operationalDemand"].values,
+        index=pd.to_datetime(dataset["dispatchInterval"]),
     )
 
     # Add the time zone information to the index.
