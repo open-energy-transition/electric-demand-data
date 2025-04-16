@@ -2,8 +2,11 @@ import datetime
 import logging
 import os
 
+import google.auth
 import pandas
 import pytz
+import util.general
+from google.cloud import storage
 
 
 def add_missing_time_steps(
@@ -343,3 +346,47 @@ def simple_save(
     time_series.to_csv(
         os.path.join(result_directory, identifier + "_" + date_of_retrieval + ".csv")
     )
+
+
+def upload_to_gcs(
+    bucket_name: str,
+    destination_blob_name: str,
+    source_file_path: str,
+) -> None:
+    """
+    Upload a file to Google Cloud Storage.
+
+    Parameters
+    ----------
+    bucket_name : str
+        The name of the GCS bucket
+    destination_blob_name : str
+        The name of the blob in GCS
+    source_file : str
+        The path to the local file to upload
+    """
+
+    # Get the root directory of the project.
+    root_directory = util.general.read_folders_structure()["root_folder"]
+
+    # Get the path to the credentials file.
+    credentials_path = os.path.normpath(
+        os.path.join(root_directory, "..", "application_default_credentials.json")
+    )
+
+    # Load the credentials from the file.
+    credentials, __ = google.auth.load_credentials_from_file(credentials_path)
+
+    # Create a GCS client.
+    storage_client = storage.Client(
+        credentials=credentials, project="electric-demand-data"
+    )
+
+    # Get the bucket.
+    bucket = storage_client.bucket(bucket_name)
+
+    # Create a new blob and upload the file.
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_filename(source_file_path)
+
+    return None

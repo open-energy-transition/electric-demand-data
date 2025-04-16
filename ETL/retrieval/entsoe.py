@@ -18,6 +18,7 @@ from pathlib import Path
 
 import pandas
 import util.fetcher
+import util.general
 from dotenv import load_dotenv
 
 
@@ -136,8 +137,11 @@ def download_and_extract_data_for_request(
 
     logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 
+    # Get the root directory of the project.
+    root_directory = util.general.read_folders_structure()["root_folder"]
+
     # Load the environment variables.
-    load_dotenv(dotenv_path=Path(".") / ".env")
+    load_dotenv(dotenv_path=os.path.join(root_directory, ".env"))
 
     # Get the ENTSO-E API client.
     api_key = os.getenv("ENTSOE_API_KEY")
