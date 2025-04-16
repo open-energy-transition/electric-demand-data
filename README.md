@@ -4,6 +4,11 @@ This project is aimed at improving the demand forecasts that are used in energy 
 It includes the process to obtain the open data from various sources (see ETL) and the models that use the data to predict electricity demand (see models).
 The project is in active development, we are always looking for suggestions and contributions!
 
+
+## Countries and regions for which retreival scripts of electricity demand data are available
+
+![Data availability](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL/figures/available_countries.png "Countries and regions with available electricity demand data")
+
 ## Development
 
 This project uses [uv](https://github.com/astral-sh/uv) as a pacakge manager.
