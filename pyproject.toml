@@ -24,6 +24,7 @@ dependencies = [
     "pytz>=2025.1",
     "shapely>=2.0.7",
     "timezonefinder>=6.5.8",
+    "tqdm>=4.67.1",
     "xarray>=2025.1.2",
 ]
 

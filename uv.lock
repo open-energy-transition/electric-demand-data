@@ -463,6 +463,7 @@ dependencies = [
     { name = "pytz" },
     { name = "shapely" },
     { name = "timezonefinder" },
+    { name = "tqdm" },
     { name = "xarray" },
 ]
 
@@ -493,6 +494,7 @@ requires-dist = [
     { name = "pytz", specifier = ">=2025.1" },
     { name = "shapely", specifier = ">=2.0.7" },
     { name = "timezonefinder", specifier = ">=6.5.8" },
+    { name = "tqdm", specifier = ">=4.67.1" },
     { name = "xarray", specifier = ">=2025.1.2" },
 ]
 
@@ -1690,5 +1692,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/fe/7a/9388d63ce062731d1
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/4c/b9b9cb522e5b6defa158c361c02ba9b36d375bc0ba4b0fad58619e72541f/xgboost_cpu-3.0.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:1041c8594ebc3ee4cde6871d2fcd8eaa5c7a8b399de7caf5ae91749d5889d7c3", size = 4841285 },
     { url = "https://files.pythonhosted.org/packages/c0/7c/0c861cba6b662a30371b2647d08bbf71e0a3311c21402114d708eeed94bc/xgboost_cpu-3.0.0-py3-none-manylinux2014_x86_64.whl", hash = "sha256:1fd557fb2d2d71397f286fb1f7dd591289cf837a8ea2d2f5ce7bac1249bb947b", size = 4903728 },
+    { url = "https://files.pythonhosted.org/packages/4a/5b/0ec9e50b56f604bdac1c686224a32978a90ec34a599b202db8b5d10de3a4/xgboost_cpu-3.0.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:708af2e7d644e122a93994a583a79802c7e092121091de8d674ba670c551fc68", size = 4602929 },
+    { url = "https://files.pythonhosted.org/packages/71/14/0a87b712ef72c42a4f1a7cb52d93e5aedc4899a150a5bcb9df081a1fb6e9/xgboost_cpu-3.0.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:54f80f521ad73f5b861d840ab8ddd8ea4855d582081646dbf8d7ed7fa89bc132", size = 4954069 },
     { url = "https://files.pythonhosted.org/packages/f7/96/f4b55e43fc46e23608fb2723c546c6a2a6c123402649b99e05a3a813586b/xgboost_cpu-3.0.0-py3-none-win_amd64.whl", hash = "sha256:7b2553a922d0765c6b80105a0d6fc67f053e668ce5bba549abe789c67479feb2", size = 1925577 },
 ]
