@@ -7,7 +7,7 @@ The project is in active development, we are always looking for suggestions and 
 
 ## Countries and regions for which retreival scripts of electricity demand data are available
 
-![Data availability](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL/figures/available_countries.png "Countries and regions with available electricity demand data")
+![Data availability](ETL/figures/available_countries.png "Countries and regions with available electricity demand data")
 
 ## Development
 
