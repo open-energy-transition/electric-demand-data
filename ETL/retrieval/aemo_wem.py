@@ -4,23 +4,16 @@
 License: AGPL-3.0
 
 Description:
-    This script retrieves the electricity load data for the Wholesale Electricity Market (WEM)
-    from the Australian Energy Market Operator (AEMO) website.
+    This script retrieves the electricity load data for the Wholesale Electricity Market (WEM) from the Australian Energy Market Operator (AEMO) website.
 
-    The data is retrieved for the dates from September 26, 2023, to the current date.
-    The data is fetched from the available JSON files on the AEMO website.
+    The data is retrieved for the dates from September 26, 2023, to the current date. The data is fetched from the available JSON files on the AEMO website.
 
     Source: https://data.wa.aemo.com.au/public/market-data/wemde/operationalDemandWithdrawal/dailyFiles/
 """
 
 import logging
-import os
-from datetime import date, timedelta
-
 import pandas as pd
 import util.fetcher
-
-logging.basicConfig(level=logging.INFO)
 
 
 def get_available_requests() -> list[tuple[int, int, int]]:
@@ -42,7 +35,7 @@ def get_available_requests() -> list[tuple[int, int, int]]:
         available_requests.append(
             (current_date.year, current_date.month, current_date.day)
         )
-        current_date += timedelta(days=1)
+        current_date += pd.Timedelta(days=1)
 
     return available_requests
 
@@ -65,11 +58,12 @@ def get_url(year: int, month: int, day: int) -> str:
     url : str
         The URL of the electricity demand data
     """
-
+    # Check if the year, month, and day are supported.
     assert (year, month, day) in get_available_requests(), (
         f"Date {year}-{month:02d}-{day:02d} is not available."
     )
 
+    # URL format for WEM
     url = (
         f"https://data.wa.aemo.com.au/public/market-data/wemde/operationalDemandWithdrawal/dailyFiles/"
         f"OperationalDemandAndWithdrawal_{year}-{month:02d}-{day:02d}.json"
@@ -78,9 +72,9 @@ def get_url(year: int, month: int, day: int) -> str:
     return url
 
 
-def download_and_save_data(year: int, month: int, day: int) -> None:
+def download_and_extract_data_for_request(year: int, month: int, day: int) -> pd.DataFrame:
     """
-    Download and save the electricity demand data from the AEMO website.
+    Download and extract the electricity demand data for a specific date from the AEMO website.
 
     Parameters
     ----------
@@ -90,50 +84,50 @@ def download_and_save_data(year: int, month: int, day: int) -> None:
         The month of the electricity demand data
     day : int
         The day of the electricity demand data
+
+    Returns
+    -------
+    pd.DataFrame
+        A pandas DataFrame containing the extracted data
     """
-    url = get_url(year, month, day)
+
+  
+    
+     # Check if the year, month, and day are supported.
+    assert (year, month, day) in get_available_requests(), (
+        f"Year {year} and month {month} and day {day} are not supported."
+    )
+
+    logging.info(
+        f"Retrieving electricity demand data for the year {year}, month {month}, and day {day}."
+    )
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/58.0.3029.110 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
     }
 
-    try:
-        dataset = util.fetcher.fetch_data(
-            url, "json", output="tabular", header_params=headers
+    url = get_url(year, month, day)
+
+  
+    dataset = util.fetcher.fetch_data(url, "json", output="tabular", header_params=headers)
+
+    # Extract the electricity demand data from the JSON response.
+    if isinstance(dataset, dict) and "data" in dataset and "data" in dataset["data"]:
+        dataset = pd.DataFrame(dataset["data"]["data"])
+    else:
+        raise ValueError(f"Unexpected data format for {year}-{month:02d}-{day:02d}")
+
+    # Extract the time series for electricity demand
+    electricity_demand_time_series = pd.Series(
+        dataset["TOTALDEMAND"].values,
+        index=pd.to_datetime(dataset["SETTLEMENTDATE"]),
+    )
+
+    # Add the time zone information to the index.
+    electricity_demand_time_series.index = (
+        electricity_demand_time_series.index.tz_localize(
+            "Australia/Perth", ambiguous="NaT", nonexistent="NaT"
         )
-        # The JSON has a nested format: extract the actual table from ["data"]["data"]
-        if (
-            isinstance(dataset, dict)
-            and "data" in dataset
-            and "data" in dataset["data"]
-        ):
-            dataset = pd.DataFrame(dataset["data"]["data"])
-        else:
-            raise ValueError("Unexpected data format from AEMO server.")
+    )
 
-        os.makedirs("aemo_csv", exist_ok=True)
-        filename = f"aemo_csv/OperationalDemand_WEM_{year}-{month:02d}-{day:02d}.csv"
-        dataset.to_csv(filename, index=False)
-        logging.info(f"Saved: {filename}")
-
-    except Exception as e:
-        logging.error(f"Error downloading/saving {year}-{month:02d}-{day:02d}: {e}")
-
-
-def get_available_requests_for_range(start_date: date, end_date: date):
-    current_date = start_date
-    while current_date <= end_date:
-        download_and_save_data(current_date.year, current_date.month, current_date.day)
-        current_date += timedelta(days=1)
-
-
-# --- Main execution: Download data for all dates from 2023-09-26 to today ---
-if __name__ == "__main__":
-    from datetime import datetime
-
-    start_date = datetime(2023, 9, 26).date()
-    end_date = datetime.today().date()
-
-    get_available_requests_for_range(start_date, end_date)
+    return electricity_demand_time_series
