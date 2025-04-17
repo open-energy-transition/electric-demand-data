@@ -255,7 +255,56 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     return electricity_demand_time_series
 
 
-def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
+def save_data(
+    electricity_demand_time_series: pandas.Series,
+    data_source: str,
+    code: str,
+    upload_to_gcs: str | None,
+) -> None:
+    """
+    Save the electricity demand time series to a file and upload it to Google Cloud Storage (GCS).
+
+    Parameters
+    ----------
+    electricity_demand_time_series : pandas.Series
+        The electricity demand time series in MW
+    data_source : str
+        The data source
+    code : str, optional
+        The code of the country or region
+    upload_to_gcs : str, optional
+        The bucket name of the Google Cloud Storage (GCS) to upload the data
+    """
+
+    # Get the directory to store the electricity demand time series.
+    result_directory = util.general.read_folders_structure()[
+        "electricity_demand_folder"
+    ]
+    os.makedirs(result_directory, exist_ok=True)
+
+    # Get the date of retrieval.
+    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
+
+    # Define the identifier of the file to be saved.
+    identifier = code + "_" + data_source
+
+    # Define the path to the file to be saved without the extension.
+    file_path = os.path.join(result_directory, identifier + "_" + date_of_retrieval)
+
+    # Save the time series to both parquet and csv files.
+    electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
+    electricity_demand_time_series.to_csv(file_path + ".csv")
+
+    if upload_to_gcs:
+        # Upload the parquet file of the electricity demand time series to GCS.
+        util.time_series.upload_to_gcs(
+            file_path + ".parquet",
+            upload_to_gcs,
+            "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
+        )
+
+
+def run_data_retrieval(args: argparse.Namespace) -> None:
     """
     Run the electricity demand data retrieval for the countries or regions of interest.
 
@@ -263,8 +312,6 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     ----------
     args : argparse.Namespace
         The command line arguments
-    result_directory : str
-        The directory to store the electricity demand time series
     """
 
     # Get the list of codes of the countries or regions of interest.
@@ -281,26 +328,13 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             args.data_source, None if one_code_on_platform else code
         )
 
-        # Get the date of retrieval.
-        date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
-
-        # Define the identifier of the file to be saved.
-        identifier = code + "_" + args.data_source
-
-        # Define the path to the file to be saved without the extension.
-        file_path = os.path.join(result_directory, identifier + "_" + date_of_retrieval)
-
-        # Save the time series to both parquet and csv files.
-        electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
-        electricity_demand_time_series.to_csv(file_path + ".csv")
-
-        if args.upload_to_gcs:
-            # Upload the parquet file of the electricity demand time series to GCS.
-            util.time_series.upload_to_gcs(
-                file_path + ".parquet",
-                args.upload_to_gcs,
-                "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
-            )
+        # Save the electricity demand time series to a file and upload it to GCS.
+        save_data(
+            electricity_demand_time_series,
+            args.data_source,
+            code,
+            args.upload_to_gcs,
+        )
 
     logging.info(
         f"Electricity data from the {args.data_source} website has been successfully retrieved and saved."
@@ -322,14 +356,8 @@ def main() -> None:
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
-    # Create a directory to store the electricity demand time series.
-    result_directory = util.general.read_folders_structure()[
-        "electricity_demand_folder"
-    ]
-    os.makedirs(result_directory, exist_ok=True)
-
     # Run the data retrieval.
-    run_data_retrieval(args, result_directory)
+    run_data_retrieval(args)
 
 
 if __name__ == "__main__":
