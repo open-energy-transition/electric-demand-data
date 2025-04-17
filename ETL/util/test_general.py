@@ -31,15 +31,6 @@ def sample_country_yaml():
     """
 
 
-@pytest.fixture
-def sample_directory_yaml():
-    # Define a sample yaml file that contains folders and paths.
-    return """
-    folder1: path1
-    folder2: path2
-    """
-
-
 def test_read_codes_from_file(sample_country_yaml):
     with patch("builtins.open", mock_open(read_data=sample_country_yaml)):
         # Read the codes from the sample yaml file.
@@ -49,19 +40,20 @@ def test_read_codes_from_file(sample_country_yaml):
         assert codes == ["FR", "GB", "US_FLA", "US_TEX"]
 
 
-def test_read_folders_structure(sample_directory_yaml):
-    with patch("builtins.open", mock_open(read_data=sample_directory_yaml)):
-        # Read the folders structure from the sample yaml file.
-        structure = read_folders_structure("dummy.yaml")
+def test_read_folders_structure():
+    # Read the folders structure from the sample yaml file.
+    structure = read_folders_structure()
 
-        # Get the root path of the ETL folder.
-        absolute_path = os.path.abspath(
-            os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
-        )
+    # Get the root path of the ETL folder.
+    absolute_path = os.path.abspath(
+        os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+    )
 
-        # Check if the folders are read correctly.
-        assert structure["folder1"] == os.path.join(absolute_path, "path1")
-        assert structure["folder2"] == os.path.join(absolute_path, "path2")
+    # Check if the folders are read correctly.
+    assert structure["data_folder"] == os.path.join(absolute_path, "data")
+    assert structure["electricity_demand_folder"] == os.path.join(
+        absolute_path, "data", "electricity_demand"
+    )
 
 
 def test_get_us_region_time_zone():

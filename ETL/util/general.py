@@ -7,14 +7,9 @@ from countryinfo import CountryInfo
 from timezonefinder import TimezoneFinder
 
 
-def read_folders_structure(file_path: str = "directories.yaml") -> dict[str, str]:
+def read_folders_structure() -> dict[str, str]:
     """
-    Read the folders structure from a yaml file.
-
-    Parameters
-    ----------
-    file_path : str, optional
-        The path to the yaml file containing the folders structure
+    Read the folders structure from the yaml file.
 
     Returns
     -------
@@ -22,12 +17,17 @@ def read_folders_structure(file_path: str = "directories.yaml") -> dict[str, str
         The folders structure
     """
 
-    # Read the folders structure from the file.
-    with open(file_path, "r") as file:
-        folders_structure = yaml.safe_load(file)
-
     # Get the absolute path to the root folder.
-    root_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
+    root_folder = os.path.normpath(
+        os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
+    )
+
+    # Define the default path to the yaml file.
+    folders_structure_file_path = os.path.join(root_folder, "directories.yaml")
+
+    # Read the folders structure from the file.
+    with open(folders_structure_file_path, "r") as file:
+        folders_structure = yaml.safe_load(file)
 
     # Add the root folder to the folders structure.
     folders_structure["root_folder"] = root_folder
@@ -41,9 +41,6 @@ def read_folders_structure(file_path: str = "directories.yaml") -> dict[str, str
                 folders_structure[key] = os.path.join(root_folder, *value)
             else:
                 folders_structure[key] = os.path.join(root_folder, value)
-
-        # Normalize the path.
-        folders_structure[key] = os.path.normpath(folders_structure[key])
 
     return folders_structure
 

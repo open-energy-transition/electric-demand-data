@@ -23,11 +23,12 @@ def fetch_data(
     retries: int = 3,
     retry_delay: int = 5,
     request_type: str = "get",
-    csv_kwargs: dict = {},
-    excel_kwargs: dict = {},
+    csv_kwargs: dict[str, str] = {},
+    excel_kwargs: dict[str, str] = {},
     verify_ssl: bool = True,
-    request_params: dict = {},
-    header_params: dict = {},
+    request_params: dict[str, str] = {},
+    post_data_params: dict[str, str] = {},
+    header_params: dict[str, str] = {},
     json_keys: list[str] = [],
     query_event_target: str = "",
     query_params: dict[str, str] = {},
@@ -49,15 +50,17 @@ def fetch_data(
         The delay between retries in seconds, by default 5
     request_type : str, optional
         The type of the request, by default "get"
-    csv_kwargs : dict, optional
+    csv_kwargs : dict[str, str], optional
         The keyword arguments for reading CSV files, by default {}
-    excel_kwargs : dict, optional
+    excel_kwargs : dict[str, str], optional
         The keyword arguments for reading Excel files, by default {}
     verify_ssl : bool, optional
         Verify the SSL certificate, by default True
-    request_params : dict, optional
+    request_params : dict[str, str], optional
         The parameters for the request, by default {}
-    header_params : dict, optional
+    post_data_params : dict[str, str], optional
+        The data for the POST request, by default {}
+    header_params : dict[str, str], optional
         The headers for the request, by default {}
     json_keys : list[str], optional
         The keys to extract from the JSON response, by default []
@@ -101,6 +104,7 @@ def fetch_data(
                         verify=verify_ssl,
                         headers=header_params,
                         params=request_params,
+                        data=post_data_params,
                     )
                 else:
                     raise ValueError(f"Request type {request_type} is not supported.")

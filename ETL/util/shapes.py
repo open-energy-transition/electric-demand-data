@@ -16,6 +16,7 @@ import geopandas
 import pandas
 import pycountry
 import util.figures
+import util.general
 from shapely.geometry import Polygon
 
 
@@ -169,18 +170,18 @@ def _read_non_standard_shape_codes() -> dict[str, list[str]]:
         Dictionary containing the non-standard shapes and their respective codes
     """
 
-    # Define the path to the shapes directory.
-    shapes_path = os.path.join(os.path.dirname(__file__), "..", "shapes")
+    # Get the path to the shapes directory.
+    shapes_directory = util.general.read_folders_structure()["shapes_folder"]
 
     # Create a dictionary to store the non-standard shapes and their respective codes.
     non_standard_shape_codes = {}
 
     # Iterate over the folders in the shapes directory.
-    for folder in os.listdir(shapes_path):
+    for folder in os.listdir(shapes_directory):
         # Check if folder is a directory.
-        if os.path.isdir(os.path.join(shapes_path, folder)):
+        if os.path.isdir(os.path.join(shapes_directory, folder)):
             # Define the path to the shapefile.
-            shapefile_path = os.path.join(shapes_path, folder, folder + ".shp")
+            shapefile_path = os.path.join(shapes_directory, folder, folder + ".shp")
 
             # Read the shapefile of the regions of the data source.
             region_shapes = geopandas.read_file(shapefile_path)
@@ -211,10 +212,11 @@ def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFra
         GeoDataFrame containing the shape of the region
     """
 
+    # Get the path to the shapes directory.
+    shapes_directory = util.general.read_folders_structure()["shapes_folder"]
+
     # Define the path to the shapefile based on the data source.
-    shapefile_path = os.path.join(
-        os.path.dirname(__file__), "..", "shapes", data_source, data_source + ".shp"
-    )
+    shapefile_path = os.path.join(shapes_directory, data_source, data_source + ".shp")
 
     # Read the shapefile of the regions of the data source.
     region_shapes = geopandas.read_file(shapefile_path)

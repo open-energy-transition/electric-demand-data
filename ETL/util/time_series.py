@@ -296,6 +296,9 @@ def clean_data(time_series: pandas.Series) -> pandas.Series:
     # Remove NaN and zero values from the time series.
     time_series = time_series[time_series.notnull() & (time_series != 0)]
 
+    # Remove duplicated time steps from the time series.
+    time_series = time_series[~time_series.index.duplicated()]
+
     return time_series
 
 
