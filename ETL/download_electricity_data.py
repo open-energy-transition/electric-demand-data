@@ -28,7 +28,9 @@ import retrieval.hydroquebec
 import retrieval.ieso
 import retrieval.nbpower
 import retrieval.neso
+import retrieval.nigeria
 import retrieval.ons
+import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
 import util.general
@@ -47,7 +49,9 @@ retrieval_module = {
     "IESO": retrieval.ieso,
     "NBPOWER": retrieval.nbpower,
     "NESO": retrieval.neso,
+    "NIGERIA": retrieval.nigeria,
     "ONS": retrieval.ons,
+    "SONELGAZ": retrieval.sonelgaz,
     "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
 }
