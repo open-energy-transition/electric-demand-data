@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -102,7 +101,7 @@ for region_code in regions["code"]:
         region_code
     ]
 
-# Save the shapes of the region to a shapefile.
+# Save the shapes of the regions to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "ons")
 os.makedirs(shapes_dir, exist_ok=True)
 regions.to_file(os.path.join(shapes_dir, "ons.shp"), driver="ESRI Shapefile")

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -122,7 +121,7 @@ all_prefectures = all_prefectures.rename(
 all_prefectures["name"] = ["Kantō"]
 all_prefectures["code"] = ["JP_Kantō"]
 
-# Save the shapes of the region to a shapefile.
+# Save the shape of the region to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "tepco")
 os.makedirs(shapes_dir, exist_ok=True)
 all_prefectures.to_file(os.path.join(shapes_dir, "tepco.shp"), driver="ESRI Shapefile")

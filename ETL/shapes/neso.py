@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -57,7 +56,7 @@ gb_shape["code"] = ["GB_GB"]
 # Reorder the columns.
 gb_shape = gb_shape[["name", "code", "geometry"]]
 
-# Save the shapes of the region to a shapefile.
+# Save the shape of the region to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "neso")
 os.makedirs(shapes_dir, exist_ok=True)
 gb_shape.to_file(os.path.join(shapes_dir, "neso.shp"), driver="ESRI Shapefile")

@@ -26,6 +26,25 @@ def read_folders_structure(file_path: str = "directories.yaml") -> dict[str, str
     with open(file_path, "r") as file:
         folders_structure = yaml.safe_load(file)
 
+    # Get the absolute path to the root folder.
+    root_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
+
+    # Add the root folder to the folders structure.
+    folders_structure["root_folder"] = root_folder
+
+    # Iterate over the folders structure, concatenate the paths if multiple folders are defined, and normalize the paths.
+    for key, value in folders_structure.items():
+        # Add the root folder to the path but skip the root folder key.
+        if key != "root_folder":
+            if isinstance(value, list):
+                # If the value is a list, unpack the list.
+                folders_structure[key] = os.path.join(root_folder, *value)
+            else:
+                folders_structure[key] = os.path.join(root_folder, value)
+
+        # Normalize the path.
+        folders_structure[key] = os.path.normpath(folders_structure[key])
+
     return folders_structure
 
 
@@ -73,19 +92,19 @@ def read_all_codes() -> list[str]:
     """
 
     # Get the path to retrieval scripts folder.
-    retrieval_scripts_folder = os.path.join(
-        os.path.dirname(__file__), "..", "retrieval"
-    )
+    retrieval_scripts_directory = read_folders_structure()["retrieval_scripts_folder"]
 
     # Get the path of all yaml files in the retrieval scripts folder.
     yaml_files = [
-        file for file in os.listdir(retrieval_scripts_folder) if file.endswith(".yaml")
+        file
+        for file in os.listdir(retrieval_scripts_directory)
+        if file.endswith(".yaml")
     ]
 
     # Read the codes from all yaml files.
     codes = []
     for yaml_file in yaml_files:
-        file_path = os.path.join(retrieval_scripts_folder, yaml_file)
+        file_path = os.path.join(retrieval_scripts_directory, yaml_file)
         codes += read_codes_from_file(file_path)
 
     # Remove duplicates.

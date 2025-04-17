@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -199,7 +198,7 @@ regions.loc[regions["name"] == "New England", "geometry"] = regions.loc[
 
 #############################################################################
 
-# Save the regions shapefile into ETL/shapes/eia.
+# Save the shapes of the regions to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "eia")
 os.makedirs(shapes_dir, exist_ok=True)
 regions.to_file(os.path.join(shapes_dir, "eia.shp"), driver="ESRI Shapefile")

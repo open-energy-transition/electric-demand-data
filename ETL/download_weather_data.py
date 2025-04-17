@@ -242,7 +242,7 @@ def run_weather_data_retrieval() -> None:
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "weather_data_from_Copernicus.log"
     logging.basicConfig(
-        filename=log_files_directory + "/" + log_file_name,
+        filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,
         filemode="w",
         format="%(asctime)s - %(levelname)s - %(message)s",
@@ -255,9 +255,8 @@ def run_weather_data_retrieval() -> None:
     # Read the codes of the regions of interest.
     settings_directory = util.general.read_folders_structure()["settings_folder"]
     region_codes = util.general.read_codes_from_file(
-        settings_directory + "/gegis__all_countries.yaml"
+        os.path.join(settings_directory, "gegis__all_countries.yaml")
     )
-    # region_codes = util.general.read_codes_from_file(settings_directory+"/us_eia_regions.yaml")
 
     # Define the ERA5 variables to download.
     era5_variables = ["2m_temperature"]
@@ -280,8 +279,8 @@ def run_weather_data_retrieval() -> None:
                 logging.info(f"Retrieving {era5_variable} data...")
 
                 # Define the full file path of the ERA5 data.
-                era5_data_file_path = (
-                    result_directory + f"/{era5_variable}_{region_code}_{year}.nc"
+                era5_data_file_path = os.path.join(
+                    result_directory, f"{era5_variable}_{region_code}_{year}.nc"
                 )
 
                 # Check if the file does not exist.

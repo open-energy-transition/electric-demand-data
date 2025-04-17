@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -116,10 +115,18 @@ def check_and_get_codes(
         A flag to check if there is only one code on the platform
     """
 
-    # Get the list of codes available on the platform.
-    codes_on_platform = util.general.read_codes_from_file(
-        "retrieval/" + args.data_source.lower() + ".yaml"
+    # Get the directory of the retrieval scripts.
+    retrieval_scripts_directory = util.general.read_folders_structure()[
+        "retrieval_scripts_folder"
+    ]
+
+    # Define the yaml file containing the list of codes.
+    yaml_file_path = os.path.join(
+        retrieval_scripts_directory, args.data_source.lower() + ".yaml"
     )
+
+    # Get the list of codes available on the platform.
+    codes_on_platform = util.general.read_codes_from_file(yaml_file_path)
 
     # Define a flag to check if there is only one code on the platform.
     one_code_on_platform = len(codes_on_platform) == 1
@@ -283,7 +290,7 @@ def main() -> None:
     log_files_directory = util.general.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
-        filename=log_files_directory + "/" + log_file_name,
+        filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,
         filemode="w",
         format="%(asctime)s - %(levelname)s - %(message)s",
