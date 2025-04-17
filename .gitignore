@@ -118,6 +118,9 @@ env.bak/
 venv.bak/
 .devcontainer/
 
+# Google Cloud credentials
+application_default_credentials.json
+
 # Spyder project settings
 .spyderproject
 .spyproject

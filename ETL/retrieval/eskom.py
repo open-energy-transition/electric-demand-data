@@ -27,7 +27,6 @@ def get_available_requests() -> None:
     """
 
     logging.info("The data is retrieved all at once.")
-    return None
 
 
 def get_url() -> str:
@@ -127,8 +126,6 @@ def send_request(
         request_type="post",
         post_data_params=form_data,
     )
-
-    return None
 
 
 def download_and_extract_data() -> pandas.Series:
