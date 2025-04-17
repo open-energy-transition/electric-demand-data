@@ -95,6 +95,13 @@ def read_command_line_arguments() -> argparse.Namespace:
         help="The path to the yaml file containing the list of codes",
         required=False,
     )
+    parser.add_argument(
+        "-u",
+        "--upload_to_gcs",
+        type=str,
+        help="The bucket name of the Google Cloud Storage (GCS) to upload the data",
+        required=False,
+    )
 
     # Read the arguments from the command line.
     args = parser.parse_args()
@@ -242,7 +249,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
 
     # Clean the data.
     electricity_demand_time_series = util.time_series.clean_data(
-        electricity_demand_time_series
+        electricity_demand_time_series, "Load (MW)"
     )
 
     return electricity_demand_time_series
@@ -274,13 +281,20 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             args.data_source, None if one_code_on_platform else code
         )
 
-        # Save the electricity demand time series.
-        util.time_series.simple_save(
-            electricity_demand_time_series,
-            "Load (MW)",
-            result_directory,
-            code + "_" + args.data_source,
-        )
+        if args.upload_to_gcs is None:
+            # Save the electricity demand time series.
+            util.time_series.simple_save(
+                electricity_demand_time_series,
+                result_directory,
+                code + "_" + args.data_source,
+            )
+        else:
+            # Upload the electricity demand time series to GCS.
+            util.time_series.upload_to_gcs(
+                electricity_demand_time_series,
+                args.upload_to_gcs,
+                code + "_" + args.data_source,
+            )
 
     logging.info(
         f"Electricity data from the {args.data_source} website has been successfully retrieved and saved."
