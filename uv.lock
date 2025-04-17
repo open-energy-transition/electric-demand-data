@@ -889,6 +889,7 @@ name = "model-xgboost"
 version = "0.1.0"
 source = { virtual = "models/xgboost" }
 dependencies = [
+    { name = "dask" },
     { name = "pandas" },
     { name = "pycountry" },
     { name = "scikit-learn" },
@@ -897,6 +898,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "dask", specifier = ">=2025.3.0" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pycountry", specifier = ">=24.6.1" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
