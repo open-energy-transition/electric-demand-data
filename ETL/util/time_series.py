@@ -149,5 +149,3 @@ def upload_to_gcs(
     # Create a new blob and upload the file.
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_filename(file_path)
-
-    return None
