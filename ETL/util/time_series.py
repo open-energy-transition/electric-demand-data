@@ -109,52 +109,22 @@ def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
     return time_series
 
 
-def simple_save(
-    time_series: pandas.Series,
-    result_directory: str,
-    identifier: str,
-) -> None:
-    """
-    Save the time series to parquet and csv files.
-
-    Parameters
-    ----------
-    time_series : pandas.Series
-        The time series in UTC time
-    result_directory : str
-        The directory to store the time series
-    identifier : str
-        The identifier of the time series
-    """
-
-    # Get the date of retrieval.
-    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
-
-    # Save the time series.
-    time_series.to_frame().to_parquet(
-        os.path.join(
-            result_directory, identifier + "_" + date_of_retrieval + ".parquet"
-        )
-    )
-    time_series.to_csv(
-        os.path.join(result_directory, identifier + "_" + date_of_retrieval + ".csv")
-    )
-
-
 def upload_to_gcs(
-    time_series: pandas.Series | pandas.DataFrame, bucket_name: str, identifier: str
+    file_path: str,
+    bucket_name: str,
+    destination_blob_name: str,
 ) -> None:
     """
-    Upload the time series to Google Cloud Storage.
+    Upload a file to Google Cloud Storage (GCS).
 
     Parameters
     ----------
-    time_series : pandas.Series or pandas.DataFrame
-        The time series to upload
+    file_path : str
+        The path to the file to be uploaded
     bucket_name : str
         The name of the GCS bucket
-    identifier : str
-        The identifier of the time series
+    destination_blob_name : str
+        The name of the blob in the GCS bucket
     """
 
     # Get the root directory of the project.
@@ -176,14 +146,8 @@ def upload_to_gcs(
     # Get the bucket.
     bucket = storage_client.bucket(bucket_name)
 
-    # Get the date of retrieval.
-    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
-
-    # Create the destination blob name.
-    destination_blob_name = "upload_" + date_of_retrieval + "/" + identifier + ".csv"
-
     # Create a new blob and upload the file.
     blob = bucket.blob(destination_blob_name)
-    blob.upload_from_string(time_series.to_csv(), "text/csv")
+    blob.upload_from_filename(file_path)
 
     return None

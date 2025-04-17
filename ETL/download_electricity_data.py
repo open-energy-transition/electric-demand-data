@@ -281,19 +281,25 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             args.data_source, None if one_code_on_platform else code
         )
 
-        if args.upload_to_gcs is None:
-            # Save the electricity demand time series.
-            util.time_series.simple_save(
-                electricity_demand_time_series,
-                result_directory,
-                code + "_" + args.data_source,
-            )
-        else:
-            # Upload the electricity demand time series to GCS.
+        # Get the date of retrieval.
+        date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
+
+        # Define the identifier of the file to be saved.
+        identifier = code + "_" + args.data_source
+
+        # Define the path to the file to be saved without the extension.
+        file_path = os.path.join(result_directory, identifier + "_" + date_of_retrieval)
+
+        # Save the time series to both parquet and csv files.
+        electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
+        electricity_demand_time_series.to_csv(file_path + ".csv")
+
+        if args.upload_to_gcs:
+            # Upload the parquet file of the electricity demand time series to GCS.
             util.time_series.upload_to_gcs(
-                electricity_demand_time_series,
+                file_path + ".parquet",
                 args.upload_to_gcs,
-                code + "_" + args.data_source,
+                "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
             )
 
     logging.info(
