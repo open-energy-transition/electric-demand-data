@@ -20,9 +20,14 @@ import pandas
 import util.fetcher
 
 
-def get_available_requests() -> list[pandas.Timestamp]:
+def get_available_requests(code: str | None = None) -> list[pandas.Timestamp]:
     """
     Get the list of available requests to retrieve the electricity generation data from the TSOC website.
+
+    Parameters
+    ----------
+    code : str, optional
+        The code of the country or region (not used in this function)
 
     Returns
     -------
