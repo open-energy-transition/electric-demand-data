@@ -5,7 +5,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data for the National Electricity Market (NEM) from the Australian Energy Market Operator (AEMO) website.
+    This script retrieves the electricity load data from the website of the Australian Energy Market Operator (AEMO) for the National Electricity Market (NEM) in Australia.
 
     The data is retrieved for the years from December of 1998 to the current month. The data is retrieved from the available CSV files on the AEMO website.
 
@@ -18,9 +18,14 @@ import pandas
 import util.fetcher
 
 
-def get_available_requests() -> list[tuple[int, int]]:
+def get_available_requests(code: str | None) -> list[tuple[int, int]]:
     """
     Get the list of available requests to retrieve the electricity demand data on the AEMO website.
+
+    Parameters
+    ----------
+    code : str, optional
+        The code of the country or region
 
     Returns
     -------
@@ -28,19 +33,32 @@ def get_available_requests() -> list[tuple[int, int]]:
         The list of available requests
     """
 
-    # Define the start and end date according to the data availability.
-    start_date = pandas.Timestamp("1998-12-01")
-    end_date = pandas.Timestamp.today()
+    if code is None:
+        raise ValueError("The region code must be provided.")
+    else:
+        # Get the region code.
+        if "_" in code:
+            # Extract the region code from the code.
+            region_code = code.split("_")[1]
+        else:
+            region_code = code
 
-    # The available requests are the years and months from December of 1998 to the current month.
-    available_requests = [
-        (year, month)
-        for year in range(start_date.year, end_date.year + 1)
-        for month in range(1, 13)
-        if year != end_date.year or month < end_date.month
-    ]
+        # For Tasmania, the data starts from May 2005.
+        if region_code == "TAS":
+            start_date = pandas.Timestamp("2005-05-01")
+        else:
+            start_date = pandas.Timestamp("1998-12-01")
 
-    return available_requests
+    # Get the list of year, month from December of 1998 to today.
+    values_list = (
+        pandas.date_range(start=start_date, end=pandas.Timestamp.today(), freq="ME")
+        .strftime("%Y-%m")
+        .str.split("-")
+        .tolist()
+    )
+
+    # Return the available requests, which are are tuples in the format (year, month).
+    return [(int(year), int(month)) for year, month in values_list]
 
 
 def get_url(year: int, month: int, region_code: str) -> str:
@@ -63,7 +81,7 @@ def get_url(year: int, month: int, region_code: str) -> str:
     """
 
     # Check if the year and month are supported.
-    assert (year, month) in get_available_requests(), (
+    assert (year, month) in get_available_requests(region_code), (
         f"Year {year} and month {month} are not supported."
     )
 
@@ -95,7 +113,7 @@ def download_and_extract_data_for_request(
     """
 
     # Check if the year and month are supported.
-    assert (year, month) in get_available_requests(), (
+    assert (year, month) in get_available_requests(region_code), (
         f"Year {year} and month {month} are not supported."
     )
 
@@ -106,6 +124,7 @@ def download_and_extract_data_for_request(
     # Extract the region code.
     region_code = region_code.split("_")[1]
 
+    # Define the headers for the request.
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
     }
@@ -115,7 +134,7 @@ def download_and_extract_data_for_request(
 
     # Fetch the electricity demand data from the URL.
     dataset = util.fetcher.fetch_data(
-        url, "text", output="tabular", header_params=headers
+        url, "text", output_content_type="tabular", header_params=headers
     )
 
     # Extract the electricity demand data from the dataset.
