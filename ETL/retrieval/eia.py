@@ -1,11 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the Energy Information Administration (EIA).
+    This script retrieves the electricity demand data from the website of the US Energy Information Administration (EIA).
 
     The data is retrieved for the years from 2020 to the current year. The data is retrieved in six-month intervals.
 
@@ -23,11 +22,11 @@ from dotenv import load_dotenv
 
 def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
-    Get the list of available requests to retrieve the electricity demand data on the Energy Information Administration website.
+    Get the list of available requests to retrieve the electricity demand data from the EIA website.
 
     Returns
     -------
-    available_requests : list[pandas.Timestamp, pandas.Timestamp]
+    list[pandas.Timestamp, pandas.Timestamp]
         The list of available requests
     """
 
@@ -43,12 +42,8 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
         pandas.to_datetime([end_date_and_time])
     )
 
-    # The available requests are the beginning and end of each six-month period.
-    available_requests = list(
-        zip(start_date_and_time_of_period, end_date_and_time_of_period)
-    )
-
-    return available_requests
+    # Return the available requests, which are the beginning and end of each six-month period.
+    return list(zip(start_date_and_time_of_period, end_date_and_time_of_period))
 
 
 def get_url(
@@ -57,7 +52,7 @@ def get_url(
     region_code: str,
 ) -> str:
     """
-    Get the URL of the electricity demand data on the Energy Information Administration website.
+    Get the URL of the electricity demand data on the EIA website.
 
     Parameters
     ----------
@@ -70,7 +65,7 @@ def get_url(
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity demand data
     """
 
@@ -94,10 +89,8 @@ def get_url(
     start = start_date_and_time.strftime("%Y-%m-%dT%H")
     end = end_date_and_time.strftime("%Y-%m-%dT%H")
 
-    # Define the URL.
-    url = f"https://api.eia.gov/v2/electricity/rto/region-data/data/?api_key={api_key}&facets[type][]=D&facets[respondent][]={region_code}&start={start}&end={end}&frequency=hourly&data[0]=value&sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return f"https://api.eia.gov/v2/electricity/rto/region-data/data/?api_key={api_key}&facets[type][]=D&facets[respondent][]={region_code}&start={start}&end={end}&frequency=hourly&data[0]=value&sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000"
 
 
 def download_and_extract_data_for_request(
@@ -106,7 +99,7 @@ def download_and_extract_data_for_request(
     region_code: str,
 ) -> pandas.Series:
     """
-    Retrieve the electricity demand data from the Energy Information Administration (EIA).
+    Download and extract the electricity demand data from the EIA website.
 
     Parameters
     ----------
@@ -120,7 +113,7 @@ def download_and_extract_data_for_request(
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Check that the number of time points is less than 5000.

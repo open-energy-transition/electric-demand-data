@@ -77,8 +77,10 @@ def get_temperature_in_largest_population_density_areas(
     # Read the temperature data from the Copernicus Climate Data Store (CDS).
     temperature_data_directory = util.general.read_folders_structure()["weather_folder"]
     temperature_data = util.geospatial.load_xarray(
-        temperature_data_directory
-        + f"/2m_temperature_{region_shape.index[0]}_{year}.nc"
+        os.path.join(
+            temperature_data_directory,
+            f"2m_temperature_{region_shape.index[0]}_{year}.nc",
+        )
     )
 
     # Read the regional population density data.
@@ -86,8 +88,10 @@ def get_temperature_in_largest_population_density_areas(
         "population_density_folder"
     ]
     population_density = util.geospatial.load_xarray(
-        population_density_directory
-        + f"/population_density_0.25_deg_{region_shape.index[0]}_2015.nc"
+        os.path.join(
+            population_density_directory,
+            f"population_density_0.25_deg_{region_shape.index[0]}_2015.nc",
+        )
     )
 
     # Get the population density data in the given region, ready to be sorted.
@@ -205,7 +209,7 @@ def run_temperature_calculation() -> None:
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "temperature_data.log"
     logging.basicConfig(
-        filename=log_files_directory + "/" + log_file_name,
+        filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,
         filemode="w",
         format="%(asctime)s - %(levelname)s - %(message)s",
@@ -218,9 +222,8 @@ def run_temperature_calculation() -> None:
     # Read the codes of the regions of interest.
     settings_directory = util.general.read_folders_structure()["settings_folder"]
     region_codes = util.general.read_codes_from_file(
-        settings_directory + "/gegis__all_countries.yaml"
+        os.path.join(settings_directory, "gegis__all_countries.yaml")
     )
-    # region_codes = util.general.read_codes_from_file(settings_directory+"/us_eia_regions.yaml")
 
     # Define the target file type.
     file_type = ".parquet"
@@ -239,15 +242,13 @@ def run_temperature_calculation() -> None:
             logging.info(f"Retrieving data for {region_code}.")
 
             # Define the file paths of the temperature time series.
-            temperature_file_path_top_1 = (
-                result_directory
-                + f"/temperature_time_series_top_1_{region_code}_{year}"
-                + file_type
+            temperature_file_path_top_1 = os.path.join(
+                result_directory,
+                f"temperature_time_series_top_1_{region_code}_{year}" + file_type,
             )
-            temperature_file_path_top_3 = (
-                result_directory
-                + f"/temperature_time_series_top_3_{region_code}_{year}"
-                + file_type
+            temperature_file_path_top_3 = os.path.join(
+                result_directory,
+                f"temperature_time_series_top_3_{region_code}_{year}" + file_type,
             )
 
             # Check if any of the files does not exist.
@@ -255,7 +256,7 @@ def run_temperature_calculation() -> None:
                 temperature_file_path_top_3
             ):
                 # Get the shape of the region of interest.
-                region_shape = util.geospatial.get_geopandas_region(region_code)
+                region_shape = util.geospatial.get_region_shape(region_code)
 
                 # Get the time zone information for the region.
                 region_time_zone = util.general.get_time_zone(region_code)

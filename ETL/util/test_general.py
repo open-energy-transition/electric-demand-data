@@ -1,3 +1,4 @@
+import os
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -53,8 +54,14 @@ def test_read_folders_structure(sample_directory_yaml):
         # Read the folders structure from the sample yaml file.
         structure = read_folders_structure("dummy.yaml")
 
-        # Check if the folders structure is read correctly.
-        assert structure == {"folder1": "path1", "folder2": "path2"}
+        # Get the root path of the ETL folder.
+        absolute_path = os.path.abspath(
+            os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+        )
+
+        # Check if the folders are read correctly.
+        assert structure["folder1"] == os.path.join(absolute_path, "path1")
+        assert structure["folder2"] == os.path.join(absolute_path, "path2")
 
 
 def test_get_us_region_time_zone():

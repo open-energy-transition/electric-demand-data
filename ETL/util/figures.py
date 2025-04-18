@@ -28,6 +28,8 @@ def simple_plot(
     fig, ax = matplotlib.pyplot.subplots()
     data_to_plot.plot(ax=ax)
     fig.savefig(
-        figure_directory + "/" + figure_name + ".png", dpi=300, bbox_inches="tight"
+        os.path.join(figure_directory, figure_name + ".png"),
+        dpi=300,
+        bbox_inches="tight",
     )
     matplotlib.pyplot.close(fig)
