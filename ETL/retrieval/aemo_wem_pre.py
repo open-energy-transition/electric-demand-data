@@ -13,8 +13,10 @@ Description:
 """
 
 import logging
+
 import pandas as pd
 import util.fetcher
+
 
 def get_available_requests() -> list[tuple[int]]:
     """
@@ -28,6 +30,7 @@ def get_available_requests() -> list[tuple[int]]:
 
     # Return the available requests for years 2006 to current year
     return [(year,) for year in range(2006, pd.Timestamp.now().year + 1)]
+
 
 def get_url(year: int) -> str:
     """
@@ -43,13 +46,14 @@ def get_url(year: int) -> str:
     url : str
         The URL of the electricity demand data
     """
-    
+
     # Define the URL of the electricity demand data for the given year
     assert 2006 <= year <= pd.Timestamp.now().year, "Year is out of range"
-    
+
     url = f"https://data.wa.aemo.com.au/datafiles/operational-demand/operational-demand-{year}.csv"
-    
+
     return url
+
 
 def download_and_extract_data_for_request(year: int) -> pd.Series:
     """
@@ -67,25 +71,35 @@ def download_and_extract_data_for_request(year: int) -> pd.Series:
     """
 
     assert 2006 <= year <= pd.Timestamp.now().year, "Year is out of range"
-    
+
     # Get the URL of the electricity demand data.
     url = get_url(year)
-    
+
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 
     # Fetch the CSV data
-    dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"skiprows": 1})  # Skip header if necessary
-    
+    dataset = util.fetcher.fetch_data(
+        url, "csv", csv_kwargs={"skiprows": 1}
+    )  # Skip header if necessary
+
     # Adjust the column names based on the data structure (modify as needed)
-    dataset.columns = [col.strip() for col in dataset.columns]  # Clean column names if needed
-    
+    dataset.columns = [
+        col.strip() for col in dataset.columns
+    ]  # Clean column names if needed
+
     # Extract the electricity demand time series.
-    index = pd.to_datetime(dataset["Date"] + " " + dataset["Time"], format='%d/%m/%Y %H:%M')
-    
+    index = pd.to_datetime(
+        dataset["Date"] + " " + dataset["Time"], format="%d/%m/%Y %H:%M"
+    )
+
     # Assuming the column name for demand is 'Demand' (check the actual CSV structure)
     electricity_demand_time_series = pd.Series(dataset["Demand"].values, index=index)
-    
+
     # Optionally, localize the time zone if needed (set correct timezone based on the dataset's time zone)
-    electricity_demand_time_series.index = electricity_demand_time_series.index.tz_localize("Australia/Perth", ambiguous="NaT", nonexistent="NaT")
-    
+    electricity_demand_time_series.index = (
+        electricity_demand_time_series.index.tz_localize(
+            "Australia/Perth", ambiguous="NaT", nonexistent="NaT"
+        )
+    )
+
     return electricity_demand_time_series
