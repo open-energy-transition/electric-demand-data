@@ -28,7 +28,7 @@ def get_available_requests() -> list[tuple[int, int, int]]:
     list[tuple[int, int, int]]
         List of tuples in the format (year, month, day)
     """
-    
+
     # Get the list of year, month, and day from 2023-09-26 to the current date.
     values_list = (
         pandas.date_range(
