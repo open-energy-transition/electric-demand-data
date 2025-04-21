@@ -19,21 +19,21 @@ import pandas
 import util.fetcher
 
 
-def get_available_requests(code: str | None = None) -> list[tuple[int, int, int]]:
+def get_available_requests() -> list[tuple[int, int, int]]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the AEMO website.
+    Get the list of available requests to retrieve the electricity demand data from September 26, 2023 to today.
 
     Returns
     -------
-    available_requests : list[tuple[int, int, int]]
+    list[tuple[int, int, int]]
         List of tuples in the format (year, month, day)
     """
-
-    # Get the list of year, month, and day from 2023-09-26 to a few days before today.
+    
+    # Get the list of year, month, and day from 2023-09-26 to the current date.
     values_list = (
         pandas.date_range(
             start="2023-09-26",
-            end=pandas.Timestamp.today() - pandas.Timedelta(days=5),
+            end=pandas.Timestamp.today(),
             freq="D",
         )
         .strftime("%Y-%m-%d")
