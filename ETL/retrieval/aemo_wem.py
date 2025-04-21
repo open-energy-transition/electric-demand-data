@@ -9,7 +9,7 @@ Description:
     The data is retrieved for the dates from 2006, to the current date. The data is fetched from the available CSV files on the AEMO website for the dates before 2023 and JSON files for the dates after 2023.
 
     Source: https://data.wa.aemo.com.au/#operational-demand
-    
+
     Source: https://data.wa.aemo.com.au/public/market-data/wemde/operationalDemandWithdrawal/dailyFiles/
 """
 
@@ -64,16 +64,15 @@ def get_url(year: int, month: int, day: int) -> str:
         The URL of the electricity demand data
     """
 
-  # Before September 2023: URL to fetch .csv files for data before September 2023
+    # Before September 2023: URL to fetch .csv files for data before September 2023
     if year < 2023 or (year == 2023 and month < 9):
         url = f"https://data.wa.aemo.com.au/datafiles/operational-demand/operational-demand-{year}.csv"
-    
+
     # After September 2023: URL to fetch .json files for data from September 2023 onward
     else:
         url = f"https://data.wa.aemo.com.au/public/market-data/wemde/operationalDemandWithdrawal/dailyFiles/OperationalDemandAndWithdrawal_{year}-{month:02d}-{day:02d}.json"
 
     return url
-
 
 
 def download_and_extract_data_for_request(
@@ -113,7 +112,9 @@ def download_and_extract_data_for_request(
     if year < 2023:
         # For years before 2023, the data is in CSV format
         dataset = util.fetcher.fetch_data(url, "csv")
-        electricity_demand_time_series = pandas.read_csv(dataset, parse_dates=['timestamp'], index_col='timestamp')
+        electricity_demand_time_series = pandas.read_csv(
+            dataset, parse_dates=["timestamp"], index_col="timestamp"
+        )
     else:
         # For 2023 and after, the data is in JSON format
         dataset = util.fetcher.fetch_data(url, "json", json_keys=["data", "data"])
