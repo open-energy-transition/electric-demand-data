@@ -21,7 +21,7 @@ import util.fetcher
 
 def get_available_requests() -> list[tuple[int, int, int]]:
     """
-    Get the list of available requests to retrieve the electricity demand data from September 26, 2023 to today.
+    Get the list of available requests to retrieve the electricity demand data from September 26, 2023 to the current date.
 
     Returns
     -------
