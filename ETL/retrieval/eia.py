@@ -33,7 +33,7 @@ def get_available_requests(
 
     Returns
     -------
-    list[pandas.Timestamp, pandas.Timestamp]
+    list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
 
