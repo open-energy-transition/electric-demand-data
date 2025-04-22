@@ -9,6 +9,8 @@ Description:
     Users can specify a data source and optionally provide a country or region code to retrieve specific data.
 
     The retrieved data is cleaned and saved in a structured format for further analysis.
+
+    The script also supports uploading the data to Google Cloud Storage (GCS) if a bucket name is provided.
 """
 
 import argparse
@@ -75,6 +77,8 @@ def read_command_line_arguments() -> argparse.Namespace:
         "You can specify the country or region code or provide a file containing the list of codes. "
         "If no code or file is provided, the data retrieval will be run for all the countries or regions available on the data source platform."
     )
+
+    # Add the command line arguments.
     parser.add_argument(
         "data_source",
         type=str,
@@ -92,7 +96,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes",
+        help="The path to the yaml file containing the list of codes of the countries or regions of interest.",
         required=False,
     )
     parser.add_argument(
