@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
@@ -19,13 +18,18 @@ import os
 import pandas
 import retrieval.aeso
 import retrieval.bchydro
+import retrieval.cammesa
 import retrieval.ccei
+import retrieval.cen
+import retrieval.coes
 import retrieval.eia
 import retrieval.entsoe
 import retrieval.hydroquebec
 import retrieval.ieso
 import retrieval.nbpower
 import retrieval.neso
+import retrieval.ons
+import retrieval.tepco
 import retrieval.tsoc
 import util.general
 import util.time_series
@@ -33,13 +37,18 @@ import util.time_series
 retrieval_module = {
     "AESO": retrieval.aeso,
     "BCHYDRO": retrieval.bchydro,
+    "CAMMESA": retrieval.cammesa,
     "CCEI": retrieval.ccei,
+    "CEN": retrieval.cen,
+    "COES": retrieval.coes,
     "EIA": retrieval.eia,
     "ENTSOE": retrieval.entsoe,
     "HYDROQUEBEC": retrieval.hydroquebec,
     "IESO": retrieval.ieso,
     "NBPOWER": retrieval.nbpower,
     "NESO": retrieval.neso,
+    "ONS": retrieval.ons,
+    "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
 }
 
@@ -70,7 +79,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-c",
         "--code",
         type=str,
-        help='The ISO Alpha-2 code (example: "US") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
+        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
         required=False,
     )
     parser.add_argument(
@@ -106,10 +115,18 @@ def check_and_get_codes(
         A flag to check if there is only one code on the platform
     """
 
-    # Get the list of codes available on the platform.
-    codes_on_platform = util.general.read_codes_from_file(
-        "retrieval/" + args.data_source.lower() + ".yaml"
+    # Get the directory of the retrieval scripts.
+    retrieval_scripts_directory = util.general.read_folders_structure()[
+        "retrieval_scripts_folder"
+    ]
+
+    # Define the yaml file containing the list of codes.
+    yaml_file_path = os.path.join(
+        retrieval_scripts_directory, args.data_source.lower() + ".yaml"
     )
+
+    # Get the list of codes available on the platform.
+    codes_on_platform = util.general.read_codes_from_file(yaml_file_path)
 
     # Define a flag to check if there is only one code on the platform.
     one_code_on_platform = len(codes_on_platform) == 1
@@ -149,7 +166,7 @@ def check_and_get_codes(
 
 def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
-    Retrieve the electricity generation data from the specified data source and code.
+    Retrieve the electricity demand data from the specified data source and code.
 
     Parameters
     ----------
@@ -160,8 +177,8 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
 
     Returns
     -------
-    electricity_generation_time_series : pandas.Series
-        The electricity generation time series in MW
+    electricity_demand_time_series : pandas.Series
+        The electricity demand time series in MW
     """
 
     # Get the list of requests to retrieve the electricity demand time series.
@@ -273,7 +290,7 @@ def main() -> None:
     log_files_directory = util.general.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
-        filename=log_files_directory + "/" + log_file_name,
+        filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,
         filemode="w",
         format="%(asctime)s - %(levelname)s - %(message)s",

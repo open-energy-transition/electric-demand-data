@@ -1,11 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity load data from the website of New Brunswick Power Corporation (NB Power).
+    This script retrieves the electricity demand data from the website of the New Brunswick Power Corporation (NB Power) in Canada.
 
     The data is retrieved for the years from 2018 to current year. The data is retrieved in one-month intervals.
 
@@ -20,11 +19,11 @@ import util.fetcher
 
 def get_available_requests() -> list[tuple[int, int]]:
     """
-    Get the list of available requests to retrieve the electricity demand data on the New Brunswick Power Corporation website.
+    Get the list of available requests to retrieve the electricity demand data from the NB Power website.
 
     Returns
     -------
-    available_requests : list[tuple[int, int]]
+    list[tuple[int, int]]
         The list of available requests
     """
 
@@ -32,36 +31,32 @@ def get_available_requests() -> list[tuple[int, int]]:
     start_date = pandas.Timestamp("2018-01-01")
     end_date = pandas.Timestamp.now()
 
-    # The available requests are the years and months from 2018 to the current year.
-    available_requests = [
+    # Return the available requests, which are the years and months from 2018 to the current year.
+    return [
         (year, month)
         for year in range(start_date.year, end_date.year + 1)
         for month in range(1, 13)
         if year != end_date.year or month < end_date.month
     ]
 
-    return available_requests
-
 
 def get_url() -> str:
     """
-    Get the URL of the electricity demand data on the New Brunswick Power Corporation website.
+    Get the URL of the electricity demand data on the NB Power website.
 
     Returns
     -------
-    url : str
+    str
         The URL of the electricity demand data
     """
 
-    # Define the URL of the electricity demand data.
-    url = "https://tso.nbpower.com/Public/en/system_information_archive.aspx"
-
-    return url
+    # Return the URL of the electricity demand data.
+    return "https://tso.nbpower.com/Public/en/system_information_archive.aspx"
 
 
 def download_and_extract_data_for_request(year: int, month: int) -> pandas.Series:
     """
-    Retrieve the electricity demand data from the New Brunswick Power Corporation website.
+    Download and extract the electricity demand data from the NB Power website.
 
     Parameters
     ----------
@@ -73,7 +68,7 @@ def download_and_extract_data_for_request(year: int, month: int) -> pandas.Serie
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity demand time series in MW
     """
 
     # Check if the year and month are supported.

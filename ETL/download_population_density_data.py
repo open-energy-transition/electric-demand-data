@@ -155,7 +155,7 @@ def run_population_density_data_retrieval() -> None:
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "population_density_data.log"
     logging.basicConfig(
-        filename=log_files_directory + "/" + log_file_name,
+        filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,
         filemode="w",
         format="%(asctime)s - %(levelname)s - %(message)s",
@@ -171,8 +171,8 @@ def run_population_density_data_retrieval() -> None:
     year = 2015
 
     # Define the file path of the global population density data.
-    global_population_file_path = (
-        result_directory + f"/population_density_30_sec_{year}.tif"
+    global_population_file_path = os.path.join(
+        result_directory, f"population_density_30_sec_{year}.tif"
     )
 
     # Download the population density data.
@@ -186,22 +186,21 @@ def run_population_density_data_retrieval() -> None:
     # Read the codes of the regions of interest.
     settings_directory = util.general.read_folders_structure()["settings_folder"]
     region_codes = util.general.read_codes_from_file(
-        settings_directory + "/gegis__all_countries.yaml"
+        os.path.join(settings_directory, "gegis__all_countries.yaml")
     )
-    # region_codes = general_utilities.read_codes_from_file(settings_directory + "/us_eia_regions.yaml")
 
     # Loop over the regions of interest.
     for region_code in region_codes:
         # Define the file path of the regional population density data.
-        regional_population_file_path = (
-            result_directory + f"/population_density_0.25_deg_{region_code}_{year}.nc"
+        regional_population_file_path = os.path.join(
+            result_directory, f"population_density_0.25_deg_{region_code}_{year}.nc"
         )
 
         if not os.path.exists(regional_population_file_path):
             logging.info(f"Extracting population density of {region_code}...")
 
             # Get the shape of the region of interest.
-            region_shape = util.geospatial.get_geopandas_region(region_code)
+            region_shape = util.geospatial.get_region_shape(region_code)
 
             # Extract the population density of the region.
             extract_population_density_of_region(

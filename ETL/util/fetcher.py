@@ -18,14 +18,16 @@ from requests.exceptions import (
 
 def fetch_data(
     url: str,
-    content_type: str,
-    output: str = "tabular",
+    target_content_type: str,
+    output_content_type: str = "tabular",
     retries: int = 3,
     retry_delay: int = 5,
+    request_type: str = "get",
     csv_kwargs: dict = {},
     excel_kwargs: dict = {},
     verify_ssl: bool = True,
-    response_params: dict = {},
+    request_params: dict = {},
+    header_params: dict = {},
     json_keys: list[str] = [],
     query_event_target: str = "",
     query_params: dict[str, str] = {},
@@ -37,22 +39,26 @@ def fetch_data(
     ----------
     url : str
         The URL of the data source.
-    content_type : str
+    target_content_type : str
         The type of the content to be fetched.
-    output : str, optional
+    output_content_type : str, optional
         The output format of the fetched data, by default "tabular"
     retries : int, optional
         The number of retries in case of connection errors, by default 3
     delay : int, optional
         The delay between retries in seconds, by default 5
+    request_type : str, optional
+        The type of the request, by default "get"
     csv_kwargs : dict, optional
         The keyword arguments for reading CSV files, by default {}
     excel_kwargs : dict, optional
         The keyword arguments for reading Excel files, by default {}
     verify_ssl : bool, optional
         Verify the SSL certificate, by default True
-    response_params : dict, optional
-        The parameters for the response, by default {}
+    request_params : dict, optional
+        The parameters for the request, by default {}
+    header_params : dict, optional
+        The headers for the request, by default {}
     json_keys : list[str], optional
         The keys to extract from the JSON response, by default []
     query_event_target : str, optional
@@ -68,35 +74,56 @@ def fetch_data(
 
     for attempt in range(retries):
         try:
-            if content_type == "csv":
+            if target_content_type == "csv":
                 # Read the CSV file from the URL.
                 return pandas.read_csv(url, **csv_kwargs)
 
-            elif content_type == "excel":
+            elif target_content_type == "excel":
                 # Read the Excel file from the URL.
                 return pandas.read_excel(url, **excel_kwargs)
 
             else:
-                # Send the GET request.
-                response = requests.get(
-                    url, timeout=10, verify=verify_ssl, params=response_params
-                )
+                # Read the HTML content from the URL.
+                if request_type == "get":
+                    # Send the GET request.
+                    response = requests.get(
+                        url,
+                        timeout=10,
+                        verify=verify_ssl,
+                        headers=header_params,
+                        params=request_params,
+                    )
+                elif request_type == "post":
+                    # Send the POST request.
+                    response = requests.post(
+                        url,
+                        timeout=10,
+                        verify=verify_ssl,
+                        headers=header_params,
+                        params=request_params,
+                    )
+                else:
+                    raise ValueError(f"Request type {request_type} is not supported.")
+
+                # Check if the request was successful.
                 response.raise_for_status()
 
-                if content_type == "text":
+                if target_content_type == "text":
                     # Read the content of the response.
                     content = response.text
 
-                    if output == "tabular":
+                    if output_content_type == "tabular":
                         # Return the content as a DataFrame.
                         return pandas.read_csv(StringIO(content), **csv_kwargs)
-                    elif output == "text":
+                    elif output_content_type == "text":
                         # Return the content as a string.
                         return content
                     else:
-                        raise ValueError(f"Output format {output} is not supported.")
+                        raise ValueError(
+                            f"Output format {output_content_type} is not supported."
+                        )
 
-                elif content_type == "json":
+                elif target_content_type == "json":
                     # Read the content of the response.
                     content = response.json()
 
@@ -107,7 +134,7 @@ def fetch_data(
                     # Return the content as a DataFrame.
                     return pandas.DataFrame(content)
 
-                elif content_type == "query":
+                elif target_content_type == "query":
                     # Read the content of the response.
                     html_content = response.text
 
