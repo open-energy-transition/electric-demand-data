@@ -136,7 +136,12 @@ def download_and_extract_data_for_request(
     logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 
     # Extract the region code.
-    region_code = region_code.split("_")[1]
+    if "_" in region_code:
+        region_code = region_code.split("_")[1]
+    else:
+        raise ValueError(
+            f"Invalid region_code format: '{region_code}'. Expected a combination of ISO Alpha-2 code and region code separated by an underscore"
+        )
 
     # Get the URL of the electricity demand data.
     url = get_url(start_date_and_time, end_date_and_time, region_code)

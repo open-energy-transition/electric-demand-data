@@ -122,7 +122,12 @@ def download_and_extract_data_for_request(
     )
 
     # Extract the region code.
-    region_code = region_code.split("_")[1]
+    if "_" in region_code:
+        region_code = region_code.split("_")[1]
+    else:
+        raise ValueError(
+            f"Invalid region_code format: '{region_code}'. Expected a combination of ISO Alpha-2 code and region code separated by an underscore"
+        )
 
     # Define the headers for the request.
     headers = {
