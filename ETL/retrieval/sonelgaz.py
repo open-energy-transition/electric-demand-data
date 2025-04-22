@@ -54,9 +54,7 @@ def download_and_extract_data() -> pandas.Series:
     url = get_url()
 
     # Fetch the data from the URL.
-    dataset = util.fetcher.fetch_data(
-        url, "excel", excel_kwargs={"sheet_name": "Feuil1"}
-    )
+    dataset = util.fetcher.fetch_data(url, "excel")
 
     # The column names have the time information. Rearrange the columns to have the time information on another column.
     dataset = dataset.melt(
