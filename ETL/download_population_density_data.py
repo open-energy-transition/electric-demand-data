@@ -1,159 +1,171 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0
+
+Description:
+
+    This script downloads population density data from SEDAC (Socioeconomic Data and Applications Center).
+
+    It then extracts the population density data for the regions of interest, coarsens the data to a 0.25-degree resolution, and saves it into NetCDF files.
+
+    The country or region codes of interest can be provided as a yaml file. If no file is provided, the script will use all available codes.
+
+    The year of the population density data can be specified as a command line argument. The default year is 2020.
+"""
+
+import argparse
 import logging
 import os
-from urllib.request import urlretrieve
 
-import geopandas
-import numpy
-import util.figures
+import retrieval.population
 import util.general
 import util.geospatial
-import xarray
+import util.shapes
 
 
-def download_population_density_data_from_SEDAC(year: int, file_path: str) -> None:
+def read_command_line_arguments() -> argparse.Namespace:
     """
-    Download the population density data from the Socioeconomic Data and Applications Center (SEDAC).
-
-    Parameters
-    ----------
-    year : int
-        The year of the population density data
-    file_path : str
-        The path to store the population density data
-    """
-
-    if not os.path.exists(file_path):
-        logging.info(
-            f"Downloading population density data from SEDAC for the year {year}..."
-        )
-
-        # Download the population density data.
-        url = f"https://data.ghg.center/sedac-popdensity-yeargrid5yr-v4.11/gpw_v4_population_density_rev11_{year}_30_sec_{year}.tif"
-        urlretrieve(url, file_path)
-
-
-def coarsen_population_density(
-    population_density: xarray.DataArray, region_bounds: list[float]
-) -> xarray.DataArray:
-    """
-    Coarsen the population density data to the same resolution as the weather data. The population density resolution is 30 arc-seconds, while the resource data resolution is 900 arc-seconds (0.25 degrees).
-
-    Parameters
-    ----------
-    population_density : xarray.DataArray
-        The population density data
-    region_bounds : list of float
-        The lateral bounds of the region of interest (West, South, East, North)
+    Create a parser for the command line arguments and read them.
 
     Returns
     -------
-    population_density : xarray.DataArray
-        The population density data coarsened to the same resolution as the weather data
+    args : argparse.Namespace
+        The command line arguments
     """
 
-    # Define the new coarser resolution.
-    x_list = numpy.linspace(-180, 180, int(360 / 0.25) + 1)
-    y_list = numpy.linspace(-90, 90, int(180 / 0.25) + 1)
-
-    # Define the bins where to aggregate the population density data of the finer resolution.
-    # The next(...) function in this case calculates the first value that satisfies the specified condition.
-    # The resulting bins are the first and last values of the x_list and y_list that are within the bounds of the region of interest.
-    x_bins = numpy.arange(
-        x_list[next(x for x, val in enumerate(x_list) if val >= region_bounds[0])]
-        - 0.25 / 2,
-        x_list[next(x for x, val in enumerate(x_list) if val >= region_bounds[2]) + 1]
-        + 0.25 / 2,
-        0.25,
-    )
-    y_bins = numpy.arange(
-        y_list[next(x for x, val in enumerate(y_list) if val >= region_bounds[1])]
-        - 0.25 / 2,
-        y_list[next(x for x, val in enumerate(y_list) if val >= region_bounds[3]) + 1]
-        + 0.25 / 2,
-        0.25,
+    # Create a parser for the command line arguments.
+    parser = argparse.ArgumentParser(
+        description="Download and process population density data from SEDAC."
     )
 
-    # Aggregate the population density data to the new coarser resolution, first in the x direction and then in the y direction.
-    population_density = population_density.groupby_bins("x", x_bins).sum()
-    population_density = population_density.groupby_bins("y", y_bins).sum()
-
-    # For each coordinate, substitute the bin range with the middle of the bin.
-    population_density["x_bins"] = numpy.arange(
-        x_list[next(x for x, val in enumerate(x_list) if val >= region_bounds[0])],
-        x_list[next(x for x, val in enumerate(x_list) if val >= region_bounds[2]) + 1],
-        0.25,
+    # Add the command line arguments.
+    parser.add_argument(
+        "-f",
+        "--file",
+        type=str,
+        help="The path to the yaml file containing the list of codes of the countries or regions of interest.",
+        required=False,
     )
-    population_density["y_bins"] = numpy.arange(
-        y_list[next(x for x, val in enumerate(y_list) if val >= region_bounds[1])],
-        y_list[next(x for x, val in enumerate(y_list) if val >= region_bounds[3]) + 1],
-        0.25,
+    parser.add_argument(
+        "-y",
+        "--year",
+        type=int,
+        choices=[2000, 2005, 2010, 2015, 2020],
+        help="Year of the population density data to download.",
+        default=2020,
+        required=False,
     )
 
-    # Rename the bins to "x" and "y".
-    population_density = population_density.rename({"x_bins": "x", "y_bins": "y"})
+    # Read the arguments from the command line.
+    args = parser.parse_args()
 
-    return population_density
+    return args
 
 
-def extract_population_density_of_region(
-    population_density: xarray.DataArray,
-    region_shape: geopandas.GeoDataFrame,
-    file_path: str,
-    make_plot: bool = True,
-) -> None:
+def check_and_get_codes(
+    args: argparse.Namespace,
+) -> list[str]:
     """
-    Extract the population density of a region of interest, coarsen it to the same resolution as the weather data, and save it to a file.
+    Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
 
     Parameters
     ----------
-    population_density : xarray.DataArray
-        The population density data.
-    region_shape : geopandas.GeoDataFrame
-        The shape of the region of interest
-    file_path : str
-        The path to store the population density data
-    make_plot : bool
-        Whether to make a plot of the population density data
+    args : argparse.Namespace
+        The command line arguments
+
+    Returns
+    -------
+    codes : list[str]
+        The list of codes of the countries or regions of interest
     """
 
-    # Get the lateral bounds of the region of interest.
-    region_bounds = util.geospatial.get_region_bounds(
-        region_shape
-    )  # West, South, East, North
+    # Get all the codes of the available countries and regions.
+    all_codes = util.general.read_all_codes()
 
-    # Select the population density data in the bounding box of the region of interest.
-    population_density = population_density.sel(
-        x=slice(region_bounds[0], region_bounds[2]),
-        y=slice(region_bounds[1], region_bounds[3]),
+    if args.file is not None:
+        # # If the file is provided, read the list of codes of the countries or regions of interest from the yaml file.
+        codes = util.general.read_codes_from_file(args.file)
+
+        # Check if the codes are valid.
+        for code in codes:
+            if code not in all_codes:
+                logging.error(
+                    f"Code {code} is not available in the list of available countries and regions."
+                )
+                codes.remove(code)
+
+        # Check if there are any codes left.
+        if len(codes) == 0:
+            raise ValueError(
+                f"None of the codes in the file are available in the list of available countries and regions. Please choose from the following codes: {all_codes}."
+            )
+    else:
+        # If the file is not provided, use all the available codes.
+        codes = all_codes
+
+    return codes
+
+
+def run_data_retrieval(args: argparse.Namespace) -> None:
+    """
+    Download the population density data from SEDAC and extract the population density data for the regions of interest.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        The command line arguments
+    """
+
+    # Get the directory to store the population density data.
+    result_directory = util.general.read_folders_structure()[
+        "population_density_folder"
+    ]
+    os.makedirs(result_directory, exist_ok=True)
+
+    # Load the population density data.
+    population_density = util.geospatial.load_xarray(
+        retrieval.population.get_url(args.year), engine="rasterio"
     )
 
-    # Coarsen the population density data to the same resolution as the weather data.
-    population_density = coarsen_population_density(population_density, region_bounds)
+    # Read the codes of the countries or regions of interest.
+    codes = check_and_get_codes(args)
 
-    # Clean the dataset.
-    population_density = population_density.squeeze("band")
-    population_density = population_density.drop_vars(["band", "spatial_ref"])
-    population_density = population_density.drop_attrs()
-    population_density = population_density.rename("population_density")
-
-    # Save the population density data.
-    population_density.to_netcdf(file_path)
-
-    if make_plot:
-        util.figures.simple_plot(
-            population_density, f"population_density_{region_shape.index[0]}"
+    # Loop over the countries or regions of interest.
+    for code in codes:
+        # Define the file path of the regional population density data.
+        regional_population_file_path = os.path.join(
+            result_directory, f"{code}_0.25_deg_{args.year}.nc"
         )
 
+        if not os.path.exists(regional_population_file_path):
+            logging.info(f"Extracting population density of {code}.")
 
-def run_population_density_data_retrieval() -> None:
-    """
-    Run the population density data retrieval from the SEDAC.
-    """
+            # Get the shape of the region of interest.
+            region_shape = util.shapes.get_region_shape(code)
+
+            # Extract the population density of the region.
+            retrieval.population.extract_population_density_of_region(
+                population_density, region_shape, regional_population_file_path
+            )
+
+            logging.info(
+                f"Population density data for {code} extracted and saved successfully."
+            )
+
+        else:
+            logging.info(
+                f"Population density data for {code} already exists. Skipping extraction."
+            )
+
+
+def main() -> None:
+    # Read the command line arguments.
+    args = read_command_line_arguments()
 
     # Set up the logging configuration.
+    log_file_name = "population_density_data.log"
     log_files_directory = util.general.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
-    log_file_name = "population_density_data.log"
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,
@@ -161,52 +173,9 @@ def run_population_density_data_retrieval() -> None:
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
-    # Create a directory to store the population density data.
-    result_directory = util.general.read_folders_structure()[
-        "population_density_folder"
-    ]
-    os.makedirs(result_directory, exist_ok=True)
-
-    # Define the year of the population density data.
-    year = 2015
-
-    # Define the file path of the global population density data.
-    global_population_file_path = os.path.join(
-        result_directory, f"population_density_30_sec_{year}.tif"
-    )
-
-    # Download the population density data.
-    download_population_density_data_from_SEDAC(year, global_population_file_path)
-
-    # Load the population density data.
-    population_density = util.geospatial.load_xarray(
-        global_population_file_path, engine="rasterio"
-    )
-
-    # Read the codes of the regions of interest.
-    settings_directory = util.general.read_folders_structure()["settings_folder"]
-    region_codes = util.general.read_codes_from_file(
-        os.path.join(settings_directory, "gegis__all_countries.yaml")
-    )
-
-    # Loop over the regions of interest.
-    for region_code in region_codes:
-        # Define the file path of the regional population density data.
-        regional_population_file_path = os.path.join(
-            result_directory, f"population_density_0.25_deg_{region_code}_{year}.nc"
-        )
-
-        if not os.path.exists(regional_population_file_path):
-            logging.info(f"Extracting population density of {region_code}...")
-
-            # Get the shape of the region of interest.
-            region_shape = util.geospatial.get_region_shape(region_code)
-
-            # Extract the population density of the region.
-            extract_population_density_of_region(
-                population_density, region_shape, regional_population_file_path
-            )
+    # Run the data retrieval.
+    run_data_retrieval(args)
 
 
 if __name__ == "__main__":
-    run_population_density_data_retrieval()
+    main()
