@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 
 [manifest]
@@ -425,6 +426,17 @@ wheels = [
 ]
 
 [[package]]
+name = "dotenv"
+version = "0.9.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dotenv" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/b7/545d2c10c1fc15e48653c91efde329a790f2eecfbbf2bd16003b5db2bab0/dotenv-0.9.9-py2.py3-none-any.whl", hash = "sha256:29cf74a087b31dafdb5a446b6d7e11cbce8ed2741540e2339c69fbef92c94ce9", size = 1892 },
+]
+
+[[package]]
 name = "electric-demand-data"
 version = "0.1.0"
 source = { virtual = "." }
@@ -434,6 +446,7 @@ dependencies = [
     { name = "cartopy" },
     { name = "cdsapi" },
     { name = "countryinfo" },
+    { name = "dotenv" },
     { name = "entsoe-py" },
     { name = "geopandas" },
     { name = "logging" },
@@ -464,6 +477,7 @@ requires-dist = [
     { name = "cartopy", specifier = ">=0.24.1" },
     { name = "cdsapi", specifier = ">=0.7.5" },
     { name = "countryinfo", specifier = ">=0.1.2" },
+    { name = "dotenv", specifier = ">=0.9.9" },
     { name = "entsoe-py", specifier = ">=0.6.18" },
     { name = "geopandas", specifier = ">=1.0.1" },
     { name = "logging", specifier = ">=0.4.9.6" },
@@ -501,6 +515,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/13/34/6c70a826b29154a77
 wheels = [
     { url = "https://files.pythonhosted.org/packages/78/77/e923bceac71f071e243fbdf0639e0073d0dae0af3c843267a3984b7ee231/entsoe_py-0.6.18-py3-none-any.whl", hash = "sha256:a3c5b82dc44a863588ce8bf6e5d64b0978978b6c879791f0813ea70e41fd33ec", size = 1615055 },
 ]
+
+[[package]]
+name = "etl"
+version = "0.1.0"
+source = { virtual = "ETL" }
 
 [[package]]
 name = "fonttools"
@@ -552,11 +571,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/39/08/2cf5d85356e45b10b
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c4/64/7d344cfcef5efddf9cf32f59af7f855828e9d74b5f862eddf5bfd9f25323/geopandas-1.0.1-py3-none-any.whl", hash = "sha256:01e147d9420cc374d26f51fc23716ac307f32b49406e4bd8462c07e82ed1d3d6", size = 323587 },
 ]
-
-[[package]]
-name = "etl"
-version = "0.1.0"
-source = { virtual = "ETL" }
 
 [[package]]
 name = "ghp-import"

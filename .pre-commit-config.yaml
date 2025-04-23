@@ -23,3 +23,8 @@ repos:
     hooks:
       - id: prettier
         types_or: [yaml, json5]
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
