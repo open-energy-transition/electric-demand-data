@@ -26,11 +26,14 @@ import retrieval.cen
 import retrieval.coes
 import retrieval.eia
 import retrieval.entsoe
+import retrieval.eskom
 import retrieval.hydroquebec
 import retrieval.ieso
 import retrieval.nbpower
 import retrieval.neso
+import retrieval.nigeria
 import retrieval.ons
+import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
 import util.general
@@ -47,11 +50,14 @@ retrieval_module = {
     "COES": retrieval.coes,
     "EIA": retrieval.eia,
     "ENTSOE": retrieval.entsoe,
+    "ESKOM": retrieval.eskom,
     "HYDROQUEBEC": retrieval.hydroquebec,
     "IESO": retrieval.ieso,
     "NBPOWER": retrieval.nbpower,
     "NESO": retrieval.neso,
+    "NIGERIA": retrieval.nigeria,
     "ONS": retrieval.ons,
+    "SONELGAZ": retrieval.sonelgaz,
     "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
 }
