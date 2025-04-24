@@ -31,9 +31,14 @@ region_id = {
 }
 
 
-def get_available_requests() -> list[str]:
+def get_available_requests(code: str | None = None) -> list[str]:
     """
     Get the list of available requests to retrieve the electricity demand data from the CAMMESA website.
+
+    Parameters
+    ----------
+    code : str, optional
+        The code of the country or region (not used in this function)
 
     Returns
     -------

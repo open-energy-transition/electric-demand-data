@@ -17,9 +17,16 @@ import pandas
 import util.fetcher
 
 
-def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
+def get_available_requests(
+    code: str | None = None,
+) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the CEN website.
+
+    Parameters
+    ----------
+    code : str, optional
+        The code of the country or region (not used in this function)
 
     Returns
     -------
