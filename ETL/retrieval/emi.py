@@ -69,9 +69,9 @@ def download_and_extract_data(year: int, month: int, day: int) -> pandas.Series:
         The electricity demand time series in GWh
     """
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-    }
+
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+
 
     url = get_url(year, month, day)
 
