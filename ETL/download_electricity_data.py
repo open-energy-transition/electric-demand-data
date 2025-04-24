@@ -16,6 +16,8 @@ import logging
 import os
 
 import pandas
+import retrieval.aemo_nem
+import retrieval.aemo_wem
 import retrieval.aeso
 import retrieval.bchydro
 import retrieval.cammesa
@@ -38,6 +40,8 @@ import util.general
 import util.time_series
 
 retrieval_module = {
+    "AEMO_NEM": retrieval.aemo_nem,
+    "AEMO_WEM": retrieval.aemo_wem,
     "AESO": retrieval.aeso,
     "BCHYDRO": retrieval.bchydro,
     "CAMMESA": retrieval.cammesa,
@@ -188,7 +192,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
 
     # Get the list of requests to retrieve the electricity demand time series.
-    requests = retrieval_module[data_source].get_available_requests()
+    requests = retrieval_module[data_source].get_available_requests(code)
 
     if requests is None:
         # If there are no requests (requests is None), it means that the electricity demand time series can be retrieved all at once.
