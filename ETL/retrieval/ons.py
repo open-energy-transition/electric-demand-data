@@ -17,9 +17,14 @@ import pandas
 import util.fetcher
 
 
-def get_available_requests() -> list[int]:
+def get_available_requests(code: str | None = None) -> list[int]:
     """
     Get the list of available requests to retrieve the electricity demand data from the ONS website.
+
+    Parameters
+    ----------
+    code : str, optional
+        The code of the country or region (not used in this function)
 
     Returns
     -------
@@ -74,7 +79,12 @@ def download_and_extract_data_for_request(year: int, region_code: str) -> pandas
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 
     # Extract the region code.
-    region_code = region_code.split("_")[1]
+    if "_" in region_code:
+        region_code = region_code.split("_")[1]
+    else:
+        raise ValueError(
+            f"Invalid region_code format: '{region_code}'. Expected a combination of ISO Alpha-2 code and region code separated by an underscore"
+        )
 
     # Get the URL of the electricity demand data.
     url = get_url(year)
