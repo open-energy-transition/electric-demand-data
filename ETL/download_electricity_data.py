@@ -16,6 +16,8 @@ import logging
 import os
 
 import pandas
+import retrieval.aemo_nem
+import retrieval.aemo_wem
 import retrieval.aeso
 import retrieval.bchydro
 import retrieval.cammesa
@@ -24,17 +26,22 @@ import retrieval.cen
 import retrieval.coes
 import retrieval.eia
 import retrieval.entsoe
+import retrieval.eskom
 import retrieval.hydroquebec
 import retrieval.ieso
 import retrieval.nbpower
 import retrieval.neso
+import retrieval.nigeria
 import retrieval.ons
+import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
 import util.general
 import util.time_series
 
 retrieval_module = {
+    "AEMO_NEM": retrieval.aemo_nem,
+    "AEMO_WEM": retrieval.aemo_wem,
     "AESO": retrieval.aeso,
     "BCHYDRO": retrieval.bchydro,
     "CAMMESA": retrieval.cammesa,
@@ -43,11 +50,14 @@ retrieval_module = {
     "COES": retrieval.coes,
     "EIA": retrieval.eia,
     "ENTSOE": retrieval.entsoe,
+    "ESKOM": retrieval.eskom,
     "HYDROQUEBEC": retrieval.hydroquebec,
     "IESO": retrieval.ieso,
     "NBPOWER": retrieval.nbpower,
     "NESO": retrieval.neso,
+    "NIGERIA": retrieval.nigeria,
     "ONS": retrieval.ons,
+    "SONELGAZ": retrieval.sonelgaz,
     "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
 }
@@ -182,7 +192,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
 
     # Get the list of requests to retrieve the electricity demand time series.
-    requests = retrieval_module[data_source].get_available_requests()
+    requests = retrieval_module[data_source].get_available_requests(code)
 
     if requests is None:
         # If there are no requests (requests is None), it means that the electricity demand time series can be retrieved all at once.

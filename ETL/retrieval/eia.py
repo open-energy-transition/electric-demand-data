@@ -20,13 +20,20 @@ import util.fetcher
 from dotenv import load_dotenv
 
 
-def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
+def get_available_requests(
+    code: str | None = None,
+) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the EIA website.
 
+    Parameters
+    ----------
+    code : str, optional
+        The code of the country or region (not used in this function)
+
     Returns
     -------
-    list[pandas.Timestamp, pandas.Timestamp]
+    list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
 
@@ -129,7 +136,12 @@ def download_and_extract_data_for_request(
     logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 
     # Extract the region code.
-    region_code = region_code.split("_")[1]
+    if "_" in region_code:
+        region_code = region_code.split("_")[1]
+    else:
+        raise ValueError(
+            f"Invalid region_code format: '{region_code}'. Expected a combination of ISO Alpha-2 code and region code separated by an underscore"
+        )
 
     # Get the URL of the electricity demand data.
     url = get_url(start_date_and_time, end_date_and_time, region_code)

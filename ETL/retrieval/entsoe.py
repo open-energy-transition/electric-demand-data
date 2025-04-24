@@ -21,9 +21,16 @@ import util.fetcher
 from dotenv import load_dotenv
 
 
-def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
+def get_available_requests(
+    code: str | None = None,
+) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the ENTSO-E website.
+
+    Parameters
+    ----------
+    code : str, optional
+        The code of the country or region (not used in this function)
 
     Returns
     -------
