@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 
 [manifest]
@@ -425,6 +426,17 @@ wheels = [
 ]
 
 [[package]]
+name = "dotenv"
+version = "0.9.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dotenv" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/b7/545d2c10c1fc15e48653c91efde329a790f2eecfbbf2bd16003b5db2bab0/dotenv-0.9.9-py2.py3-none-any.whl", hash = "sha256:29cf74a087b31dafdb5a446b6d7e11cbce8ed2741540e2339c69fbef92c94ce9", size = 1892 },
+]
+
+[[package]]
 name = "electric-demand-data"
 version = "0.1.0"
 source = { virtual = "." }
@@ -434,6 +446,7 @@ dependencies = [
     { name = "cartopy" },
     { name = "cdsapi" },
     { name = "countryinfo" },
+    { name = "dotenv" },
     { name = "entsoe-py" },
     { name = "geopandas" },
     { name = "logging" },
@@ -465,6 +478,7 @@ requires-dist = [
     { name = "cartopy", specifier = ">=0.24.1" },
     { name = "cdsapi", specifier = ">=0.7.5" },
     { name = "countryinfo", specifier = ">=0.1.2" },
+    { name = "dotenv", specifier = ">=0.9.9" },
     { name = "entsoe-py", specifier = ">=0.6.18" },
     { name = "geopandas", specifier = ">=1.0.1" },
     { name = "logging", specifier = ">=0.4.9.6" },

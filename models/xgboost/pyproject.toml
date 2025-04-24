@@ -1,0 +1,17 @@
+[project]
+name = "model_xgboost"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dask>=2025.3.0",
+    "dotenv>=0.9.9",
+    "matplotlib>=3.10.1",
+    "pandas>=2.2.3",
+    "pyarrow>=19.0.1",
+    "pycountry>=24.6.1",
+    "scikit-learn>=1.6.1",
+    "tqdm>=4.67.1",
+    "xgboost-cpu>=3.0.0",
+]
