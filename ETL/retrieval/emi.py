@@ -5,10 +5,10 @@
 License: AGPL-3.0
 
 Description:
-    This script retrieves cumulative electricity demand data from the website of the Electricity Market Information (EMI) for New Zealand.
+This script retrieves cumulative electricity demand data from the website of the Electricity Market Information (EMI) for New Zealand.
 
-    The data is downloaded as a CSV file from Jan 1, 2005 up to the current date. The data is retrieved all at once.
-    Source: https://www.emi.ea.govt.nz/Wholesale/Reports/W_GD_C
+The data is downloaded as a CSV file from Jan 1, 2005 up to the current date. The data is retrieved all at once.
+Source: https://www.emi.ea.govt.nz/Wholesale/Reports/W_GD_C
 """
 
 import logging
@@ -68,11 +68,9 @@ def download_and_extract_data(year: int, month: int, day: int) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in GWh
     """
-
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-}
-
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
 
     url = get_url(year, month, day)
 
