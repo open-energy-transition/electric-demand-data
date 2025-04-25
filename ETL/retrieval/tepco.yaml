@@ -3,3 +3,6 @@ items:
     region_code: Kantō
     country_name: Japan
     country_code: JP
+    start_date: 2016-04-01
+    end_date: today
+    time_zone: Asia/Tokyo

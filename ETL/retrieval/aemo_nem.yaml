@@ -3,19 +3,34 @@ items:
     region_code: NSW
     country_name: Australia
     country_code: AU
+    start_date: 1998-12-01
+    end_date: today
+    time_zone: Australia/Sydney
   - region_name: Queensland
     region_code: QLD
     country_name: Australia
     country_code: AU
+    start_date: 1998-12-01
+    end_date: today
+    time_zone: Australia/Brisbane
   - region_name: Victoria
     region_code: VIC
     country_name: Australia
     country_code: AU
+    start_date: 1998-12-01
+    end_date: today
+    time_zone: Australia/Melbourne
   - region_name: South Australia
     region_code: SA
     country_name: Australia
     country_code: AU
+    start_date: 1998-12-01
+    end_date: today
+    time_zone: Australia/Adelaide
   - region_name: Tasmania
     region_code: TAS
     country_name: Australia
     country_code: AU
+    start_date: 2005-05-01
+    end_date: today
+    time_zone: Australia/Hobart

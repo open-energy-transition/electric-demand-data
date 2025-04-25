@@ -1,3 +1,5 @@
 items:
   - country_name: Peru
     country_code: PE
+    start_date: 1997-01-01
+    end_date: today
