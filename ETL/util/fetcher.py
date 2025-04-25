@@ -20,7 +20,7 @@ def fetch_data(
     url: str,
     target_content_type: str,
     output_content_type: str = "tabular",
-    retries: int = 3,
+    retries: int = 5,
     retry_delay: int = 5,
     request_type: str = "get",
     csv_kwargs: dict[str, str] = {},
@@ -179,13 +179,14 @@ def fetch_data(
             logging.error(f"Timeout error. Retrying ({attempt}/{retries})...")
             time.sleep(retry_delay)
 
-        except SSLError:
-            raise Exception("SSL error. Please verify the SSL certificate.")
-
         except HTTPError:
-            raise Exception(
+            logging.error(
                 f"HTTP error. The URL {url} is not valid or the server is not responding."
             )
+            time.sleep(retry_delay)
+
+        except SSLError:
+            raise Exception("SSL error. Please verify the SSL certificate.")
 
         except RequestException:
             raise Exception(f"Request error. The URL {url} is not valid.")
