@@ -20,7 +20,7 @@ import util.fetcher
 
 def get_available_requests(
     code: str | None = None,
-) -> list[tuple[int, bool] | tuple[None, bool]]:
+) -> list[tuple[int | None, bool]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the IESO website.
 
@@ -31,7 +31,7 @@ def get_available_requests(
 
     Returns
     -------
-    list[tuple[int, bool] | tuple[None, bool]]
+    list[tuple[int | None, bool]]
         The list of available requests
     """
 

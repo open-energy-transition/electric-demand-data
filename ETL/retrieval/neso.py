@@ -106,9 +106,6 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     # Fetch the electricity demand data from the URL.
     dataset = util.fetcher.fetch_data(url, "json", json_keys=["result", "records"])
 
-    # Get the time zone of the country.
-    local_time_zone = util.general.get_time_zone("GB")
-
     # Extract the electricity demand time series.
     electricity_demand_time_series = pandas.Series(
         dataset["ND"].values,
@@ -116,7 +113,7 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
             start=f"{year}-01-01 00:30",
             periods=len(dataset),
             freq="30min",
-            tz=local_time_zone,
+            tz="Europe/London",
         ),
     )
 

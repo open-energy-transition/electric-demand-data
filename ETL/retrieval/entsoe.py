@@ -78,7 +78,7 @@ def get_url(
     """
 
     # Check if the retrieval period is less than 1 year.
-    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("1y"), (
+    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("366days"), (
         "The retrieval period must be less than or equal to 1 year."
     )
 
@@ -132,7 +132,7 @@ def download_and_extract_data_for_request(
     """
 
     # Check if the retrieval period is less than 1 year.
-    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("1y"), (
+    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("366days"), (
         "The retrieval period must be less than or equal to 1 year."
     )
 

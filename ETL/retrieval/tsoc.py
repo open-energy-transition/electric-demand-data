@@ -147,7 +147,7 @@ def _read_timestamp_and_generation(
 
 def download_and_extract_data_for_request(
     start_date: pandas.Timestamp,
-) -> tuple[list[str], list[str], list[str], list[float | None]]:
+) -> pandas.Series:
     """
     Download and extract the electricity generation data from the TSOC website.
 
