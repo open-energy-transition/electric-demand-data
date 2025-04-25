@@ -26,6 +26,7 @@ dependencies = [
     "shapely>=2.0.7",
     "timezonefinder>=6.5.8",
     "xarray>=2025.1.2",
+    "xlrd>=2.0.1",
 ]
 
 [dependency-groups]
