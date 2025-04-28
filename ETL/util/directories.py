@@ -29,7 +29,7 @@ def read_folders_structure() -> dict[str, str]:
     )
 
     # Define the default path to the yaml file.
-    folders_structure_file_path = os.path.join(root_folder, "directories.yaml")
+    folders_structure_file_path = os.path.join(root_folder, "util", "directories.yaml")
 
     # Read the folders structure from the file.
     with open(folders_structure_file_path, "r") as file:
