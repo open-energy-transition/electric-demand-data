@@ -6,7 +6,7 @@ Description:
 
     This script downloads electricity demand data from various data sources.
 
-    Users can specify a data source and optionally provide a country or region code to retrieve specific data.
+    Users can specify a data source and optionally provide a country or subdivision code to retrieve specific data.
 
     The retrieved data is cleaned and saved in a structured format for further analysis.
 """
@@ -36,7 +36,8 @@ import retrieval.ons
 import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
-import util.general
+import util.directories
+import util.entities
 import util.time_series
 
 retrieval_module = {
@@ -76,8 +77,8 @@ def read_command_line_arguments() -> argparse.Namespace:
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
         description="Download electricity demand data from the specified data source. "
-        "You can specify the country or region code or provide a file containing the list of codes. "
-        "If no code or file is provided, the data retrieval will be run for all the countries or regions available on the data source platform."
+        "You can specify the country or subdivision code or provide a file containing the list of codes. "
+        "If no code or file is provided, the data retrieval will be run for all the countries and subdivisions available on the data source website."
     )
     parser.add_argument(
         "data_source",
@@ -89,7 +90,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-c",
         "--code",
         type=str,
-        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
+        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and subdivision code (example: "US_CAL")',
         required=False,
     )
     parser.add_argument(
@@ -110,7 +111,7 @@ def check_and_get_codes(
     args: argparse.Namespace,
 ) -> tuple[list[str], bool]:
     """
-    Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
+    Check the validity of the country and subdivision codes and return the list of codes of the countries and subdivisions of interest.
 
     Parameters
     ----------
@@ -120,58 +121,48 @@ def check_and_get_codes(
     Returns
     -------
     codes : list[str]
-        The list of codes of the countries or regions of interest
-    one_code_on_platform : bool
-        A flag to check if there is only one code on the platform
+        The list of codes of the countries and subdivisions of interest
+    one_code_in_data_source : bool
+        A flag to check if there is only one code on the data source website
     """
 
-    # Get the directory of the retrieval scripts.
-    retrieval_scripts_directory = util.general.read_folders_structure()[
-        "retrieval_scripts_folder"
-    ]
+    # Get the list of countries and subdivisions available on the data source website.
+    codes_in_data_source = util.entities.read_codes(data_source=args.data_source.lower())
 
-    # Define the yaml file containing the list of codes.
-    yaml_file_path = os.path.join(
-        retrieval_scripts_directory, args.data_source.lower() + ".yaml"
-    )
-
-    # Get the list of codes available on the platform.
-    codes_on_platform = util.general.read_codes_from_file(yaml_file_path)
-
-    # Define a flag to check if there is only one code on the platform.
-    one_code_on_platform = len(codes_on_platform) == 1
+    # Define a flag to check if there is only one code on the data source website.
+    one_code_in_data_source = len(codes_in_data_source) == 1
 
     if args.code is not None:
-        # Check if the code is in the list of countries or regions available on the platform.
-        if args.code not in codes_on_platform:
+        # Check if the code is in the list of countries and subdivisions available on the data source website.
+        if args.code not in codes_in_data_source:
             raise ValueError(
-                f"Code {args.code} is not available on the {args.data_source} platform. Please choose one of the following: {', '.join(codes_on_platform)}"
+                f"Code {args.code} is not available on the {args.data_source} website. Please choose one of the following: {', '.join(codes_in_data_source)}"
             )
         else:
             codes = [args.code]
 
     elif args.file is not None:
-        # Read the codes from the file.
-        codes = util.general.read_codes_from_file(args.file)
+        # Get the list of countries and subdivisions available on the specified file.
+        codes = util.entities.read_codes(args.file)
 
-        # Check if the codes are in the list of countries or regions available on the platform.
+        # Check if the codes are in the list of countries and subdivisions available on the data source website.
         for code in codes:
-            if code not in codes_on_platform:
+            if code not in codes_in_data_source:
                 logging.error(
-                    f"Code {code} is not available on the {args.data_source} platform."
+                    f"Code {code} is not available on the {args.data_source} website."
                 )
                 codes.remove(code)
 
         # Check if there are any codes left.
         if len(codes) == 0:
             raise ValueError(
-                f"None of the codes in the file are available on the {args.data_source} platform. Please choose from the following: {', '.join(codes_on_platform)}"
+                f"None of the codes in the file are available on the {args.data_source} website. Please choose from the following: {', '.join(codes_in_data_source)}"
             )
     else:
-        # Run the data retrieval for all the countries or regions available on the platform.
-        codes = codes_on_platform
+        # Run the data retrieval for all the countries and subdivisions available on the data source website.
+        codes = codes_in_data_source
 
-    return codes, one_code_on_platform
+    return codes, one_code_in_data_source
 
 
 def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
@@ -183,7 +174,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     data_source : str
         The data source
     code : str, optional
-        The code of the country or region
+        The code of the country or subdivision
 
     Returns
     -------
@@ -254,7 +245,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
 
 def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     """
-    Run the electricity demand data retrieval for the countries or regions of interest.
+    Run the electricity demand data retrieval for the countries and subdivisions of interest.
 
     Parameters
     ----------
@@ -264,8 +255,8 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
         The directory to store the electricity demand time series
     """
 
-    # Get the list of codes of the countries or regions of interest.
-    codes, one_code_on_platform = check_and_get_codes(args)
+    # Get the list of codes of the countries and subdivisions of interest.
+    codes, one_code_in_data_source = check_and_get_codes(args)
 
     logging.info(f"Retrieving electricity data from the {args.data_source} website.")
 
@@ -275,7 +266,7 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
 
         # Retrieve the electricity demand time series.
         electricity_demand_time_series = retrieve_data(
-            args.data_source, None if one_code_on_platform else code
+            args.data_source, None if one_code_in_data_source else code
         )
 
         # Save the electricity demand time series.
@@ -297,7 +288,7 @@ def main() -> None:
 
     # Set up the logging configuration.
     log_file_name = f"electricity_data_from_{args.data_source}.log"
-    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.directories.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),
@@ -307,7 +298,7 @@ def main() -> None:
     )
 
     # Create a directory to store the electricity demand time series.
-    result_directory = util.general.read_folders_structure()[
+    result_directory = util.directories.read_folders_structure()[
         "electricity_demand_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)

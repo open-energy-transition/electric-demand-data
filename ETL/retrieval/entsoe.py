@@ -30,7 +30,7 @@ def get_available_requests(
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------

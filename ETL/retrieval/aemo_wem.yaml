@@ -1,6 +1,6 @@
-territories:
-  - region_name: Western Australia
-    region_code: WA
+entities:
+  - subdivision_name: Western Australia
+    subdivision_code: WA
     country_name: Australia
     country_code: AU
     start_date: 2006-09-20

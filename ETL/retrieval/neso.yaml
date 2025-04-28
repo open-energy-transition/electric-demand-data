@@ -1,6 +1,6 @@
-territories:
-  - region_name: Great Britain
-    region_code: GB
+entities:
+  - subdivision_name: Great Britain
+    subdivision_code: GB
     country_name: United Kingdom
     country_code: GB
     start_date: 2009-01-01

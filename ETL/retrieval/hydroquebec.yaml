@@ -1,6 +1,6 @@
-territories:
-  - region_name: Quebec
-    region_code: QC
+entities:
+  - subdivision_name: Quebec
+    subdivision_code: QC
     country_name: Canada
     country_code: CA
     start_date: 2019-01-01

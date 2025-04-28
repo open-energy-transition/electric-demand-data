@@ -1,4 +1,4 @@
-territories:
+entities:
   - country_name: Austria
     country_code: AT
   - country_name: Belgium

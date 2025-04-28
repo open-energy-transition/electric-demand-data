@@ -1,6 +1,6 @@
-territories:
-  - region_name: New Brunswick
-    region_code: NB
+entities:
+  - subdivision_name: New Brunswick
+    subdivision_code: NB
     country_name: Canada
     country_code: CA
     start_date: 2018-01-01

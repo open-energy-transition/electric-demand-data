@@ -24,7 +24,7 @@ def get_available_requests(code: str | None = None) -> list[int]:
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------
@@ -33,7 +33,7 @@ def get_available_requests(code: str | None = None) -> list[int]:
     """
 
     # Return the available requests, which are the years from 2000 to current year.
-    return [year for year in range(2000, pandas.Timestamp.now().year + 1)]
+    return list(range(2000, 2026))
 
 
 def get_url(year: int) -> str:
@@ -57,7 +57,7 @@ def get_url(year: int) -> str:
     return f"https://ons-aws-prod-opendata.s3.amazonaws.com/dataset/curva-carga-ho/CURVA_CARGA_{year}.csv"
 
 
-def download_and_extract_data_for_request(year: int, region_code: str) -> pandas.Series:
+def download_and_extract_data_for_request(year: int, subdivision_code: str) -> pandas.Series:
     """
     Download and extract the electricity demand data from the ONS website.
 
@@ -65,8 +65,8 @@ def download_and_extract_data_for_request(year: int, region_code: str) -> pandas
     ----------
     year : int
         The year of the electricity demand data
-    region_code : str
-        The code of the region of interest
+    subdivision_code : str
+        The code of the subdivision of interest
 
     Returns
     -------
@@ -78,12 +78,12 @@ def download_and_extract_data_for_request(year: int, region_code: str) -> pandas
 
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 
-    # Extract the region code.
-    if "_" in region_code:
-        region_code = region_code.split("_")[1]
+    # Extract the subdivision code.
+    if "_" in subdivision_code:
+        subdivision_code = subdivision_code.split("_")[1]
     else:
         raise ValueError(
-            f"Invalid region_code format: '{region_code}'. Expected a combination of ISO Alpha-2 code and region code separated by an underscore"
+            f"Invalid subdivision_code format: '{subdivision_code}'. Expected a combination of ISO Alpha-2 code and subdivision code separated by an underscore"
         )
 
     # Get the URL of the electricity demand data.
@@ -92,8 +92,8 @@ def download_and_extract_data_for_request(year: int, region_code: str) -> pandas
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"sep": ";"})
 
-    # Filter the dataset for the region of interest.
-    dataset = dataset[dataset["id_subsistema"] == region_code]
+    # Filter the dataset for the subdivision of interest.
+    dataset = dataset[dataset["id_subsistema"] == subdivision_code]
 
     # Extract the electricity demand time series.
     electricity_demand_time_series = pandas.Series(

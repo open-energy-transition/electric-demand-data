@@ -40,7 +40,7 @@ def harmonize_coords(
 
 
 def get_fraction_of_grid_cells_in_shape(
-    region_shape: geopandas.GeoDataFrame,
+    entity_shape: geopandas.GeoDataFrame,
     resolution: float = 0.25,
     make_plot: bool = True,
 ) -> xarray.DataArray:
@@ -49,12 +49,12 @@ def get_fraction_of_grid_cells_in_shape(
 
     Parameters
     ----------
-    region_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the region of interest
+    entity_shape : geopandas.GeoDataFrame
+        GeoDataFrame containing the country or subdivision of interest
     resolution : float
         The resolution of the grid cells in degrees
     make_plot : bool
-        Whether to make a plot of the fraction of each grid cell that is in the given region
+        Whether to make a plot of the fraction of each grid cell that is in the given country or subdivision
 
     Returns
     -------
@@ -62,10 +62,10 @@ def get_fraction_of_grid_cells_in_shape(
         Fraction of each grid cell that is in the given shape
     """
 
-    # Calculate the lateral bounds for the cutout based on the lateral bounds of the region of interest.
-    cutout_bounds = util.shapes.get_region_bounds(region_shape)
+    # Calculate the lateral bounds for the cutout based on the lateral bounds of the country or subdivision of interest.
+    cutout_bounds = util.shapes.get_entity_bounds(entity_shape)
 
-    # Create a temporary cutout to have the grid cell of the region of interest.
+    # Create a temporary cutout to have the grid cell of the country or subdivision of interest.
     cutout = atlite.Cutout(
         "temporary_cutout",
         module="era5",
@@ -77,7 +77,7 @@ def get_fraction_of_grid_cells_in_shape(
 
     # Calculate the fraction of each grid cell that is in the given shape.
     fraction_of_grid_cells_in_shape_np = atlite.gis.compute_indicatormatrix(
-        cutout.grid, region_shape, orig_crs=4326, dest_crs=4326
+        cutout.grid, entity_shape, orig_crs=4326, dest_crs=4326
     ).toarray()
 
     # Fix NaN and Inf values to 0.0 to avoid numerical issues.
@@ -107,7 +107,7 @@ def get_fraction_of_grid_cells_in_shape(
     if make_plot:
         util.figures.simple_plot(
             fraction_of_grid_cells_in_shape,
-            f"fraction_of_grid_cells_in_shape_{region_shape.index[0]}",
+            f"fraction_of_grid_cells_in_shape_{entity_shape.index[0]}",
         )
 
     return fraction_of_grid_cells_in_shape

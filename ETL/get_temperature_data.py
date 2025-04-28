@@ -4,24 +4,26 @@ import os
 import geopandas
 import pandas
 import pytz
-import util.general
+import util.directories
 import util.geospatial
+import util.entities
+import util.shapes
 import util.time_series
 import xarray
 
 
-def get_largest_population_densities_in_region(
-    region_shape: geopandas.GeoDataFrame,
+def get_largest_population_densities_in_entity(
+    entity_shape: geopandas.GeoDataFrame,
     population_density: xarray.DataArray,
     number_of_grid_cells: int,
 ) -> xarray.DataArray:
     """
-    Get the population density data in the given region, ready to be sorted.
+    Get the population density data in the given country or subdivision, ready to be sorted.
 
     Parameters
     ----------
-    region_shape : geopandas.GeoDataFrame
-        The shape of the region of interest
+    entity_shape : geopandas.GeoDataFrame
+        The shape of the country or subdivision of interest
     population_density : xarray.DataArray
         Population density data
     number_of_grid_cells : int
@@ -35,7 +37,7 @@ def get_largest_population_densities_in_region(
 
     # Calculate the fraction of each grid cell that is in the given shapes.
     fraction_of_grid_cells_in_shape = (
-        util.geospatial.get_fraction_of_grid_cells_in_shape(region_shape)
+        util.geospatial.get_fraction_of_grid_cells_in_shape(entity_shape)
     )
 
     # Rearrange the population density data to sort the values.
@@ -54,49 +56,49 @@ def get_largest_population_densities_in_region(
 
 
 def get_temperature_in_largest_population_density_areas(
-    year: int, region_shape: geopandas.GeoDataFrame, number_of_grid_cells: int
+    year: int, entity_shape: geopandas.GeoDataFrame, number_of_grid_cells: int
 ) -> pandas.Series:
     """
-    Get the temperature data for the largest population density areas in the given country.
+    Get the temperature data for the largest population density areas in the given country or subdivision.
 
     Parameters
     ----------
     year : int
         The year of the temperature data
-    region_shape : geopandas.GeoDataFrame
-        The shape of the region of interest
+    entity_shape : geopandas.GeoDataFrame
+        The shape of the country or subdivision of interest
     number_of_grid_cells : int
         The number of grid cells to consider
 
     Returns
     -------
     temperature_time_series : pandas.Series
-        Temperature data for the largest population density areas in the given country
+        Temperature data for the largest population density areas in the given country or subdivision
     """
 
     # Read the temperature data from the Copernicus Climate Data Store (CDS).
-    temperature_data_directory = util.general.read_folders_structure()["weather_folder"]
+    temperature_data_directory = util.directories.read_folders_structure()["weather_folder"]
     temperature_data = util.geospatial.load_xarray(
         os.path.join(
             temperature_data_directory,
-            f"2m_temperature_{region_shape.index[0]}_{year}.nc",
+            f"2m_temperature_{entity_shape.index[0]}_{year}.nc",
         )
     )
 
-    # Read the regional population density data.
-    population_density_directory = util.general.read_folders_structure()[
+    # Read the population density data of the country or subdivision of interest.
+    population_density_directory = util.directories.read_folders_structure()[
         "population_density_folder"
     ]
     population_density = util.geospatial.load_xarray(
         os.path.join(
             population_density_directory,
-            f"population_density_0.25_deg_{region_shape.index[0]}_2015.nc",
+            f"population_density_0.25_deg_{entity_shape.index[0]}_2015.nc",
         )
     )
 
-    # Get the population density data in the given region, ready to be sorted.
-    largest_population_densities = get_largest_population_densities_in_region(
-        region_shape, population_density, number_of_grid_cells=number_of_grid_cells
+    # Get the population density data in the given country or subdivions, ready to be sorted.
+    largest_population_densities = get_largest_population_densities_in_entity(
+        entity_shape, population_density, number_of_grid_cells=number_of_grid_cells
     )
 
     # Get the temperature data for the grid cells with the largest population densities.
@@ -119,7 +121,7 @@ def get_temperature_in_largest_population_density_areas(
 
 
 def add_temperature_statistics(
-    temperature_time_series: pandas.Series, country_time_zone: pytz.timezone
+    temperature_time_series: pandas.Series, entity_time_zone: pytz.timezone
 ) -> pandas.DataFrame:
     """
     Add temperature statistics to the temperature time series.
@@ -128,8 +130,8 @@ def add_temperature_statistics(
     ----------
     temperature_time_series : pandas.Series
         Original temperature time series
-    country_time_zone : pytz.timezone
-        Time zone of the country
+    entity_time_zone : pytz.timezone
+        Time zone of the country or subdivision of interest
 
     Returns
     -------
@@ -139,7 +141,7 @@ def add_temperature_statistics(
 
     # Convert the temperature time series to the local time zone.
     temperature_time_series = temperature_time_series.tz_localize("UTC").tz_convert(
-        country_time_zone
+        entity_time_zone
     )
 
     # Get the montly average temperature.
@@ -205,7 +207,7 @@ def run_temperature_calculation() -> None:
     """
 
     # Set up the logging configuration.
-    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.directories.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = "temperature_data.log"
     logging.basicConfig(
@@ -216,12 +218,12 @@ def run_temperature_calculation() -> None:
     )
 
     # Create a directory to store the weather data.
-    result_directory = util.general.read_folders_structure()["temperature_folder"]
+    result_directory = util.directories.read_folders_structure()["temperature_folder"]
     os.makedirs(result_directory, exist_ok=True)
 
-    # Read the codes of the regions of interest.
-    settings_directory = util.general.read_folders_structure()["settings_folder"]
-    region_codes = util.general.read_codes_from_file(
+    # Read the codes of the countries and subdivisions of interest.
+    settings_directory = util.directories.read_folders_structure()["settings_folder"]
+    codes = util.entities.read_codes(
         os.path.join(settings_directory, "gegis__all_countries.yaml")
     )
 
@@ -237,42 +239,42 @@ def run_temperature_calculation() -> None:
     for year in years:
         logging.info(f"Year {year}.")
 
-        # Loop over the regions of interest.
-        for region_code in region_codes:
-            logging.info(f"Retrieving data for {region_code}.")
+        # Loop over the countries and subdivisions of interest.
+        for code in codes:
+            logging.info(f"Retrieving data for {code}.")
 
             # Define the file paths of the temperature time series.
             temperature_file_path_top_1 = os.path.join(
                 result_directory,
-                f"temperature_time_series_top_1_{region_code}_{year}" + file_type,
+                f"temperature_time_series_top_1_{code}_{year}" + file_type,
             )
             temperature_file_path_top_3 = os.path.join(
                 result_directory,
-                f"temperature_time_series_top_3_{region_code}_{year}" + file_type,
+                f"temperature_time_series_top_3_{code}_{year}" + file_type,
             )
 
             # Check if any of the files does not exist.
             if not os.path.exists(temperature_file_path_top_1) or not os.path.exists(
                 temperature_file_path_top_3
             ):
-                # Get the shape of the region of interest.
-                region_shape = util.geospatial.get_region_shape(region_code)
+                # Get the shape of the country or subdivision.
+                entity_shape = util.shapes.get_entity_shape(code)
 
-                # Get the time zone information for the region.
-                region_time_zone = util.general.get_time_zone(region_code)
+                # Get the time zone information for the country or subdivision.
+                entity_time_zone = util.entities.get_time_zone(code)
 
             # Check if the file of temperature time series for the largest population density area does not exist.
             if not os.path.exists(temperature_file_path_top_1):
-                # Get the temperature data for the largest population density area in the given region.
+                # Get the temperature data for the largest population density area in the given country or subdivision.
                 temperature_time_series_top_1 = (
                     get_temperature_in_largest_population_density_areas(
-                        year, region_shape, number_of_grid_cells=1
+                        year, entity_shape, number_of_grid_cells=1
                     )
                 )
 
                 # Add temperature statistics to the time series.
                 temperature_time_series_top_1 = add_temperature_statistics(
-                    temperature_time_series_top_1, region_time_zone
+                    temperature_time_series_top_1, entity_time_zone
                 )
 
                 # Save the temperature time series.
@@ -280,15 +282,15 @@ def run_temperature_calculation() -> None:
                     temperature_time_series_top_1,
                     temperature_file_path_top_1,
                     temperature_time_series_top_1.columns.values,
-                    local_time_zone=region_time_zone,
+                    local_time_zone=entity_time_zone,
                 )
 
             # Check if the file of temperature time series for the 3 largest population density areas does not exist.
             if not os.path.exists(temperature_file_path_top_3):
-                # Get the temperature data for the 3 largest population density areas in the given region.
+                # Get the temperature data for the 3 largest population density areas in the given country or subdivision.
                 temperature_time_series_top_3 = (
                     get_temperature_in_largest_population_density_areas(
-                        year, region_shape, number_of_grid_cells=3
+                        year, entity_shape, number_of_grid_cells=3
                     )
                 )
 
@@ -297,7 +299,7 @@ def run_temperature_calculation() -> None:
                     temperature_time_series_top_3,
                     temperature_file_path_top_3,
                     "Temperature (K)",
-                    local_time_zone=region_time_zone,
+                    local_time_zone=entity_time_zone,
                 )
 
 

@@ -1,4 +1,4 @@
-territories:
+entities:
   - country_name: Argentina
     country_code: AR
     start_date: 2024-09-01

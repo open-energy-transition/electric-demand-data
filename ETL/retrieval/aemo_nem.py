@@ -25,7 +25,7 @@ def get_available_requests(code: str | None) -> list[tuple[int, int]]:
     Parameters
     ----------
     code : str, optional
-        The code of the country or region
+        The code of the country or subdivision
 
     Returns
     -------
@@ -34,17 +34,17 @@ def get_available_requests(code: str | None) -> list[tuple[int, int]]:
     """
 
     if code is None:
-        raise ValueError("The region code must be provided.")
+        raise ValueError("The code must be provided.")
     else:
-        # Get the region code.
+        # Get the subdivision code.
         if "_" in code:
-            # Extract the region code from the code.
-            region_code = code.split("_")[1]
+            # Extract the subdivision code from the code.
+            subdivision_code = code.split("_")[1]
         else:
-            region_code = code
+            subdivision_code = code
 
         # For Tasmania, the data starts from May 2005.
-        if region_code == "TAS":
+        if subdivision_code == "TAS":
             start_date = pandas.Timestamp("2005-05-01")
         else:
             start_date = pandas.Timestamp("1998-12-01")
@@ -61,7 +61,7 @@ def get_available_requests(code: str | None) -> list[tuple[int, int]]:
     return [(int(year), int(month)) for year, month in values_list]
 
 
-def get_url(year: int, month: int, region_code: str) -> str:
+def get_url(year: int, month: int, subdivision_code: str) -> str:
     """
     Get the URL of the electricity demand data on the AEMO website.
 
@@ -71,8 +71,8 @@ def get_url(year: int, month: int, region_code: str) -> str:
         The month of the data to retrieve
     year : int
         The year of the data to retrieve
-    region_code : str
-        The region code of the data to retrieve
+    subdivision_code : str
+        The subdivision code of the data to retrieve
 
     Returns
     -------
@@ -81,18 +81,18 @@ def get_url(year: int, month: int, region_code: str) -> str:
     """
 
     # Check if the year and month are supported.
-    assert (year, month) in get_available_requests(region_code), (
+    assert (year, month) in get_available_requests(subdivision_code), (
         f"Year {year} and month {month} are not supported."
     )
 
     # Define the URL of the electricity demand data.
-    url = f"https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{year}{month:02d}_{region_code}1.csv"
+    url = f"https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{year}{month:02d}_{subdivision_code}1.csv"
 
     return url
 
 
 def download_and_extract_data_for_request(
-    year: int, month: int, region_code: str
+    year: int, month: int, subdivision_code: str
 ) -> pandas.Series:
     """
     Download and extract the electricity demand data from the AEMO website.
@@ -103,8 +103,8 @@ def download_and_extract_data_for_request(
         The year of the electricity demand data
     month : int
         The month of the electricity demand data
-    region_code : str
-        The region code of the electricity demand data
+    subdivision_code : str
+        The subdivision code of the electricity demand data
 
     Returns
     -------
@@ -113,7 +113,7 @@ def download_and_extract_data_for_request(
     """
 
     # Check if the year and month are supported.
-    assert (year, month) in get_available_requests(region_code), (
+    assert (year, month) in get_available_requests(subdivision_code), (
         f"Year {year} and month {month} are not supported."
     )
 
@@ -121,12 +121,12 @@ def download_and_extract_data_for_request(
         f"Retrieving electricity demand data for the year {year} and month {month}."
     )
 
-    # Extract the region code.
-    if "_" in region_code:
-        region_code = region_code.split("_")[1]
+    # Extract the subdivision code.
+    if "_" in subdivision_code:
+        subdivision_code = subdivision_code.split("_")[1]
     else:
         raise ValueError(
-            f"Invalid region_code format: '{region_code}'. Expected a combination of ISO Alpha-2 code and region code separated by an underscore"
+            f"Invalid subdivision_code format: '{subdivision_code}'. Expected a combination of ISO Alpha-2 code and subdivision code separated by an underscore"
         )
 
     # Define the headers for the request.
@@ -135,7 +135,7 @@ def download_and_extract_data_for_request(
     }
 
     # Get the URL of the electricity demand data.
-    url = get_url(year, month, region_code)
+    url = get_url(year, month, subdivision_code)
 
     # Fetch the electricity demand data from the URL.
     dataset = util.fetcher.fetch_data(

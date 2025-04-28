@@ -1,4 +1,4 @@
-territories:
+entities:
   - country_name: Algeria
     country_code: DZ
     start_date: 2008-01-01

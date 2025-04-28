@@ -8,7 +8,7 @@ Description:
 
     The data is retrieved for the years from 2011 to 2024. The data is retrieved from the available Excel files on the AESO website.
 
-    Source: https://www.aeso.ca/market/market-and-system-reporting/data-requests/hourly-load-by-area-and-region
+    Source: https://www.aeso.ca/market/market-and-system-reporting/data-requests/hourly-load-by-area-and-subdivision
 """
 
 import logging
@@ -24,7 +24,7 @@ def get_available_requests(code: str | None = None) -> list[int]:
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------

@@ -1,34 +1,34 @@
-territories:
-  - region_name: New South Wales
-    region_code: NSW
+entities:
+  - subdivision_name: New South Wales
+    subdivision_code: NSW
     country_name: Australia
     country_code: AU
     start_date: 1998-12-01
     end_date: today
     time_zone: Australia/Sydney
-  - region_name: Queensland
-    region_code: QLD
+  - subdivision_name: Queensland
+    subdivision_code: QLD
     country_name: Australia
     country_code: AU
     start_date: 1998-12-01
     end_date: today
     time_zone: Australia/Brisbane
-  - region_name: Victoria
-    region_code: VIC
+  - subdivision_name: Victoria
+    subdivision_code: VIC
     country_name: Australia
     country_code: AU
     start_date: 1998-12-01
     end_date: today
     time_zone: Australia/Melbourne
-  - region_name: South Australia
-    region_code: SA
+  - subdivision_name: South Australia
+    subdivision_code: SA
     country_name: Australia
     country_code: AU
     start_date: 1998-12-01
     end_date: today
     time_zone: Australia/Adelaide
-  - region_name: Tasmania
-    region_code: TAS
+  - subdivision_name: Tasmania
+    subdivision_code: TAS
     country_name: Australia
     country_code: AU
     start_date: 2005-05-01

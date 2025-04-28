@@ -17,7 +17,7 @@ import logging
 import os
 
 import pandas
-import util.general
+import util.directories
 
 
 def get_available_requests() -> None:
@@ -56,7 +56,7 @@ def download_and_extract_data() -> pandas.Series:
     """
 
     # Get the data folder.
-    data_directory = util.general.read_folders_structure()["data_folder"]
+    data_directory = util.directories.read_folders_structure()["data_folder"]
 
     # Get the paths of the downloaded files. Each file starts with "ESK".
     downloaded_file_paths = [

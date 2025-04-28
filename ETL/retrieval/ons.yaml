@@ -1,27 +1,27 @@
-territories:
-  - region_name: North
-    region_code: N
+entities:
+  - subdivision_name: North
+    subdivision_code: N
     country_name: Brazil
     country_code: BR
     start_date: 2000-01-01
     end_date: today
     time_zone: America/Sao_Paulo
-  - region_name: North-East
-    region_code: NE
+  - subdivision_name: North-East
+    subdivision_code: NE
     country_name: Brazil
     country_code: BR
     start_date: 2000-01-01
     end_date: today
     time_zone: America/Sao_Paulo
-  - region_name: South-East
-    region_code: SE
+  - subdivision_name: South-East
+    subdivision_code: SE
     country_name: Brazil
     country_code: BR
     start_date: 2000-01-01
     end_date: today
     time_zone: America/Sao_Paulo
-  - region_name: South
-    region_code: S
+  - subdivision_name: South
+    subdivision_code: S
     country_name: Brazil
     country_code: BR
     start_date: 2000-01-01

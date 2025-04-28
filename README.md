@@ -5,9 +5,9 @@ It includes the process to obtain the open data from various sources (see ETL) a
 The project is in active development, we are always looking for suggestions and contributions!
 
 
-## Countries and regions for which retreival scripts of electricity demand data are available
+## Countries and subdivisions for which retreival scripts of electricity demand data are available
 
-![Data availability](ETL/figures/available_countries.png "Countries and regions with available electricity demand data")
+![Data availability](ETL/figures/available_countries.png "Countries and subdivisions with available electricity demand data")
 
 ## Development
 

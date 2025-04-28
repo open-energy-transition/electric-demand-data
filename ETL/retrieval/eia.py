@@ -29,7 +29,7 @@ def get_available_requests(
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------
@@ -56,7 +56,7 @@ def get_available_requests(
 def get_url(
     start_date_and_time: pandas.Timestamp,
     end_date_and_time: pandas.Timestamp,
-    region_code: str,
+    subdivision_code: str,
 ) -> str:
     """
     Get the URL of the electricity demand data on the EIA website.
@@ -67,8 +67,8 @@ def get_url(
         The start date and time of the data retrieval
     end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
-    region_code : str
-        The code of the region of interest
+    subdivision_code : str
+        The code of the subdivision of interest
 
     Returns
     -------
@@ -97,13 +97,13 @@ def get_url(
     end = end_date_and_time.strftime("%Y-%m-%dT%H")
 
     # Return the URL of the electricity demand data.
-    return f"https://api.eia.gov/v2/electricity/rto/region-data/data/?api_key={api_key}&facets[type][]=D&facets[respondent][]={region_code}&start={start}&end={end}&frequency=hourly&data[0]=value&sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000"
+    return f"https://api.eia.gov/v2/electricity/rto/region-data/data/?api_key={api_key}&facets[type][]=D&facets[respondent][]={subdivision_code}&start={start}&end={end}&frequency=hourly&data[0]=value&sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000"
 
 
 def download_and_extract_data_for_request(
     start_date_and_time: pandas.Timestamp,
     end_date_and_time: pandas.Timestamp,
-    region_code: str,
+    subdivision_code: str,
 ) -> pandas.Series:
     """
     Download and extract the electricity demand data from the EIA website.
@@ -114,8 +114,8 @@ def download_and_extract_data_for_request(
         The start date and time of the data retrieval
     end_date_and_time : pandas.Timestamp
         The end date and time of the data retrieval
-    region_code : str
-        The code of the region of interest
+    subdivision_code : str
+        The code of the subdivision of interest
 
     Returns
     -------
@@ -135,16 +135,16 @@ def download_and_extract_data_for_request(
 
     logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 
-    # Extract the region code.
-    if "_" in region_code:
-        region_code = region_code.split("_")[1]
+    # Extract the subdivision code.
+    if "_" in subdivision_code:
+        subdivision_code = subdivision_code.split("_")[1]
     else:
         raise ValueError(
-            f"Invalid region_code format: '{region_code}'. Expected a combination of ISO Alpha-2 code and region code separated by an underscore"
+            f"Invalid subdivision_code format: '{subdivision_code}'. Expected a combination of ISO Alpha-2 code and subdivision code separated by an underscore"
         )
 
     # Get the URL of the electricity demand data.
-    url = get_url(start_date_and_time, end_date_and_time, region_code)
+    url = get_url(start_date_and_time, end_date_and_time, subdivision_code)
 
     # Fetch the electricity demand data from the URL.
     dataset = util.fetcher.fetch_data(url, "json", json_keys=["response", "data"])

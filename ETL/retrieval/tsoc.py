@@ -27,7 +27,7 @@ def get_available_requests(code: str | None = None) -> list[pandas.Timestamp]:
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------

@@ -24,7 +24,7 @@ def get_available_requests(code: str | None = None) -> None:
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
     """
 
     logging.info("The data is retrieved all at once.")

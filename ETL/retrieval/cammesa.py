@@ -18,7 +18,7 @@ import logging
 import pandas
 import util.fetcher
 
-region_id = {
+province_id = {
     "AR": 1002,  # Argentina
     "BAS": [425, 426],  # Provincia de Buenos Aires
     "CEN": 422,  # Centro
@@ -38,7 +38,7 @@ def get_available_requests(code: str | None = None) -> list[str]:
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------
@@ -48,7 +48,7 @@ def get_available_requests(code: str | None = None) -> list[str]:
 
     # Return the available requests, which are the days from 2024-08-01 to current date.
     return (
-        pandas.date_range(start="2024-08-01", end=pandas.Timestamp.today(), freq="D")
+        pandas.date_range(start="2024-09-01", end=pandas.Timestamp.today(), freq="D")
         .strftime("%Y-%m-%d")
         .to_list()
     )

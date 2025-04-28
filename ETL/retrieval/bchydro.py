@@ -25,7 +25,7 @@ def get_available_requests(code: str | None = None) -> list[int]:
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------
@@ -33,8 +33,8 @@ def get_available_requests(code: str | None = None) -> list[int]:
         The list of available requests
     """
 
-    # Return the available requests, which are the years from 2001 to current year.
-    return list(range(2001, pandas.Timestamp.now().year + 1))
+    # Return the available requests, which are the years from 2001 to 2025.
+    return list(range(2001, 2026))
 
 
 def get_url(year: int) -> str:

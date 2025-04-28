@@ -11,7 +11,7 @@ import xarray
 def get_request(
     ERA5_variable: str,
     year: int,
-    region_bounds: list[float] | None = None,
+    entity_bounds: list[float] | None = None,
     extra_time_steps: pandas.DatetimeIndex = None,
     uneven_utc_offset: bool = False,
 ) -> dict[str, str | list[str] | list[float]]:
@@ -24,8 +24,8 @@ def get_request(
         The ERA5 variable of interest
     year : int
         The year of the data retrieval
-    region_bounds : list of float, optional
-        The lateral bounds of the region of interest (West, South, East, North)
+    entity_bounds : list of float, optional
+        The lateral bounds of the country or subdivision of interest (West, South, East, North)
     extra_time_steps : pandas.DatetimeIndex, optional
         The extra time steps to consider
     uneven_utc_offset : bool, optional
@@ -45,13 +45,13 @@ def get_request(
         "download_format": "unarchived",
     }
 
-    # Add the region bounds if they are provided.
-    if region_bounds is not None:
+    # Add the country or subdivision bounds if they are provided.
+    if entity_bounds is not None:
         request["area"] = [
-            region_bounds[3],
-            region_bounds[0],
-            region_bounds[1],
-            region_bounds[2],
+            entity_bounds[3],
+            entity_bounds[0],
+            entity_bounds[1],
+            entity_bounds[2],
         ]  # North, West, South, East
 
     # Add the time steps of the year of interest or the extra time steps.
@@ -140,7 +140,7 @@ def download_ERA5_data_from_Copernicus(
     year: int,
     ERA5_variable: str,
     file_path: str,
-    region_bounds: list[float] | None = None,
+    entity_bounds: list[float] | None = None,
     local_time_zone: pytz.timezone = None,
 ) -> None:
     """
@@ -154,10 +154,10 @@ def download_ERA5_data_from_Copernicus(
         The ERA5 variable of interest
     file_path : str
         The full file path to store the ERA5 data
-    region_bounds : list of float, optional
-        The lateral bounds of the region of interest (West, South, East, North)
+    entity_bounds : list of float, optional
+        The lateral bounds of the country or subdivision of interest (West, South, East, North)
     local_time_zone : pytz.timezone, optional
-        The time zone of the region of interest
+        The time zone of the country or subdivision of interest
     """
 
     # Create a new CDS API client.
@@ -168,11 +168,11 @@ def download_ERA5_data_from_Copernicus(
 
     if local_time_zone is None:
         # Define the request.
-        request = get_request(ERA5_variable, year, region_bounds)
+        request = get_request(ERA5_variable, year, entity_bounds)
         client.retrieve(dataset, request, file_path)
 
     else:
-        # Get all the time steps of the year in the time zone of the region and convert them to UTC.
+        # Get all the time steps of the year in the time zone of the country or subdivision and convert them to UTC.
         time_steps = (
             (
                 pandas.date_range(
@@ -183,10 +183,10 @@ def download_ERA5_data_from_Copernicus(
             .tz_convert(None)
         )
 
-        # Find the time steps that are not in the year of interest (UTC) when considering the time zone of the region.
+        # Find the time steps that are not in the year of interest (UTC) when considering the time zone of the country or subdivision.
         extra_time_steps = time_steps[time_steps.year != year]
 
-        # Get the time difference to check if the time zone of the region has an uneven UTC offset.
+        # Get the time difference to check if the time zone of the country or subdivision has an uneven UTC offset.
         time_difference = (
             pandas.Timestamp(str(year), tz=local_time_zone).utcoffset().total_seconds()
             / 3600
@@ -204,11 +204,11 @@ def download_ERA5_data_from_Copernicus(
             request_1 = get_request(
                 ERA5_variable,
                 year,
-                region_bounds,
+                entity_bounds,
                 extra_time_steps=extra_time_steps,
                 uneven_utc_offset=uneven_utc_offset,
             )
-            request_2 = get_request(ERA5_variable, year, region_bounds)
+            request_2 = get_request(ERA5_variable, year, entity_bounds)
 
             # Download the two temperature datasets.
             client.retrieve(dataset, request_1, temporaty_file_path_1)
@@ -225,5 +225,5 @@ def download_ERA5_data_from_Copernicus(
 
         else:
             # Define the request.
-            request = get_request(ERA5_variable, year, region_bounds)
+            request = get_request(ERA5_variable, year, entity_bounds)
             client.retrieve(dataset, request, file_path)

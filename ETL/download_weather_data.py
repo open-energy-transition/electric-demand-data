@@ -6,9 +6,9 @@ Description:
 
     This script downloads weather data from the Copernicus Climate Data Store (CDS).
 
-    It then extracts the weather data for the regions of interest and saves it into NetCDF files.
+    It then extracts the weather data for the countries and subdivisions of interest and saves it into NetCDF files.
 
-    The country or region codes of interest can be provided as a yaml file. If no file is provided, the script will use all available codes.
+    The country and subdivision codes of interest can be provided as a yaml file. If no file is provided, the script will use all available codes.
 
     The variable of the weather data can be specified as a command line argument. The default variable is 2m_temperature.
 
@@ -20,8 +20,9 @@ import logging
 import os
 
 import retrieval.weather
-import util.general
+import util.directories
 import util.shapes
+import util.entities
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -44,7 +45,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes of the countries or regions of interest.",
+        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest.",
         required=False,
     )
     parser.add_argument(
@@ -73,7 +74,7 @@ def check_and_get_codes(
     args: argparse.Namespace,
 ) -> list[str]:
     """
-    Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
+    Check the validity of the country and subdivision codes and return the list of codes of the countries and subdivisions of interest.
 
     Parameters
     ----------
@@ -83,28 +84,28 @@ def check_and_get_codes(
     Returns
     -------
     codes : list[str]
-        The list of codes of the countries or regions of interest
+        The list of codes of the countries and subdivisions of interest
     """
 
-    # Get all the codes of the available countries and regions.
-    all_codes = util.general.read_all_codes()
+    # Get all the codes of the available countries and subdivisions.
+    all_codes = util.entities.read_all_codes()
 
     if args.file is not None:
-        # # If the file is provided, read the list of codes of the countries or regions of interest from the yaml file.
-        codes = util.general.read_codes_from_file(args.file)
+        # # If the file is provided, read the list of codes of the countries and subdivisions of interest from the yaml file.
+        codes = util.entities.read_codes(file_path=args.file)
 
         # Check if the codes are valid.
         for code in codes:
             if code not in all_codes:
                 logging.error(
-                    f"Code {code} is not available in the list of available countries and regions."
+                    f"Code {code} is not available in the list of available countries and subdivisions."
                 )
                 codes.remove(code)
 
         # Check if there are any codes left.
         if len(codes) == 0:
             raise ValueError(
-                f"None of the codes in the file are available in the list of available countries and regions. Please choose from the following codes: {all_codes}."
+                f"None of the codes in the file are available in the list of available countries and subdivisions. Please choose from the following codes: {all_codes}."
             )
     else:
         # If the file is not provided, use all the available codes.
@@ -124,24 +125,30 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     """
 
     # Get the directory to store the population density data.
-    result_directory = util.general.read_folders_structure()["weather_folder"]
+    result_directory = util.directories.read_folders_structure()["weather_folder"]
     os.makedirs(result_directory, exist_ok=True)
 
-    # Read the codes of the countries or regions of interest.
+    # Read the codes of the countries and subdivisions of interest.
     codes = check_and_get_codes(args)
 
-    # Define the years of the data retrieval.
-    start_year = 2015
-    end_year = 2015
-    years = range(start_year, end_year + 1)
+    # Loop over the countries and subdivisions of interest.
+    for code in codes:
+        logging.info(f"Retrieving {args.variable} data for {code}.")
 
-    # Loop over the years.
-    for year in years:
-        logging.info(f"Year {year}.")
+        if args.year is not None:
+            # If the year is provided, use it.
+            years = [args.year]
+        else:
+            # Read the start and end dates of the available data for the country or subdivision of interest.
+            start_and_end_dates = util.entities.read_all_date_ranges()[code]
 
-        # Loop over the regions of interest.
-        for code in codes:
-            logging.info(f"Retrieving {args.variable} data for {code}.")
+            # Get the years of the data retrieval.
+            years = [year for year in range(start_and_end_dates[0].year, start_and_end_dates[1].year + 1)]
+
+        # Loop over the years.
+        for year in years:
+
+            logging.info(f"Retrieving {args.variable} data in {year}")
 
             # Define the full file path of the ERA5 data.
             era5_data_file_path = os.path.join(
@@ -150,24 +157,24 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
             # Check if the file does not exist.
             if not os.path.exists(era5_data_file_path):
-                # Get the region of interest.
-                region_shape = util.shapes.get_region_shape(code)
+                # Get the shape of the country or subdivision.
+                entity_shape = util.shapes.get_entity_shape(code)
 
-                # Get the lateral bounds of the region of interest.
-                region_bounds = util.shapes.get_region_bounds(
-                    region_shape
+                # Get the lateral bounds of the country or subdivision.
+                entity_bounds = util.shapes.get_entity_bounds(
+                    entity_shape
                 )  # West, South, East, North
 
-                # Get the time zone of the region.
-                region_time_zone = util.general.get_time_zone(code)
+                # Get the time zone of the country or subdivision.
+                entity_time_zone = util.entities.get_time_zone(code)
 
                 # Download the ERA5 data from the Copernicus Climate Data Store (CDS).
                 retrieval.weather.download_ERA5_data_from_Copernicus(
                     year,
                     args.variable,
                     era5_data_file_path,
-                    region_bounds=region_bounds,
-                    local_time_zone=region_time_zone,
+                    entity_bounds=entity_bounds,
+                    local_time_zone=entity_time_zone,
                 )
 
                 logging.info(
@@ -181,7 +188,7 @@ def main() -> None:
 
     # Set up the logging configuration.
     log_file_name = "weather_data.log"
-    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.directories.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),

@@ -1,4 +1,4 @@
-territories:
+entities:
   - country_name: Nigeria
     country_code: NG
     start_date: 2016-01-01
