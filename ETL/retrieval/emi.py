@@ -12,6 +12,7 @@ Source: https://www.emi.ea.govt.nz/Wholesale/Reports/W_GD_C
 """
 
 import logging
+
 import pandas as pd
 import util.fetcher
 
