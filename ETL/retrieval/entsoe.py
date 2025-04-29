@@ -14,15 +14,56 @@ Description:
 
 import logging
 import os
-from pathlib import Path
 
 import pandas
+import util.directories
+import util.entities
 import util.fetcher
 from dotenv import load_dotenv
 
 
-def get_available_requests(
+def _check_input_parameters(
+    start_date: pandas.Timestamp | None = None,
+    end_date: pandas.Timestamp | None = None,
     code: str | None = None,
+) -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    start_date : pandas.Timestamp
+        The start date of the data retrieval
+    end_date : pandas.Timestamp
+        The end date of the data retrieval
+    code : str
+        The code of the subdivision of interest
+    """
+
+    if code is not None:
+        # Check if the code is valid.
+        util.entities.check_code(code, "entsoe")
+
+    if start_date is not None and end_date is not None:
+        # Check if the retrieval period is less than 1 year.
+        assert (end_date - start_date) <= pandas.Timedelta("366days"), (
+            "The retrieval period must be less than or equal to 1 year. start_date: "
+            f"{start_date}, end_date: {end_date}"
+        )
+
+        # Read the start date of the available data.
+        start_date_of_data_availability = pandas.to_datetime(
+            util.entities.read_date_ranges(data_source="entsoe")[code][0]
+        )
+
+        # Check that the start date is greater than or equal to the beginning of the data availability.
+        assert start_date >= start_date_of_data_availability, (
+            f"The beginning of the data availability is {start_date_of_data_availability}."
+        )
+
+
+def get_available_requests(
+    code: str,
 ) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the ENTSO-E website.
@@ -30,7 +71,7 @@ def get_available_requests(
     Parameters
     ----------
     code : str, optional
-        The code of the country or subdivision (not used in this function)
+        The code of the country
 
     Returns
     -------
@@ -38,37 +79,39 @@ def get_available_requests(
         The list of available requests
     """
 
-    # Define the start and end date according to the data availability.
-    start_date_and_time = pandas.Timestamp("2014-01-01 00:00:00")
-    end_date_and_time = pandas.Timestamp.today()
+    # Check if input parameters are valid.
+    _check_input_parameters(code=code)
 
-    # Define start and end dates and times for one-year retrieval periods. A one-year period is the maximum available on the platform.
-    start_date_and_time_of_period = pandas.date_range(
-        start_date_and_time, end_date_and_time, freq="YS"
-    )
-    end_date_and_time_of_period = start_date_and_time_of_period[1:].union(
-        pandas.to_datetime([end_date_and_time])
-    )
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="entsoe")[code]
+
+    # Define intervals for the retrieval periods. A one-year period is the maximum available on the platform.
+    intervals = pandas.date_range(start_date, end_date, freq="YS")
+    intervals = intervals.union(pandas.to_datetime([start_date, end_date]))
+
+    # Define start and end dates of the retrieval periods.
+    start_dates_and_times = intervals[:-1]
+    end_dates_and_times = intervals[1:]
 
     # Return the available requests, which are the beginning and end of each one-year period.
-    return list(zip(start_date_and_time_of_period, end_date_and_time_of_period))
+    return list(zip(start_dates_and_times, end_dates_and_times))
 
 
 def get_url(
-    start_date_and_time: pandas.Timestamp,
-    end_date_and_time: pandas.Timestamp,
-    iso_alpha_2_code: str = "",
+    start_date: pandas.Timestamp,
+    end_date: pandas.Timestamp,
+    code: str = "",
 ) -> str:
     """
     Get the URL of the electricity demand data on the ENTSO-E website. Used only to check if the platform is available.
 
     Parameters
     ----------
-    start_date_and_time : pandas.Timestamp
-        The start date and time of the data retrieval
-    end_date_and_time : pandas.Timestamp
-        The end date and time of the data retrieval
-    iso_alpha_2_code : str
+    start_date : pandas.Timestamp
+        The start date of the data retrieval
+    end_date : pandas.Timestamp
+        The end date of the data retrieval
+    code : str
         The ISO Alpha-2 code of the country
 
     Returns
@@ -77,25 +120,21 @@ def get_url(
         The URL of the electricity demand data
     """
 
-    # Check if the retrieval period is less than 1 year.
-    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("366days"), (
-        "The retrieval period must be less than or equal to 1 year."
-    )
-
-    # Check if the retrieval period starts before 2014.
-    assert start_date_and_time >= pandas.Timestamp("2014-01-01 00:00:00"), (
-        "The retrieval period must start after 2014-01-01 00:00:00."
-    )
+    # Check if input parameters are valid.
+    _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
 
     # Convert the start and end dates and times to the required format.
-    start = start_date_and_time.strftime("%Y%m%d%H00")
-    end = end_date_and_time.strftime("%Y%m%d%H00")
+    start = start_date.strftime("%Y%m%d%H00")
+    end = end_date.strftime("%Y%m%d%H00")
 
     # Define the domain of the country.
     domain = "10YBE----------2"  # Belgium
 
+    # Get the root directory of the project.
+    root_directory = util.directories.read_folders_structure()["root_folder"]
+
     # Load the environment variables.
-    load_dotenv(dotenv_path=Path(".") / ".env")
+    load_dotenv(dotenv_path=os.path.join(root_directory, ".env"))
 
     # Get the ENTSO-E API client.
     api_key = os.getenv("ENTSOE_API_KEY")
@@ -109,20 +148,20 @@ def get_url(
 
 
 def download_and_extract_data_for_request(
-    start_date_and_time: pandas.Timestamp,
-    end_date_and_time: pandas.Timestamp,
-    iso_alpha_2_code: str,
+    start_date: pandas.Timestamp,
+    end_date: pandas.Timestamp,
+    code: str,
 ) -> pandas.Series:
     """
     Download and extract the electricity demand data from the ENTSO-E website.
 
     Parameters
     ----------
-    start_date_and_time : pandas.Timestamp
-        The start date and time of the data retrieval period
-    end_date_and_time : pandas.Timestamp
-        The end date and time of the data retrieval period
-    iso_alpha_2_code : str
+    start_date : pandas.Timestamp
+        The start date of the data retrieval period
+    end_date : pandas.Timestamp
+        The end date of the data retrieval period
+    code : str
         The ISO Alpha-2 code of the country
 
     Returns
@@ -131,31 +170,29 @@ def download_and_extract_data_for_request(
         The electricity demand time series in MW
     """
 
-    # Check if the retrieval period is less than 1 year.
-    assert (end_date_and_time - start_date_and_time) <= pandas.Timedelta("366days"), (
-        "The retrieval period must be less than or equal to 1 year."
+    # Check if input parameters are valid.
+    _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
+
+    logging.info(
+        f"Retrieving electricity demand data from {start_date.date()} to {end_date.date()}."
     )
 
-    # Check if the retrieval period starts before 2014.
-    assert start_date_and_time >= pandas.Timestamp("2014-01-01 00:00:00"), (
-        "The retrieval period must start after 2014-01-01 00:00:00."
-    )
-
-    logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
+    # Get the root directory of the project.
+    root_directory = util.directories.read_folders_structure()["root_folder"]
 
     # Load the environment variables.
-    load_dotenv(dotenv_path=Path(".") / ".env")
+    load_dotenv(dotenv_path=os.path.join(root_directory, ".env"))
 
     # Get the ENTSO-E API client.
     api_key = os.getenv("ENTSOE_API_KEY")
 
-    # Add the time zone to the start date and time.
-    start_date_and_time = start_date_and_time.tz_localize("UTC")
-    end_date_and_time = end_date_and_time.tz_localize("UTC")
+    # Add the time zone to the start date.
+    start_date = start_date.tz_localize("UTC")
+    end_date = end_date.tz_localize("UTC")
 
     # Download the electricity demand time series from the ENTSO-E API.
     electricity_demand_time_series = util.fetcher.fetch_entsoe_demand(
-        api_key, iso_alpha_2_code, start_date_and_time, end_date_and_time
+        api_key, code, start_date, end_date
     )
 
     if not electricity_demand_time_series.empty:

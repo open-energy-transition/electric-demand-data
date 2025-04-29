@@ -1,28 +1,24 @@
 import logging
 import re
 import time
+import urllib.error
+import urllib.request
 from io import StringIO
 
 import pandas
 import requests
+import requests.exceptions
 from entsoe import EntsoePandasClient
 from entsoe.exceptions import NoMatchingDataError
-from requests.exceptions import (
-    ConnectionError,
-    HTTPError,
-    RequestException,
-    SSLError,
-    Timeout,
-)
 
 
 def fetch_data(
     url: str,
-    target_content_type: str,
-    output_content_type: str = "tabular",
+    content_type: str,
     retries: int = 5,
     retry_delay: int = 5,
-    request_type: str = "get",
+    read_with: str = "requests.get",
+    read_as: str = "tabular",
     csv_kwargs: dict[str, str] = {},
     excel_kwargs: dict[str, str] = {},
     verify_ssl: bool = True,
@@ -40,16 +36,16 @@ def fetch_data(
     ----------
     url : str
         The URL of the data source.
-    target_content_type : str
+    content_type : str
         The type of the content to be fetched.
-    output_content_type : str, optional
-        The output format of the fetched data, by default "tabular"
     retries : int, optional
         The number of retries in case of connection errors, by default 3
     delay : int, optional
         The delay between retries in seconds, by default 5
-    request_type : str, optional
-        The type of the request, by default "get"
+    read_with : str, optional
+        The library to use for reading the html content, by default "requests.get"
+    read_as : str, optional
+        The format to read the content as, by default "tabular"
     csv_kwargs : dict[str, str], optional
         The keyword arguments for reading CSV files, by default {}
     excel_kwargs : dict[str, str], optional
@@ -77,119 +73,132 @@ def fetch_data(
 
     for attempt in range(retries):
         try:
-            if target_content_type == "csv":
+            if content_type == "csv":
                 # Read the CSV file from the URL.
                 return pandas.read_csv(url, **csv_kwargs)
 
-            elif target_content_type == "excel":
+            elif content_type == "excel":
                 # Read the Excel file from the URL.
                 return pandas.read_excel(url, **excel_kwargs)
 
-            else:
-                # Read the HTML content from the URL.
-                if request_type == "get":
-                    # Send the GET request.
-                    response = requests.get(
-                        url,
-                        timeout=10,
-                        verify=verify_ssl,
-                        headers=header_params,
-                        params=request_params,
-                    )
-                elif request_type == "post":
-                    # Send the POST request.
-                    response = requests.post(
-                        url,
-                        timeout=10,
-                        verify=verify_ssl,
-                        headers=header_params,
-                        params=request_params,
-                        data=post_data_params,
-                    )
-                else:
-                    raise ValueError(f"Request type {request_type} is not supported.")
+            elif content_type == "html":
+                if read_with == "urllib.request":
+                    # Read the HTML content from the URL using the urlib.request module.
+                    request = urllib.request.Request(url)
+                    for key, value in header_params.items():
+                        request.add_header(key, value)
 
-                # Check if the request was successful.
-                response.raise_for_status()
+                    # Send the request and return the response as a string.
+                    return urllib.request.urlopen(request).read().decode("utf-8")
 
-                if target_content_type == "text":
-                    # Read the content of the response.
-                    content = response.text
-
-                    if output_content_type == "tabular":
-                        # Return the content as a DataFrame.
-                        return pandas.read_csv(StringIO(content), **csv_kwargs)
-                    elif output_content_type == "text":
-                        # Return the content as a string.
-                        return content
-                    else:
-                        raise ValueError(
-                            f"Output format {output_content_type} is not supported."
+                elif read_with == "requests.get" or read_with == "requests.post":
+                    if read_with == "requests.get":
+                        # Send a GET request to the URL.
+                        response = requests.get(
+                            url,
+                            timeout=10,
+                            verify=verify_ssl,
+                            headers=header_params,
+                            params=request_params,
                         )
 
-                elif target_content_type == "json":
-                    # Read the content of the response.
-                    content = response.json()
+                    elif read_with == "requests.post":
+                        # Send a POST request to the URL.
+                        response = requests.post(
+                            url,
+                            timeout=10,
+                            verify=verify_ssl,
+                            headers=header_params,
+                            params=request_params,
+                            data=post_data_params,
+                        )
 
-                    # Loop over the JSON keys and extract the content.
-                    for json_key in json_keys:
-                        content = content[json_key]
-
-                    # Return the content as a DataFrame.
-                    return pandas.DataFrame(content)
-
-                elif target_content_type == "query":
-                    # Read the content of the response.
-                    html_content = response.text
-
-                    # Extract the viewstate and eventvalidation parameters from the HTML content.
-                    viewstate = re.findall(
-                        r"id=\"__VIEWSTATE\" value=\"(.+)\"", html_content
-                    )[0]
-                    eventvalidation = re.findall(
-                        r"id=\"__EVENTVALIDATION\" value=\"(.+)\"", html_content
-                    )[0]
-
-                    # Prepare the parameters for the POST request.
-                    payload = {
-                        "__VIEWSTATE": viewstate,
-                        "__EVENTVALIDATION": eventvalidation,
-                        "__EVENTTARGET": query_event_target,
-                    }
-
-                    # Add the additional parameters to the payload.
-                    for key, value in query_params.items():
-                        payload[key] = value
-
-                    # Send the POST request.
-                    response = requests.post(url, data=payload, timeout=10)
+                    # Check if the request was successful.
                     response.raise_for_status()
 
-                    # Read the content of the response.
-                    content = response.text
+                    if read_as == "tabular":
+                        # Return the content as a DataFrame.
+                        return pandas.read_csv(StringIO(response.text), **csv_kwargs)
+                    elif read_as == "text":
+                        # Return the content as a string.
+                        return response.text
+                    elif read_as == "json":
+                        # Read the content of the response
+                        content = response.json()
 
-                    # Return the content as a DataFrame.
-                    return pandas.read_csv(StringIO(content))
+                        # Loop over the JSON keys and extract the content.
+                        for json_key in json_keys:
+                            content = content[json_key]
 
-        except ConnectionError:
-            logging.error(f"Connection error. Retrying ({attempt}/{retries})...")
+                        # Return the content as a DataFrame.
+                        return pandas.DataFrame(content)
+
+                    elif read_as == "query":
+                        # Read the content of the response.
+                        html_content = response.text
+
+                        # Extract the viewstate and eventvalidation parameters from the HTML content.
+                        viewstate = re.findall(
+                            r"id=\"__VIEWSTATE\" value=\"(.+)\"", html_content
+                        )[0]
+                        eventvalidation = re.findall(
+                            r"id=\"__EVENTVALIDATION\" value=\"(.+)\"", html_content
+                        )[0]
+
+                        # Prepare the parameters for the POST request.
+                        payload = {
+                            "__VIEWSTATE": viewstate,
+                            "__EVENTVALIDATION": eventvalidation,
+                            "__EVENTTARGET": query_event_target,
+                        }
+
+                        # Add the additional parameters to the payload.
+                        for key, value in query_params.items():
+                            payload[key] = value
+
+                        # Send the POST request.
+                        response = requests.post(url, data=payload, timeout=10)
+                        response.raise_for_status()
+
+                        # Read the content of the response.
+                        content = response.text
+
+                        # Return the content as a DataFrame.
+                        return pandas.read_csv(StringIO(content))
+                    else:
+                        raise ValueError(
+                            f"The read_as parameter {read_as} is not supported."
+                        )
+
+                else:
+                    raise ValueError(f"Library {read_with} is not supported.")
+
+            else:
+                raise ValueError(f"The content type {content_type} is not supported.")
+
+        except requests.exceptions.ConnectionError:
+            logging.error(f"Connection error. Retrying ({attempt + 1}/{retries})...")
             time.sleep(retry_delay)
 
-        except Timeout:
-            logging.error(f"Timeout error. Retrying ({attempt}/{retries})...")
+        except requests.exceptions.Timeout:
+            logging.error(f"Timeout error. Retrying ({attempt + 1}/{retries})...")
             time.sleep(retry_delay)
 
-        except HTTPError:
+        except (requests.exceptions.HTTPError, urllib.error.HTTPError):
             logging.error(
-                f"HTTP error. The URL {url} is not valid or the server is not responding."
+                f"HTTP error. The URL {url} is not valid or the server is not responding. Retrying ({attempt + 1}/{retries})..."
             )
             time.sleep(retry_delay)
 
-        except SSLError:
+        except requests.exceptions.SSLError as e:
+            logging.error(f"SSL error: {e}")
             raise Exception("SSL error. Please verify the SSL certificate.")
 
-        except RequestException:
-            raise Exception(f"Request error. The URL {url} is not valid.")
+        except requests.exceptions.RequestException or urllib.error.URLError as e:
+            logging.error(f"Request error: {e}")
+            raise Exception(
+                f"Request error. The URL {url} is not valid or the server is not responding."
+            )
 
     raise Exception(f"Failed to fetch data from {url} after {retries} retries.")
 

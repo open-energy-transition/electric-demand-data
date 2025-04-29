@@ -15,17 +15,45 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(code: str | None) -> list[tuple[int, int]]:
+def _check_input_parameters(
+    year: int | None = None, month: int | None = None, code: str | None = None
+) -> None:
+    """
+    Check if the year and month are valid.
+
+    Parameters
+    ----------
+    year : int
+        The year of the data to retrieve
+    month : int
+        The month of the data to retrieve
+    code : str
+        The code of the subdivision
+    """
+
+    if code is not None:
+        # Check if the code is valid.
+        util.entities.check_code(code, "aemo_nem")
+
+    if year is not None and month is not None and code is not None:
+        # Check if the year and month are valid.
+        assert (year, month) in get_available_requests(code), (
+            f"Year {year} and month {month} are not supported."
+        )
+
+
+def get_available_requests(code: str) -> list[tuple[int, int]]:
     """
     Get the list of available requests to retrieve the electricity demand data on the AEMO website.
 
     Parameters
     ----------
     code : str, optional
-        The code of the country or subdivision
+        The code of the subdivision
 
     Returns
     -------
@@ -33,35 +61,25 @@ def get_available_requests(code: str | None) -> list[tuple[int, int]]:
         The list of available requests
     """
 
-    if code is None:
-        raise ValueError("The code must be provided.")
-    else:
-        # Get the subdivision code.
-        if "_" in code:
-            # Extract the subdivision code from the code.
-            subdivision_code = code.split("_")[1]
-        else:
-            subdivision_code = code
+    # Check if input parameters are valid.
+    _check_input_parameters(code=code)
 
-        # For Tasmania, the data starts from May 2005.
-        if subdivision_code == "TAS":
-            start_date = pandas.Timestamp("2005-05-01")
-        else:
-            start_date = pandas.Timestamp("1998-12-01")
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="aemo_nem")[code]
 
-    # Get the list of year, month from December of 1998 to today.
+    # Get the list of available requests, which are the years and months.
     values_list = (
-        pandas.date_range(start=start_date, end=pandas.Timestamp.today(), freq="ME")
+        pandas.date_range(start=start_date, end=end_date, freq="ME")
         .strftime("%Y-%m")
         .str.split("-")
         .tolist()
     )
 
-    # Return the available requests, which are are tuples in the format (year, month).
+    # Return the available requests, which are tuples in the format (year, month).
     return [(int(year), int(month)) for year, month in values_list]
 
 
-def get_url(year: int, month: int, subdivision_code: str) -> str:
+def get_url(year: int, month: int, code: str) -> str:
     """
     Get the URL of the electricity demand data on the AEMO website.
 
@@ -71,8 +89,8 @@ def get_url(year: int, month: int, subdivision_code: str) -> str:
         The month of the data to retrieve
     year : int
         The year of the data to retrieve
-    subdivision_code : str
-        The subdivision code of the data to retrieve
+    code : str
+        The code of the subdivision
 
     Returns
     -------
@@ -80,10 +98,11 @@ def get_url(year: int, month: int, subdivision_code: str) -> str:
         The URL of the electricity demand data
     """
 
-    # Check if the year and month are supported.
-    assert (year, month) in get_available_requests(subdivision_code), (
-        f"Year {year} and month {month} are not supported."
-    )
+    # Check if the input parameters are valid.
+    _check_input_parameters(year=year, month=month, code=code)
+
+    # Extract the subdivision code.
+    subdivision_code = code.split("_")[1]
 
     # Define the URL of the electricity demand data.
     url = f"https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{year}{month:02d}_{subdivision_code}1.csv"
@@ -92,7 +111,7 @@ def get_url(year: int, month: int, subdivision_code: str) -> str:
 
 
 def download_and_extract_data_for_request(
-    year: int, month: int, subdivision_code: str
+    year: int, month: int, code: str
 ) -> pandas.Series:
     """
     Download and extract the electricity demand data from the AEMO website.
@@ -112,34 +131,23 @@ def download_and_extract_data_for_request(
         The electricity generation time series in MW
     """
 
-    # Check if the year and month are supported.
-    assert (year, month) in get_available_requests(subdivision_code), (
-        f"Year {year} and month {month} are not supported."
-    )
+    # Check if the input parameters are valid.
+    _check_input_parameters(year=year, month=month, code=code)
 
     logging.info(
         f"Retrieving electricity demand data for the year {year} and month {month}."
     )
 
-    # Extract the subdivision code.
-    if "_" in subdivision_code:
-        subdivision_code = subdivision_code.split("_")[1]
-    else:
-        raise ValueError(
-            f"Invalid subdivision_code format: '{subdivision_code}'. Expected a combination of ISO Alpha-2 code and subdivision code separated by an underscore"
-        )
-
-    # Define the headers for the request.
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
-    }
-
     # Get the URL of the electricity demand data.
-    url = get_url(year, month, subdivision_code)
+    url = get_url(year, month, code)
 
     # Fetch the electricity demand data from the URL.
     dataset = util.fetcher.fetch_data(
-        url, "text", output_content_type="tabular", header_params=headers
+        url,
+        "html",
+        read_with="requests.get",
+        header_params={"User-Agent": "Mozilla/5.0"},
+        read_as="tabular",
     )
 
     # Extract the electricity demand data from the dataset.

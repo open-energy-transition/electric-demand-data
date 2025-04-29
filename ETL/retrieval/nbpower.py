@@ -14,17 +14,31 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(code: str | None = None) -> list[tuple[int, int]]:
+def _check_input_parameters(year: int, month: int) -> None:
     """
-    Get the list of available requests to retrieve the electricity demand data from the NB Power website.
+    Check if the input parameters are valid.
 
     Parameters
     ----------
-    code : str, optional
-        The code of the country or subdivision (not used in this function)
+    year : int
+        The year of the electricity demand data
+    month : int
+        The month of the electricity demand data
+    """
+
+    # Check if the year and month are supported.
+    assert (year, month) in get_available_requests(), (
+        f"Year {year} and month {month} are not available."
+    )
+
+
+def get_available_requests() -> list[tuple[int, int]]:
+    """
+    Get the list of available requests to retrieve the electricity demand data from the NB Power website.
 
     Returns
     -------
@@ -32,17 +46,21 @@ def get_available_requests(code: str | None = None) -> list[tuple[int, int]]:
         The list of available requests
     """
 
-    # Define the start and end date according to the data availability.
-    start_date = pandas.Timestamp("2018-01-01")
-    end_date = pandas.Timestamp.now()
-
-    # Return the available requests, which are the years and months from 2018 to the current year.
-    return [
-        (year, month)
-        for year in range(start_date.year, end_date.year + 1)
-        for month in range(1, 13)
-        if year != end_date.year or month < end_date.month
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="nbpower")[
+        "CA_NB"
     ]
+
+    # Get the list of available requests, which are the years and months.
+    values_list = (
+        pandas.date_range(start=start_date, end=end_date, freq="ME")
+        .strftime("%Y-%m")
+        .str.split("-")
+        .tolist()
+    )
+
+    # Return the available requests, which are tuples in the format (year, month).
+    return [(int(year), int(month)) for year, month in values_list]
 
 
 def get_url() -> str:
@@ -76,10 +94,8 @@ def download_and_extract_data_for_request(year: int, month: int) -> pandas.Serie
         The electricity demand time series in MW
     """
 
-    # Check if the year and month are supported.
-    assert (year, month) in get_available_requests(), (
-        f"Year {year} and month {month} are not available."
-    )
+    # Check if input parameters are valid.
+    _check_input_parameters(year, month)
 
     logging.info(
         f"Retrieving electricity demand data for the year {year} and month {month}."
@@ -91,7 +107,9 @@ def download_and_extract_data_for_request(year: int, month: int) -> pandas.Serie
     # Fetch HTML content from the URL.
     dataset = util.fetcher.fetch_data(
         url,
-        "query",
+        "html",
+        read_with="requests.get",
+        read_as="query",
         query_event_target="ctl00$cphMainContent$lbGetData",
         query_params={
             "ctl00$cphMainContent$ddlMonth": month,

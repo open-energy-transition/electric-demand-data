@@ -14,17 +14,29 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(code: str | None = None) -> list[int]:
+def _check_input_parameters(year: int) -> None:
     """
-    Get the list of available requests to retrieve the electricity demand data from the TEPCO website.
+    Check if the input parameters are valid.
 
     Parameters
     ----------
-    code : str, optional
-        The code of the country or subdivision (not used in this function)
+    year : int
+        The year of the electricity demand data
+    """
+
+    # Check if the year is supported.
+    assert year in get_available_requests(), (
+        f"The year {year} is not in the supported range."
+    )
+
+
+def get_available_requests() -> list[int]:
+    """
+    Get the list of available requests to retrieve the electricity demand data from the TEPCO website.
 
     Returns
     -------
@@ -32,8 +44,13 @@ def get_available_requests(code: str | None = None) -> list[int]:
         The list of available requests
     """
 
-    # Return the available requests, which are the years from 2016 to current year.
-    return list(range(2016, 2026))
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="tepco")[
+        "JP_Kantō"
+    ]
+
+    # Return the available requests, which are the years.
+    return list(range(start_date.year, end_date.year + 1))
 
 
 def get_url(year: int) -> str:
@@ -51,7 +68,8 @@ def get_url(year: int) -> str:
         The URL of the electricity demand data
     """
 
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if input parameters are valid.
+    _check_input_parameters(year)
 
     # Return the URL of the electricity demand data.
     return f"https://www4.tepco.co.jp/forecast/html/images/juyo-{year}.csv"
@@ -72,7 +90,8 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         The electricity demand time series in MW
     """
 
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(year)
 
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 
@@ -80,7 +99,13 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     url = get_url(year)
 
     # Fetch the data from the URL.
-    dataset = util.fetcher.fetch_data(url, "text", csv_kwargs={"skiprows": 2})
+    dataset = util.fetcher.fetch_data(
+        url,
+        "html",
+        read_with="requests.get",
+        read_as="tabular",
+        csv_kwargs={"skiprows": 2},
+    )
 
     # Define the index of the time series.
     index = pandas.to_datetime(

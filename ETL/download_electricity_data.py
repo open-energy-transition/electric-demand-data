@@ -127,7 +127,9 @@ def check_and_get_codes(
     """
 
     # Get the list of countries and subdivisions available on the data source website.
-    codes_in_data_source = util.entities.read_codes(data_source=args.data_source.lower())
+    codes_in_data_source = util.entities.read_codes(
+        data_source=args.data_source.lower()
+    )
 
     # Define a flag to check if there is only one code on the data source website.
     one_code_in_data_source = len(codes_in_data_source) == 1
@@ -183,7 +185,12 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
 
     # Get the list of requests to retrieve the electricity demand time series.
-    requests = retrieval_module[data_source].get_available_requests(code)
+    if code is None:
+        # If there is only one code on the platform (code is None), there is no need to specify the code.
+        requests = retrieval_module[data_source].get_available_requests()
+    else:
+        # If there are multiple codes on the platform (code is not None), the code needs to be specified.
+        requests = retrieval_module[data_source].get_available_requests(code)
 
     if requests is None:
         # If there are no requests (requests is None), it means that the electricity demand time series can be retrieved all at once.

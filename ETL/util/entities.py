@@ -7,16 +7,15 @@ Description:
     This script povides utility functions to read country and subdivision codes, time zones, and date ranges from yaml files.
 """
 
-
+import datetime
 import os
 
-import datetime
 import pycountry
 import pytz
+import util.directories
 import yaml
 from countryinfo import CountryInfo
 from timezonefinder import TimezoneFinder
-import util.directories
 
 
 def _read_entities_info(file_path: str = "", data_source: str = "") -> list[dict]:
@@ -51,7 +50,7 @@ def _read_entities_info(file_path: str = "", data_source: str = "") -> list[dict
     # Read the content from the file.
     with open(file_path, "r") as file:
         content = yaml.safe_load(file)
-    
+
     # Return the information of the countries and subdivisions.
     return content["entities"]
 
@@ -116,6 +115,27 @@ def read_all_codes() -> list[str]:
     return codes
 
 
+def check_code(code: str, data_source: str) -> None:
+    """
+    Check if the code is valid.
+
+    Parameters
+    ----------
+    code : str
+        The code of the subdivision
+
+    Raises
+    ------
+    AssertionError
+        If the code is not valid.
+    """
+
+    # Check if the code is valid.
+    assert code in read_codes(data_source=data_source), (
+        f"Invalid code: {code}. Available codes are: {', '.join(read_codes(data_source=data_source))}"
+    )
+
+
 def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
     """
     Get the time zone of a country.
@@ -164,11 +184,13 @@ def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
             time_zone = time_zones[0]
     else:
         raise ValueError(f"Expected ISO Alpha-2 code, but got {iso_alpha_2_code}.")
-    
+
     return time_zone
 
 
-def _get_time_zones(file_path: str = "", data_source: str = "") -> dict[str, pytz.timezone]:
+def _get_time_zones(
+    file_path: str = "", data_source: str = ""
+) -> dict[str, pytz.timezone]:
     """
     Get the time zones of the countries and subdivisions in the yaml file of the data source.
 
@@ -189,12 +211,16 @@ def _get_time_zones(file_path: str = "", data_source: str = "") -> dict[str, pyt
     entities = _read_entities_info(file_path=file_path, data_source=data_source)
 
     # Define a dictionary to store the time zones of the countries and subdivisions.
-    time_zones : dict[str, pytz.timezone] = {}
+    time_zones: dict[str, pytz.timezone] = {}
 
     # Iterate over the entities and extract the time zones.
     for entity in entities:
         # Extract the code of the country or subdivision.
-        code = entity["country_code"] + "_" + entity["subdivision_code"] if "subdivision_code" in entity else entity["country_code"]
+        code = (
+            entity["country_code"] + "_" + entity["subdivision_code"]
+            if "subdivision_code" in entity
+            else entity["country_code"]
+        )
 
         # If the code specifies a subdivision, extract the time zone from the file.
         if "time_zone" in entity and "_" in code:
@@ -207,14 +233,16 @@ def _get_time_zones(file_path: str = "", data_source: str = "") -> dict[str, pyt
             time_zone = _get_country_time_zone(code)
             # Check if the time zone is the same as the one in the file.
             if time_zone.zone != entity["time_zone"]:
-                raise ValueError(f"The time zone in the file does not match the expected time zone for {code}.")
+                raise ValueError(
+                    f"The time zone in the file does not match the expected time zone for {code}."
+                )
         # If the code specifies a subdivision and the time zone is not defined in the file, raise an error.
         else:
             raise ValueError(f"The time zone is not defined for {code}.")
-        
+
         # Add the code to the dictionary and the respective time zone.
         time_zones[code] = time_zone
-    
+
     return time_zones
 
 
@@ -232,7 +260,7 @@ def get_all_time_zones() -> dict[str, pytz.timezone]:
     yaml_file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
 
     # Define a dictionary to store the time zones of the countries and subdivisions.
-    time_zones : dict[str, pytz.timezone] = {}
+    time_zones: dict[str, pytz.timezone] = {}
 
     # Iterate over the yaml files and read the time zones from each file.
     for yaml_file_path in yaml_file_paths:
@@ -244,7 +272,9 @@ def get_all_time_zones() -> dict[str, pytz.timezone]:
             # If the code is already in the dictionary, check if the time zone is the same as the one in the file.
             if code in time_zones:
                 if time_zones[code].zone != time_zone.zone:
-                    raise ValueError(f"The time zone in the file {os.path.basename(yaml_file_path)} does not match the previously defined time zone for {code}.")
+                    raise ValueError(
+                        f"The time zone in the file {os.path.basename(yaml_file_path)} does not match the previously defined time zone for {code}."
+                    )
             else:
                 # If the code is not in the dictionary, add it to the dictionary.
                 time_zones[code] = time_zone
@@ -260,7 +290,7 @@ def get_time_zone(code: str) -> pytz.timezone:
     ----------
     code : str
         The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 codes and the subdivision codes
-    
+
     Returns
     -------
     time_zone : pytz.timezone
@@ -279,7 +309,9 @@ def get_time_zone(code: str) -> pytz.timezone:
         raise ValueError(f"The time zone is not defined for {code}.")
 
 
-def read_date_ranges(file_path: str = "", data_source: str = "") -> dict[str, tuple[datetime.date, datetime.date]]:
+def read_date_ranges(
+    file_path: str = "", data_source: str = ""
+) -> dict[str, tuple[datetime.date, datetime.date]]:
     """
     Read the start and end dates of the available data for the countries and subdivisions in the yaml file of the data source.
 
@@ -289,7 +321,7 @@ def read_date_ranges(file_path: str = "", data_source: str = "") -> dict[str, tu
         The path to the file containing the information of the countries and subdivisions
     data_source : str
         The name of the data source
-    
+
     Returns
     -------
     start_date : datetime.date
@@ -302,12 +334,16 @@ def read_date_ranges(file_path: str = "", data_source: str = "") -> dict[str, tu
     entities = _read_entities_info(file_path=file_path, data_source=data_source)
 
     # Define a dictionary to store the start and end dates of the available data for the countries and subdivisions.
-    start_and_end_dates : dict[str, tuple[datetime.date, datetime.date]] = {}
+    start_and_end_dates: dict[str, tuple[datetime.date, datetime.date]] = {}
 
     # Iterate over the entities and extract the start and end dates.
     for entity in entities:
         # Extract the code of the country or subdivision.
-        code = entity["country_code"] + "_" + entity["subdivision_code"] if "subdivision_code" in entity else entity["country_code"]
+        code = (
+            entity["country_code"] + "_" + entity["subdivision_code"]
+            if "subdivision_code" in entity
+            else entity["country_code"]
+        )
 
         # Extract the start and end dates of the available data.
         start_date = entity["start_date"]
@@ -319,11 +355,13 @@ def read_date_ranges(file_path: str = "", data_source: str = "") -> dict[str, tu
 
         # Add the code to the dictionary and the respective start and end dates.
         start_and_end_dates[code] = (start_date, end_date)
-        
+
         # Check if the start date is before the end date.
         if start_date > end_date:
-            raise ValueError(f"The start date {start_date} is after the end date {end_date} for {code}.")
-        
+            raise ValueError(
+                f"The start date {start_date} is after the end date {end_date} for {code}."
+            )
+
     return start_and_end_dates
 
 
@@ -341,7 +379,7 @@ def read_all_date_ranges() -> dict[str, tuple[datetime.date, datetime.date]]:
     yaml_file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
 
     # Define a dictionary to store the start and end dates of the available data for the countries and subdivisions.
-    start_and_end_dates : dict[str, tuple[datetime.date, datetime.date]] = {}
+    start_and_end_dates: dict[str, tuple[datetime.date, datetime.date]] = {}
 
     # Iterate over the yaml files and read the start and end dates from each file.
     for yaml_file_path in yaml_file_paths:
@@ -353,7 +391,9 @@ def read_all_date_ranges() -> dict[str, tuple[datetime.date, datetime.date]]:
             # If the code is already in the dictionary, get the dates giving the longest period.
             if code in start_and_end_dates:
                 existing_start_date, existing_end_date = start_and_end_dates[code]
-                existing_time_difference = (existing_end_date - existing_start_date).days
+                existing_time_difference = (
+                    existing_end_date - existing_start_date
+                ).days
                 new_time_difference = (end_date - start_date).days
                 if new_time_difference > existing_time_difference:
                     # If the new time difference is greater, update the start and end dates.
