@@ -59,18 +59,14 @@ def download_and_extract_data(
 
     # Ensure timezone-aware using Pacific/Auckland, handle DST ambiguity
     index = index.dt.tz_localize(
-    "Pacific/Auckland", ambiguous="NaT", nonexistent="shift_forward"
-)
-
-
-
-
+        "Pacific/Auckland", ambiguous="NaT", nonexistent="shift_forward"
+    )
 
     # Convert from GWh to MW (multiply by 1000)
     electricity_demand_time_series = pd.Series(
-    dataset["Demand (GWh)"].values
-    * 1000,  # Convert GWh to MW by multiplying by 1000
-    index=index,
-)
+        dataset["Demand (GWh)"].values
+        * 1000,  # Convert GWh to MW by multiplying by 1000
+        index=index,
+    )
 
     return electricity_demand_time_series
