@@ -7,7 +7,6 @@ Description:
     This script povides utility functions to read the folders structure and list yaml files in a specified folder.
 """
 
-
 import os
 
 import yaml

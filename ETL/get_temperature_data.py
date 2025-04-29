@@ -77,7 +77,9 @@ def get_temperature_in_largest_population_density_areas(
     """
 
     # Read the temperature data from the Copernicus Climate Data Store (CDS).
-    temperature_data_directory = util.directories.read_folders_structure()["weather_folder"]
+    temperature_data_directory = util.directories.read_folders_structure()[
+        "weather_folder"
+    ]
     temperature_data = util.geospatial.load_xarray(
         os.path.join(
             temperature_data_directory,

@@ -74,7 +74,9 @@ for state_shape in state_shapes:
         {
             "name": state_shape.attributes["name"],
             "code": state_shape.attributes["iso_3166_2"],
-            "parent": codes_of_brazilian_subdivisions[state_shape.attributes["iso_3166_2"]],
+            "parent": codes_of_brazilian_subdivisions[
+                state_shape.attributes["iso_3166_2"]
+            ],
             "geometry": state_shape.geometry,
         }
     )
@@ -97,9 +99,9 @@ subdivisions = subdivisions.rename(columns={"parent": "code"})
 
 # Add the names of the subdivisions to the GeoDataFrame.
 for subdivision_code in subdivisions["code"]:
-    subdivisions.loc[subdivisions["code"] == subdivision_code, "name"] = names_of_brazilian_subdivisions[
-        subdivision_code
-    ]
+    subdivisions.loc[subdivisions["code"] == subdivision_code, "name"] = (
+        names_of_brazilian_subdivisions[subdivision_code]
+    )
 
 # Save the shapes of the subdivisions to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "ons")
