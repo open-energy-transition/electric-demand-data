@@ -7,7 +7,9 @@ Description:
     This script povides utility functions to read country and subdivision codes, time zones, and date ranges from yaml files.
 """
 
+import argparse
 import datetime
+import logging
 import os
 
 import pycountry
@@ -403,3 +405,57 @@ def read_all_date_ranges() -> dict[str, tuple[datetime.date, datetime.date]]:
                 start_and_end_dates[code] = (start_date, end_date)
 
     return start_and_end_dates
+
+
+def check_and_get_codes(
+    args: argparse.Namespace,
+) -> list[str]:
+    """
+    Check the validity of the country and subdivision codes and return the list of codes of the countries and subdivisions of interest.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        The command line arguments
+
+    Returns
+    -------
+    codes : list[str]
+        The list of codes of the countries and subdivisions of interest
+    """
+
+    # Get the list of available countries and subdivisions according to the arguments.
+    if "data_source" in args and args.data_source is not None:
+        all_codes = read_codes(data_source=args.data_source.lower())
+    else:
+        all_codes = read_all_codes()
+
+    if args.code is not None:
+        # Check if the code is available.
+        if args.code not in all_codes:
+            raise ValueError(
+                f"Code {args.code} is not available. Please choose one of the following: {', '.join(all_codes)}"
+            )
+        else:
+            codes = [args.code]
+
+    elif args.file is not None:
+        # Get the list of countries and subdivisions available on the specified file.
+        codes = read_codes(file_path=args.file)
+
+        # Check if the codes are available.
+        for code in codes:
+            if code not in all_codes:
+                logging.error(f"Code {code} is not available.")
+                codes.remove(code)
+
+        # Check if there are any codes left.
+        if len(codes) == 0:
+            raise ValueError(
+                f"None of the codes in the file are available. Please choose from the following: {', '.join(all_codes)}"
+            )
+    else:
+        # If the file or code is not provided, use all the available codes.
+        codes = all_codes
+
+    return codes

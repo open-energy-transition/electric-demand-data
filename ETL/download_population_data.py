@@ -8,7 +8,7 @@ Description:
 
     It then extracts the population density data for the countries and subdivisions of interest, coarsens the data to a 0.25-degree resolution, and saves it into NetCDF files.
 
-    The country or subdivision codes of interest can be provided as a yaml file. If no file is provided, the script will use all available codes.
+    The country and subdivision code can be specified or a list can be provided as a yaml file. If no file or code is provided, the script will use all available codes.
 
     The year of the population density data can be specified as a command line argument. The default year is 2020.
 """
@@ -17,11 +17,13 @@ import argparse
 import logging
 import os
 
-import retrieval.population
+import geopandas
 import util.directories
+import util.entities
+import util.figures
 import util.geospatial
 import util.shapes
-import util.entities
+import xarray
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -40,6 +42,13 @@ def read_command_line_arguments() -> argparse.Namespace:
     )
 
     # Add the command line arguments.
+    parser.add_argument(
+        "-c",
+        "--code",
+        type=str,
+        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and subdivision code (example: "US_CAL")',
+        required=False,
+    )
     parser.add_argument(
         "-f",
         "--file",
@@ -63,48 +72,73 @@ def read_command_line_arguments() -> argparse.Namespace:
     return args
 
 
-def check_and_get_codes(
-    args: argparse.Namespace,
-) -> list[str]:
+def get_url(year: int) -> str:
     """
-    Check the validity of the country and subdivision codes and return the list of codes of the countries and subdivisions of interest.
+    Get the URL of the population density data from SEDAC.
 
     Parameters
     ----------
-    args : argparse.Namespace
-        The command line arguments
-
-    Returns
-    -------
-    codes : list[str]
-        The list of codes of the countries and subdivisions of interest
+    year : int
+        The year of the population density data
     """
 
-    # Get all the codes of the available countries and subdivisions.
-    all_codes = util.entities.read_all_codes()
+    # Check if the year is supported.
+    assert year in [2000, 2005, 2010, 2015, 2020], (
+        "Year not supported. Supported years are 2000, 2005, 2010, 2015, and 2020."
+    )
 
-    if args.file is not None:
-        # # If the file is provided, read the list of codes of the countries and subdivisions of interest from the yaml file.
-        codes = util.entities.read_codes(file_path=args.file)
+    # Return the URL of the population density data.
+    return f"https://data.ghg.center/sedac-popdensity-yeargrid5yr-v4.11/gpw_v4_population_density_rev11_{year}_30_sec_{year}.tif"
 
-        # Check if the codes are valid.
-        for code in codes:
-            if code not in all_codes:
-                logging.error(
-                    f"Code {code} is not available in the list of available countries and subdivisions."
-                )
-                codes.remove(code)
 
-        # Check if there are any codes left.
-        if len(codes) == 0:
-            raise ValueError(
-                f"None of the codes in the file are available in the list of available countries and subdivisions. Please choose from the following codes: {all_codes}."
-            )
-    else:
-        # If the file is not provided, use all the available codes.
-        codes = all_codes
+def extract_population_density_of_entity(
+    population_density: xarray.DataArray,
+    entity_shape: geopandas.GeoDataFrame,
+    file_path: str,
+    make_plot: bool = False,
+) -> None:
+    """
+    Extract the population density of a country or subdivision of interest, coarsen it to the same resolution as the weather data, and save it to a file.
 
-    return codes
+    Parameters
+    ----------
+    population_density : xarray.DataArray
+        The population density data.
+    entity_shape : geopandas.GeoDataFrame
+        The shape of the entity of interest
+    file_path : str
+        The path to store the population density data
+    make_plot : bool
+        Whether to make a plot of the population density data
+    """
+
+    # Get the lateral bounds of the country or subdivision of interest.
+    entity_bounds = util.shapes.get_entity_bounds(
+        entity_shape
+    )  # West, South, East, North
+
+    # Select the population density data in the bounding box of the country or subdivision of interest.
+    population_density = population_density.sel(
+        x=slice(entity_bounds[0], entity_bounds[2]),
+        y=slice(entity_bounds[1], entity_bounds[3]),
+    )
+
+    # Coarsen the population density data to the same resolution as the weather data.
+    population_density = util.geospatial.coarsen(population_density, entity_bounds)
+
+    # Clean the dataset.
+    population_density = population_density.squeeze("band")
+    population_density = population_density.drop_vars(["band", "spatial_ref"])
+    population_density = population_density.drop_attrs()
+    population_density = population_density.rename("population_density")
+
+    # Save the population density data.
+    population_density.to_netcdf(file_path)
+
+    if make_plot:
+        util.figures.simple_plot(
+            population_density, f"population_density_{entity_shape.index[0]}"
+        )
 
 
 def run_data_retrieval(args: argparse.Namespace) -> None:
@@ -125,11 +159,11 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
     # Load the population density data.
     population_density = util.geospatial.load_xarray(
-        retrieval.population.get_url(args.year), engine="rasterio"
+        get_url(args.year), engine="rasterio"
     )
 
-    # Read the codes of the countries and subdivisions of interest.
-    codes = check_and_get_codes(args)
+    # Get the list of codes of the countries and subdivisions of interest.
+    codes = util.entities.check_and_get_codes(args)
 
     # Loop over the countries and subdivisions of interest.
     for code in codes:
@@ -145,12 +179,12 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             entity_shape = util.shapes.get_entity_shape(code)
 
             # Extract the population density of the country or subdivision.
-            retrieval.population.extract_population_density_of_entity(
+            extract_population_density_of_entity(
                 population_density, entity_shape, population_file_path
             )
 
             logging.info(
-                f"Population density data for {code} extracted and saved successfully."
+                f"Population density data for {code} has been successfully extracted and saved."
             )
 
         else:

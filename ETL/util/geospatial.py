@@ -1,4 +1,4 @@
-import atlite
+import atlite.gis
 import geopandas
 import numpy
 import util.figures
@@ -37,6 +37,39 @@ def harmonize_coords(
     ds = ds.sortby("y")
 
     return ds
+
+
+def load_xarray(
+    file_path: str, engine: str = "netcdf4", dataarray_or_dataset: str = "dataarray"
+) -> xarray.DataArray | xarray.Dataset:
+    """
+    Load an xarray dataset from a file.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the file to load
+    engine : str
+        The engine to use to load the xarray dataset
+    dataarray_or_dataset : str
+        Whether to load a dataarray or a dataset
+
+    Returns
+    -------
+    xarray_data : xarray.DataArray or xarray.Dataset
+        The loaded dataset
+    """
+
+    # Load the xarray.
+    if dataarray_or_dataset == "dataarray":
+        xarray_data = xarray.open_dataarray(file_path, engine=engine)
+    elif dataarray_or_dataset == "dataset":
+        xarray_data = xarray.open_dataset(file_path, engine=engine)
+
+    # Harmonize the coordinates of the xarray dataset.
+    xarray_data = harmonize_coords(xarray_data)
+
+    return xarray_data
 
 
 def get_fraction_of_grid_cells_in_shape(
@@ -113,34 +146,81 @@ def get_fraction_of_grid_cells_in_shape(
     return fraction_of_grid_cells_in_shape
 
 
-def load_xarray(
-    file_path: str, engine: str = "netcdf4", dataarray_or_dataset: str = "dataarray"
-) -> xarray.DataArray | xarray.Dataset:
+def coarsen(
+    original_xarray: xarray.DataArray,
+    bounds: list[float],
+    target_resolution: float = 0.25,
+) -> xarray.DataArray:
     """
-    Load an xarray dataset from a file.
+    Coarsen the xarray data to the target resolution.
 
     Parameters
     ----------
-    file_path : str
-        The path to the file to load
-    engine : str
-        The engine to use to load the xarray dataset
-    dataarray_or_dataset : str
-        Whether to load a dataarray or a dataset
+    original_xarray : xarray.DataArray
+        The xarray data to coarsen
+    bounds : list of float
+        The lateral bounds (West, South, East, North) used to clip the data
+    target_resolution : float
+        The target resolution of the coarsened data
 
     Returns
     -------
-    xarray_data : xarray.DataArray or xarray.Dataset
-        The loaded dataset
+    coarsened_xarray : xarray.DataArray
+        The coarsened xarray data
     """
 
-    # Load the xarray.
-    if dataarray_or_dataset == "dataarray":
-        xarray_data = xarray.open_dataarray(file_path, engine=engine)
-    elif dataarray_or_dataset == "dataset":
-        xarray_data = xarray.open_dataset(file_path, engine=engine)
+    # Get the original resolution of the xarray data.
+    original_x_resolution = abs(original_xarray.x[1] - original_xarray.x[0]).item()
+    original_y_resolution = abs(original_xarray.y[1] - original_xarray.y[0]).item()
+    original_resolution = max(original_x_resolution, original_y_resolution)
 
-    # Harmonize the coordinates of the xarray dataset.
-    xarray_data = harmonize_coords(xarray_data)
+    # Check if the target resolution is greater than the original resolution.
+    assert target_resolution > original_resolution, (
+        "Target resolution must be greater than the original resolution."
+    )
 
-    return xarray_data
+    # Check if the target resolution provides an integer number of bins.
+    assert 360 % target_resolution == 0, (
+        "Target resolution must result in an integer number when dividing 360."
+    )
+
+    # Define the new coarser resolution.
+    x_list = numpy.linspace(-180, 180, int(360 / target_resolution) + 1)
+    y_list = numpy.linspace(-90, 90, int(180 / target_resolution) + 1)
+
+    # Define the bins where to aggregate the original data.
+    # The next(...) function in this case calculates the first value that satisfies the specified condition.
+    # The resulting bins are the first and last values of the x_list and y_list that are within the bounds.
+    x_bins = numpy.arange(
+        x_list[next(x for x, val in enumerate(x_list) if val >= bounds[0])] - 0.25 / 2,
+        x_list[next(x for x, val in enumerate(x_list) if val >= bounds[2]) + 1]
+        + 0.25 / 2,
+        0.25,
+    )
+    y_bins = numpy.arange(
+        y_list[next(x for x, val in enumerate(y_list) if val >= bounds[1])] - 0.25 / 2,
+        y_list[next(x for x, val in enumerate(y_list) if val >= bounds[3]) + 1]
+        + 0.25 / 2,
+        0.25,
+    )
+
+    # Aggregate the original data to the new coarser resolution, first in the x direction and then in the y direction.
+    coarsened_xarray = original_xarray.groupby_bins("x", x_bins).sum()
+    coarsened_xarray = coarsened_xarray.groupby_bins("y", y_bins).sum()
+
+    # For each coordinate, substitute the bin range with the middle of the bin.
+    coarsened_xarray["x_bins"] = numpy.arange(
+        x_list[next(x for x, val in enumerate(x_list) if val >= bounds[0])],
+        x_list[next(x for x, val in enumerate(x_list) if val >= bounds[2]) + 1],
+        0.25,
+    )
+    coarsened_xarray["y_bins"] = numpy.arange(
+        y_list[next(x for x, val in enumerate(y_list) if val >= bounds[1])],
+        y_list[next(x for x, val in enumerate(y_list) if val >= bounds[3]) + 1],
+        0.25,
+    )
+
+    # Rename the bins to "x" and "y".
+    coarsened_xarray = coarsened_xarray.rename({"x_bins": "x", "y_bins": "y"})
+
+    return coarsened_xarray

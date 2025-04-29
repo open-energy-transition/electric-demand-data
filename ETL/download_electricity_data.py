@@ -107,66 +107,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     return args
 
 
-def check_and_get_codes(
-    args: argparse.Namespace,
-) -> tuple[list[str], bool]:
-    """
-    Check the validity of the country and subdivision codes and return the list of codes of the countries and subdivisions of interest.
-
-    Parameters
-    ----------
-    args : argparse.Namespace
-        The command line arguments
-
-    Returns
-    -------
-    codes : list[str]
-        The list of codes of the countries and subdivisions of interest
-    one_code_in_data_source : bool
-        A flag to check if there is only one code on the data source website
-    """
-
-    # Get the list of countries and subdivisions available on the data source website.
-    codes_in_data_source = util.entities.read_codes(
-        data_source=args.data_source.lower()
-    )
-
-    # Define a flag to check if there is only one code on the data source website.
-    one_code_in_data_source = len(codes_in_data_source) == 1
-
-    if args.code is not None:
-        # Check if the code is in the list of countries and subdivisions available on the data source website.
-        if args.code not in codes_in_data_source:
-            raise ValueError(
-                f"Code {args.code} is not available on the {args.data_source} website. Please choose one of the following: {', '.join(codes_in_data_source)}"
-            )
-        else:
-            codes = [args.code]
-
-    elif args.file is not None:
-        # Get the list of countries and subdivisions available on the specified file.
-        codes = util.entities.read_codes(args.file)
-
-        # Check if the codes are in the list of countries and subdivisions available on the data source website.
-        for code in codes:
-            if code not in codes_in_data_source:
-                logging.error(
-                    f"Code {code} is not available on the {args.data_source} website."
-                )
-                codes.remove(code)
-
-        # Check if there are any codes left.
-        if len(codes) == 0:
-            raise ValueError(
-                f"None of the codes in the file are available on the {args.data_source} website. Please choose from the following: {', '.join(codes_in_data_source)}"
-            )
-    else:
-        # Run the data retrieval for all the countries and subdivisions available on the data source website.
-        codes = codes_in_data_source
-
-    return codes, one_code_in_data_source
-
-
 def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     """
     Retrieve the electricity demand data from the specified data source and code.
@@ -250,7 +190,45 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     return electricity_demand_time_series
 
 
-def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
+def save_data(
+    electricity_demand_time_series: pandas.Series,
+    data_source: str,
+    code: str,
+) -> None:
+    """
+    Save the electricity demand time series to a file.
+
+    Parameters
+    ----------
+    electricity_demand_time_series : pandas.Series
+        The electricity demand time series in MW
+    data_source : str
+        The data source
+    code : str, optional
+        The code of the country or subdivision
+    """
+
+    # Get the directory to store the electricity demand time series.
+    result_directory = util.directories.read_folders_structure()[
+        "electricity_demand_folder"
+    ]
+    os.makedirs(result_directory, exist_ok=True)
+
+    # Get the date of retrieval.
+    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
+
+    # Define the identifier of the file to be saved.
+    identifier = code + "_" + data_source
+
+    # Define the path to the file to be saved without the extension.
+    file_path = os.path.join(result_directory, identifier + "_" + date_of_retrieval)
+
+    # Save the time series to both parquet and csv files.
+    electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
+    electricity_demand_time_series.to_csv(file_path + ".csv")
+
+
+def run_data_retrieval(args: argparse.Namespace) -> None:
     """
     Run the electricity demand data retrieval for the countries and subdivisions of interest.
 
@@ -263,7 +241,10 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     """
 
     # Get the list of codes of the countries and subdivisions of interest.
-    codes, one_code_in_data_source = check_and_get_codes(args)
+    codes = util.entities.check_and_get_codes(args)
+
+    # Check if there is only one code on the platform.
+    one_code_in_data_source = len(util.entities.read_codes(args.data_source)) == 1
 
     logging.info(f"Retrieving electricity data from the {args.data_source} website.")
 
@@ -276,13 +257,8 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             args.data_source, None if one_code_in_data_source else code
         )
 
-        # Save the electricity demand time series.
-        util.time_series.simple_save(
-            electricity_demand_time_series,
-            "Load (MW)",
-            result_directory,
-            code + "_" + args.data_source,
-        )
+        # Save the electricity demand time series to a file and upload it to GCS.
+        save_data(electricity_demand_time_series, args.data_source, code)
 
     logging.info(
         f"Electricity data from the {args.data_source} website has been successfully retrieved and saved."
@@ -304,14 +280,8 @@ def main() -> None:
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
-    # Create a directory to store the electricity demand time series.
-    result_directory = util.directories.read_folders_structure()[
-        "electricity_demand_folder"
-    ]
-    os.makedirs(result_directory, exist_ok=True)
-
     # Run the data retrieval.
-    run_data_retrieval(args, result_directory)
+    run_data_retrieval(args)
 
 
 if __name__ == "__main__":

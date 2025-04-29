@@ -8,21 +8,22 @@ Description:
 
     It then extracts the weather data for the countries and subdivisions of interest and saves it into NetCDF files.
 
-    The country and subdivision codes of interest can be provided as a yaml file. If no file is provided, the script will use all available codes.
+    The country and subdivision code can be specified or a list can be provided as a yaml file. If no file or code is provided, the script will use all available codes.
 
     The variable of the weather data can be specified as a command line argument. The default variable is 2m_temperature.
 
-    The year of the weather data can be specified as a command line argument. The default year is 2015.
+    The year of the weather data can be specified as a command line argument. If no year is provided, the script will use all the years of available electricity demand data.
 """
 
 import argparse
 import logging
 import os
 
-import retrieval.weather
+import pandas
+import retrieval.copernicus
 import util.directories
-import util.shapes
 import util.entities
+import util.shapes
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -42,6 +43,13 @@ def read_command_line_arguments() -> argparse.Namespace:
 
     # Add the command line arguments.
     parser.add_argument(
+        "-c",
+        "--code",
+        type=str,
+        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and subdivision code (example: "US_CAL")',
+        required=False,
+    )
+    parser.add_argument(
         "-f",
         "--file",
         type=str,
@@ -51,7 +59,7 @@ def read_command_line_arguments() -> argparse.Namespace:
     parser.add_argument(
         "-v",
         "--variable",
-        type=int,
+        type=str,
         help="Variable of the weather data to download.",
         default="2m_temperature",
         required=False,
@@ -70,53 +78,9 @@ def read_command_line_arguments() -> argparse.Namespace:
     return args
 
 
-def check_and_get_codes(
-    args: argparse.Namespace,
-) -> list[str]:
-    """
-    Check the validity of the country and subdivision codes and return the list of codes of the countries and subdivisions of interest.
-
-    Parameters
-    ----------
-    args : argparse.Namespace
-        The command line arguments
-
-    Returns
-    -------
-    codes : list[str]
-        The list of codes of the countries and subdivisions of interest
-    """
-
-    # Get all the codes of the available countries and subdivisions.
-    all_codes = util.entities.read_all_codes()
-
-    if args.file is not None:
-        # # If the file is provided, read the list of codes of the countries and subdivisions of interest from the yaml file.
-        codes = util.entities.read_codes(file_path=args.file)
-
-        # Check if the codes are valid.
-        for code in codes:
-            if code not in all_codes:
-                logging.error(
-                    f"Code {code} is not available in the list of available countries and subdivisions."
-                )
-                codes.remove(code)
-
-        # Check if there are any codes left.
-        if len(codes) == 0:
-            raise ValueError(
-                f"None of the codes in the file are available in the list of available countries and subdivisions. Please choose from the following codes: {all_codes}."
-            )
-    else:
-        # If the file is not provided, use all the available codes.
-        codes = all_codes
-
-    return codes
-
-
 def run_data_retrieval(args: argparse.Namespace) -> None:
     """
-    Download and process the weather data from the Copernicus Climate Data Store (CDS).
+    Run the weather data retrieval for the countries and subdivisions of interest.
 
     Parameters
     ----------
@@ -128,8 +92,8 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     result_directory = util.directories.read_folders_structure()["weather_folder"]
     os.makedirs(result_directory, exist_ok=True)
 
-    # Read the codes of the countries and subdivisions of interest.
-    codes = check_and_get_codes(args)
+    # Get the list of codes of the countries and subdivisions of interest.
+    codes = util.entities.check_and_get_codes(args)
 
     # Loop over the countries and subdivisions of interest.
     for code in codes:
@@ -140,46 +104,60 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             years = [args.year]
         else:
             # Read the start and end dates of the available data for the country or subdivision of interest.
-            start_and_end_dates = util.entities.read_all_date_ranges()[code]
+            start_date, end_date = util.entities.read_all_date_ranges()[code]
+
+            # Get the time zone of the country or subdivision.
+            entity_time_zone = util.entities.get_time_zone(code)
+
+            # Convert the start and end dates to the time zone of the country or subdivision.
+            start_date = (
+                pandas.to_datetime(start_date)
+                .tz_localize(entity_time_zone)
+                .tz_convert("UTC")
+            )
+            end_date = (
+                pandas.to_datetime(end_date)
+                .tz_localize(entity_time_zone)
+                .tz_convert("UTC")
+            )
 
             # Get the years of the data retrieval.
-            years = [year for year in range(start_and_end_dates[0].year, start_and_end_dates[1].year + 1)]
+            years = [year for year in range(start_date.year, end_date.year + 1)]
+
+        # Get the shape of the country or subdivision.
+        entity_shape = util.shapes.get_entity_shape(code)
+
+        # Get the lateral bounds of the country or subdivision.
+        entity_bounds = util.shapes.get_entity_bounds(
+            entity_shape
+        )  # West, South, East, North
 
         # Loop over the years.
         for year in years:
-
-            logging.info(f"Retrieving {args.variable} data in {year}")
-
-            # Define the full file path of the ERA5 data.
-            era5_data_file_path = os.path.join(
+            # Define the full file paths of the ERA5 data.
+            file_path = os.path.join(
                 result_directory, f"{args.variable}_{code}_{year}.nc"
             )
 
-            # Check if the file does not exist.
-            if not os.path.exists(era5_data_file_path):
-                # Get the shape of the country or subdivision.
-                entity_shape = util.shapes.get_entity_shape(code)
-
-                # Get the lateral bounds of the country or subdivision.
-                entity_bounds = util.shapes.get_entity_bounds(
-                    entity_shape
-                )  # West, South, East, North
-
-                # Get the time zone of the country or subdivision.
-                entity_time_zone = util.entities.get_time_zone(code)
+            # Check if the file does not exist or if the year is the current year.
+            if not os.path.exists(file_path) or (
+                os.path.exists(file_path) and year == pandas.Timestamp.now().year
+            ):
+                logging.info(f"Retrieving data for the year {year}.")
 
                 # Download the ERA5 data from the Copernicus Climate Data Store (CDS).
-                retrieval.weather.download_ERA5_data_from_Copernicus(
-                    year,
-                    args.variable,
-                    era5_data_file_path,
-                    entity_bounds=entity_bounds,
-                    local_time_zone=entity_time_zone,
+                retrieval.copernicus.download_data(
+                    year, args.variable, file_path, entity_bounds=entity_bounds
                 )
 
+            else:
                 logging.info(
-                    f"{args.variable} data for {code} retrieved and saved successfully."
+                    f"Data for the year {year} already exists. Skipping download."
                 )
+
+        logging.info(
+            f"{args.variable} data for {code} has been successfully retrieved and saved."
+        )
 
 
 def main() -> None:
