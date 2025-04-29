@@ -40,7 +40,6 @@ def download_and_extract_data(
     Download and extract demand data from EMI.
     Returns a timezone-aware pandas.Series indexed by datetime.
     """
-
     start_ts = pd.to_datetime(start_date)
     end_ts = pd.to_datetime(end_date) if end_date else pd.Timestamp.today()
 
@@ -58,9 +57,12 @@ def download_and_extract_data(
     except Exception as e:
         raise ValueError(f"Date parsing failed: {e}")
 
-
     # Ensure timezone-aware using Pacific/Auckland, handle DST ambiguity
-    index = index.dt.tz_localize("Pacific/Auckland", ambiguous='NaT', nonexistent='shift_forward')
+    index = index.dt.tz_localize(
+        "Pacific/Auckland", 
+        ambiguous="NaT", 
+        nonexistent="shift_forward"
+    )
 
     # Convert from GWh to MW (multiply by 1000)
     electricity_demand_time_series = pd.Series(
@@ -69,4 +71,3 @@ def download_and_extract_data(
     )
 
     return electricity_demand_time_series
-
