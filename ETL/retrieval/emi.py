@@ -12,74 +12,61 @@ Source: https://www.emi.ea.govt.nz/Wholesale/Reports/W_GD_C
 """
 
 import logging
-
-import pandas
+import pandas as pd
 import util.fetcher
 
 
 def get_available_requests(code: str | None = None) -> None:
-    """
-    This script retrieves all data at once. No need to provide date inputs.
-    """
     logging.info("The data is retrieved all at once.")
     return None
 
 
-def get_url(year: int, month: int, day: int) -> str:
+def get_url(start_date: pd.Timestamp, end_date: pd.Timestamp) -> str:
     """
-    Get the URL of the electricity demand data on the EMI website.
-
-    Parameters
-    ----------
-    year : int
-        The year of the data to retrieve
-    month : int
-        The month of the data to retrieve
-    day : int
-        The day of the data to retrieve
-
-    Returns
-    -------
-    url : str
-        The URL of the electricity demand data
+    Build the EMI URL for demand data download.
     """
     return (
-        f"https://www.emi.ea.govt.nz/Wholesale/Reports/W_GD_C"
-        f"?DateFrom={year}{month:02d}{day:02d}&DateTo={year}{month:02d}{day:02d}"
-        f"&RegionType=NZ&_rsdr=D1&_si=_dr_DateFrom|20050101,"
-        f"_dr_DateTo|{year}{month:02d}{day:02d},_dr_RegionType|NZ,v|4"
+        "https://www.emi.ea.govt.nz/Wholesale/Download/DataReport/CSV/W_GD_C"
+        f"?DateFrom={start_date.strftime('%Y%m%d')}"
+        f"&DateTo={end_date.strftime('%Y%m%d')}"
+        "&RegionType=NZ&_rsdr=L7423D&_si=v|4"
     )
 
 
-def download_and_extract_data(year: int, month: int, day: int) -> pandas.Series:
+def download_and_extract_data(
+    start_date: str = "2005-01-01", end_date: str | None = None
+) -> pd.Series:
     """
-    Download and extract the electricity demand data from the EMI website.
-
-    Parameters
-    ----------
-    year : int
-        The year of the data to retrieve
-    month : int
-        The month of the data to retrieve
-    day : int
-        The day of the data to retrieve
-
-    Returns
-    -------
-    electricity_demand_time_series : pandas.Series
-        The electricity demand time series in GWh
+    Download and extract demand data from EMI.
+    Returns a timezone-aware pandas.Series indexed by datetime.
     """
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    headers = {"User-Agent": "Mozilla/5.0"}
+    start_ts = pd.to_datetime(start_date)
+    end_ts = pd.to_datetime(end_date) if end_date else pd.Timestamp.today()
 
-    url = get_url(year, month, day)
+    url = get_url(start_ts, end_ts)
 
     dataset = util.fetcher.fetch_data(
-        url, "text", output_content_type="tabular", header_params=headers
+        url,
+        target_content_type="csv",
+        csv_kwargs={"skiprows": 11},
     )
 
-    electricity_demand_time_series = pandas.Series(
-        dataset["Demand (GWh)"].values,
-        index=pandas.to_datetime(dataset["Period start"]),
+    # Parse date columns with proper format
+    try:
+        index = pd.to_datetime(dataset["Period start"], dayfirst=True, errors="coerce")
+    except Exception as e:
+        raise ValueError(f"Date parsing failed: {e}")
+
+
+    # Ensure timezone-aware using Pacific/Auckland, handle DST ambiguity
+    index = index.dt.tz_localize("Pacific/Auckland", ambiguous='NaT', nonexistent='shift_forward')
+
+    # Convert from GWh to MW (multiply by 1000)
+    electricity_demand_time_series = pd.Series(
+        dataset["Demand (GWh)"].values * 1000,  # Convert GWh to MW by multiplying by 1000
+        index=index,
     )
 
     return electricity_demand_time_series
+
