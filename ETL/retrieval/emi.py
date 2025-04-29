@@ -40,7 +40,7 @@ def download_and_extract_data(
     Download and extract demand data from EMI.
     Returns a timezone-aware pandas.Series indexed by datetime.
     """
-    headers = {"User-Agent": "Mozilla/5.0"}
+
     start_ts = pd.to_datetime(start_date)
     end_ts = pd.to_datetime(end_date) if end_date else pd.Timestamp.today()
 
