@@ -3,6 +3,7 @@ import logging
 import pandas
 import pytz
 from google.cloud import storage
+from google.cloud.exceptions import GoogleCloudError
 
 
 def add_missing_time_steps(
@@ -331,6 +332,14 @@ def upload_to_gcs(
     # Get the bucket.
     bucket = storage_client.bucket(bucket_name)
 
-    # Create a new blob and upload the file.
+    # Create a new blob.
     blob = bucket.blob(destination_blob_name)
-    blob.upload_from_filename(file_path)
+
+    # Updload the file to GCS.
+    try:
+        blob.upload_from_filename(file_path)
+    except (OSError, GoogleCloudError) as e:
+        logging.error(
+            f"Failed to upload file {file_path} to GCS bucket {bucket_name} as {destination_blob_name}: {e}"
+        )
+        raise
