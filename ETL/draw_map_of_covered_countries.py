@@ -15,6 +15,8 @@ import os
 
 import cartopy.crs
 import cartopy.feature
+import matplotlib.cm
+import matplotlib.colors
 import matplotlib.pyplot
 import util.directories
 import util.entities
@@ -39,30 +41,89 @@ fig, ax = matplotlib.pyplot.subplots(
 # Plot the land.
 ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
 
+# Get the range of available data for all countries and subdivisions.
+date_ranges = util.entities.read_all_date_ranges()
+
+# Define the colormap.
+map_cmap = matplotlib.pyplot.get_cmap("viridis_r")
+
+# Set the transparency of the shapes.
+alpha = 0.8
+
 # Loop over the countries.
 for code in codes:
     # Get the shape of the country or subdivision.
     entity_shape = util.shapes.get_entity_shape(code, make_plot=False)
 
+    # Calculate the number of years of available data.
+    n_years = (date_ranges[code][1] - date_ranges[code][0]).days / 365
+
+    # Define the transparency of the shape based on the number of years of available data.
+    if n_years >= 0 and n_years < 5:
+        color = map_cmap(0.0)
+    elif n_years >= 5 and n_years < 10:
+        color = map_cmap(0.33)
+    elif n_years >= 10 and n_years < 20:
+        color = map_cmap(0.66)
+    else:
+        color = map_cmap(1.0)
+
     # Plot the country or subdivision.
     entity_shape.plot(
         ax=ax,
         transform=data_crs,
-        facecolor="tomato",
+        facecolor=color,
         edgecolor="black",
         linewidth=0.5,
         aspect=None,
         autolim=False,
+        alpha=alpha,
     )
+
+# Extract the base color of the colormap.
+base_colors = [
+    map_cmap(0.0),
+    map_cmap(0.33),
+    map_cmap(0.66),
+    map_cmap(1.0),
+]
+
+# Modify the transparency of the base colors.
+base_colors = [
+    (base_colors[0][0], base_colors[0][1], base_colors[0][2], alpha),
+    (base_colors[1][0], base_colors[1][1], base_colors[1][2], alpha),
+    (base_colors[2][0], base_colors[2][1], base_colors[2][2], alpha),
+    (base_colors[3][0], base_colors[3][1], base_colors[3][2], alpha),
+]
+
+# Add a colorbar.
+bar_cmap = matplotlib.colors.ListedColormap(base_colors, name="bar_cmap")
+bounds = [0, 1, 2, 3, 4]
+norm = matplotlib.colors.BoundaryNorm(bounds, bar_cmap.N)
+cbar = fig.colorbar(
+    matplotlib.cm.ScalarMappable(norm=norm, cmap=bar_cmap),
+    ax=ax,
+    orientation="horizontal",
+    pad=0.025,
+    shrink=0.5,
+    ticks=[0.5, 1.5, 2.5, 3.5],
+)
+cbar.ax.set_xticklabels(["0-4", "5-9", "10-19", "20+"])
+cbar.ax.tick_params(labelsize=12)
+cbar.set_label("Years of available data", fontsize=14, weight="bold", labelpad=10)
+
 
 # Add title.
 ax.set_title(
-    "Countries and subdivisions with available data", fontsize=20, y=1.05, weight="bold"
+    "Countries and subdivisions for which retreival scripts\nof electricity demand data are available",
+    fontsize=18,
+    y=1.04,
+    weight="bold",
 )
 
 # Save the figure.
 fig.savefig(
     os.path.join(figure_directory, "available_entities.png"),
-    dpi=600,
+    dpi=300,
     bbox_inches="tight",
 )
