@@ -1,5 +1,6 @@
 # Folders used for local data storage
 data/
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -117,9 +118,6 @@ ENV/
 env.bak/
 venv.bak/
 .devcontainer/
-
-# Google Cloud credentials
-application_default_credentials.json
 
 # Spyder project settings
 .spyderproject
