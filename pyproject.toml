@@ -48,3 +48,8 @@ files = [
 
 [tool.uv.workspace]
 members = ["ETL"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "ETL",
+]
