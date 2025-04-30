@@ -23,3 +23,5 @@ repos:
     hooks:
       - id: prettier
         types_or: [yaml, json5]
+
+autoupdate_schedule: "quaterly"
