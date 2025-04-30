@@ -17,8 +17,8 @@ import cartopy.crs
 import cartopy.feature
 import matplotlib.pyplot
 import util.directories
-import util.shapes
 import util.entities
+import util.shapes
 
 # Create a directory to store the figures.
 figure_directory = util.directories.read_folders_structure()["figures_folder"]

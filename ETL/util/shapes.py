@@ -15,8 +15,8 @@ import cartopy.io.shapereader
 import geopandas
 import pandas
 import pycountry
-import util.figures
 import util.directories
+import util.figures
 from shapely.geometry import Polygon
 
 
