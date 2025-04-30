@@ -5,3 +5,8 @@ description = "Extract Transform Load functionality for electric demand data"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".",
+]

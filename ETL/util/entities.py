@@ -20,6 +20,25 @@ from countryinfo import CountryInfo
 from timezonefinder import TimezoneFinder
 
 
+def _read_data_sources() -> list[str]:
+    """
+    Read the names of the data sources from the yaml files.
+
+    Returns
+    -------
+    data_sources : list of str
+        The names of the data sources
+    """
+
+    # Get the paths to the yaml files of the data sources.
+    file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
+
+    # Read the data sources from the file names.
+    return [
+        os.path.basename(file_path).split(".")[0].upper() for file_path in file_paths
+    ]
+
+
 def _read_entities_info(file_path: str = "", data_source: str = "") -> list[dict]:
     """
     Get the information of the countries and subdivisions in the yaml file of the data source.
@@ -37,6 +56,12 @@ def _read_entities_info(file_path: str = "", data_source: str = "") -> list[dict
     """
 
     if file_path == "" and data_source != "":
+        # Check if the data source is valid.
+        if data_source not in _read_data_sources():
+            raise ValueError(
+                f"Invalid data source: {data_source}. Available data sources are: {', '.join(_read_data_sources())}"
+            )
+
         # Get the path to the yaml file of the data source.
         file_path = os.path.join(
             util.directories.read_folders_structure()["retrieval_scripts_folder"],
@@ -119,23 +144,72 @@ def read_all_codes() -> list[str]:
 
 def check_code(code: str, data_source: str) -> None:
     """
-    Check if the code is valid.
+    Check if the code is available in the yaml file of the data source.
 
     Parameters
     ----------
     code : str
         The code of the subdivision
-
-    Raises
-    ------
-    AssertionError
-        If the code is not valid.
     """
 
     # Check if the code is valid.
     assert code in read_codes(data_source=data_source), (
         f"Invalid code: {code}. Available codes are: {', '.join(read_codes(data_source=data_source))}"
     )
+
+
+def check_and_get_codes(
+    args: argparse.Namespace,
+) -> list[str]:
+    """
+    Check the validity of the country and subdivision codes and return the list of codes of interest.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        The command line arguments
+
+    Returns
+    -------
+    codes : list[str]
+        The list of codes of the countries and subdivisions of interest
+    """
+
+    # Get the list of available countries and subdivisions according to the arguments.
+    if "data_source" in args and args.data_source is not None:
+        all_codes = read_codes(data_source=args.data_source)
+    else:
+        all_codes = read_all_codes()
+
+    if args.code is not None:
+        # Check if the code is available.
+        if args.code not in all_codes:
+            raise ValueError(
+                f"Code {args.code} is not available. Please choose one of the following: {', '.join(all_codes)}"
+            )
+        else:
+            codes = [args.code]
+
+    elif args.file is not None:
+        # Get the list of countries and subdivisions available on the specified file.
+        codes = read_codes(file_path=args.file)
+
+        # Check if the codes are available.
+        for code in codes:
+            if code not in all_codes:
+                logging.error(f"Code {code} is not available.")
+                codes.remove(code)
+
+        # Check if there are any codes left.
+        if len(codes) == 0:
+            raise ValueError(
+                f"None of the codes in the file are available. Please choose from the following: {', '.join(all_codes)}"
+            )
+    else:
+        # If the file or code is not provided, use all the available codes.
+        codes = all_codes
+
+    return codes
 
 
 def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
@@ -183,7 +257,7 @@ def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
             time_zone = pytz.timezone(time_zone_name)
         else:
             # Get the time zone of the country.
-            time_zone = time_zones[0]
+            time_zone = pytz.timezone(time_zones[0])
     else:
         raise ValueError(f"Expected ISO Alpha-2 code, but got {iso_alpha_2_code}.")
 
@@ -308,7 +382,9 @@ def get_time_zone(code: str) -> pytz.timezone:
         return time_zones[code]
     else:
         # If the code is not in the dictionary, raise an error.
-        raise ValueError(f"The time zone is not defined for {code}.")
+        raise ValueError(
+            f"{code} is not among the available countries and subdivisions."
+        )
 
 
 def read_date_ranges(
@@ -405,57 +481,3 @@ def read_all_date_ranges() -> dict[str, tuple[datetime.date, datetime.date]]:
                 start_and_end_dates[code] = (start_date, end_date)
 
     return start_and_end_dates
-
-
-def check_and_get_codes(
-    args: argparse.Namespace,
-) -> list[str]:
-    """
-    Check the validity of the country and subdivision codes and return the list of codes of the countries and subdivisions of interest.
-
-    Parameters
-    ----------
-    args : argparse.Namespace
-        The command line arguments
-
-    Returns
-    -------
-    codes : list[str]
-        The list of codes of the countries and subdivisions of interest
-    """
-
-    # Get the list of available countries and subdivisions according to the arguments.
-    if "data_source" in args and args.data_source is not None:
-        all_codes = read_codes(data_source=args.data_source.lower())
-    else:
-        all_codes = read_all_codes()
-
-    if args.code is not None:
-        # Check if the code is available.
-        if args.code not in all_codes:
-            raise ValueError(
-                f"Code {args.code} is not available. Please choose one of the following: {', '.join(all_codes)}"
-            )
-        else:
-            codes = [args.code]
-
-    elif args.file is not None:
-        # Get the list of countries and subdivisions available on the specified file.
-        codes = read_codes(file_path=args.file)
-
-        # Check if the codes are available.
-        for code in codes:
-            if code not in all_codes:
-                logging.error(f"Code {code} is not available.")
-                codes.remove(code)
-
-        # Check if there are any codes left.
-        if len(codes) == 0:
-            raise ValueError(
-                f"None of the codes in the file are available. Please choose from the following: {', '.join(all_codes)}"
-            )
-    else:
-        # If the file or code is not provided, use all the available codes.
-        codes = all_codes
-
-    return codes
