@@ -229,7 +229,7 @@ def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFra
 
 
 def get_region_shape(
-    code: str, make_plot: bool = True, remove_remote_islands: bool = True
+    code: str, make_plot: bool = False, remove_remote_islands: bool = True
 ) -> geopandas.GeoDataFrame:
     """
     Get the region shape of a country or region of interest.
