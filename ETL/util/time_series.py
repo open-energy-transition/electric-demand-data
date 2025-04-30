@@ -328,21 +328,8 @@ def upload_to_gcs(
         The name of the blob in the GCS bucket
     """
 
-    # Get the root directory of the project.
-    root_directory = util.general.read_folders_structure()["root_folder"]
-
-    # Get the path to the credentials file.
-    credentials_path = os.path.normpath(
-        os.path.join(root_directory, "..", "application_default_credentials.json")
-    )
-
-    # Load the credentials from the file.
-    credentials, __ = google.auth.load_credentials_from_file(credentials_path)
-
     # Create a GCS client.
-    storage_client = storage.Client(
-        credentials=credentials, project="electric-demand-data"
-    )
+    storage_client = storage.Client()
 
     # Get the bucket.
     bucket = storage_client.bucket(bucket_name)
