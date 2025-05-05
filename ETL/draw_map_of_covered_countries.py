@@ -45,10 +45,14 @@ ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
 date_ranges = util.entities.read_all_date_ranges()
 
 # Define the colormap.
-map_cmap = matplotlib.pyplot.get_cmap("viridis_r")
+map_cmap = matplotlib.pyplot.get_cmap("Reds")
 
 # Set the transparency of the shapes.
 alpha = 0.8
+
+# Define the extent of the colormap.
+lower_bound = 0.2
+upper_bound = 0.9
 
 # Loop over the countries.
 for code in codes:
@@ -60,13 +64,13 @@ for code in codes:
 
     # Define the transparency of the shape based on the number of years of available data.
     if n_years >= 0 and n_years < 5:
-        color = map_cmap(0.0)
+        color = map_cmap(lower_bound)
     elif n_years >= 5 and n_years < 10:
-        color = map_cmap(0.33)
+        color = map_cmap(lower_bound + (upper_bound - lower_bound) / 3)
     elif n_years >= 10 and n_years < 20:
-        color = map_cmap(0.66)
+        color = map_cmap(lower_bound + (2 * (upper_bound - lower_bound)) / 3)
     else:
-        color = map_cmap(1.0)
+        color = map_cmap(upper_bound)
 
     # Plot the country or subdivision.
     entity_shape.plot(
@@ -82,10 +86,10 @@ for code in codes:
 
 # Extract the base color of the colormap.
 base_colors = [
-    map_cmap(0.0),
-    map_cmap(0.33),
-    map_cmap(0.66),
-    map_cmap(1.0),
+    map_cmap(lower_bound),
+    map_cmap(lower_bound + (upper_bound - lower_bound) / 3),
+    map_cmap(lower_bound + 2 * (upper_bound - lower_bound) / 3),
+    map_cmap(upper_bound),
 ]
 
 # Modify the transparency of the base colors.
