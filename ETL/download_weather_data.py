@@ -38,7 +38,9 @@ def read_command_line_arguments() -> argparse.Namespace:
 
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
-        description="Download and process population density data from SEDAC."
+        description="Download and process weather data from the Copernicus Climate Data Store (CDS)."
+        "You can specify the country or subdivision code, provide a file containing the list of codes, "
+        "or use all available codes. The variable and year of the weather data can also be specified."
     )
 
     # Add the command line arguments.
@@ -53,14 +55,14 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest.",
+        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest",
         required=False,
     )
     parser.add_argument(
         "-v",
         "--variable",
         type=str,
-        help="Variable of the weather data to download.",
+        help="Variable of the weather data to be downloaded",
         default="2m_temperature",
         required=False,
     )
@@ -68,7 +70,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-y",
         "--year",
         type=int,
-        help="Year of the weather data to download.",
+        help="Year of the weather data to be downloaded",
         required=False,
     )
 

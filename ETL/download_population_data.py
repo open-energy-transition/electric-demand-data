@@ -38,7 +38,9 @@ def read_command_line_arguments() -> argparse.Namespace:
 
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
-        description="Download and process population density data from SEDAC."
+        description="Download and process population density data from SEDAC. "
+        "You can specify the country or subdivision code, provide a file containing the list of codes, "
+        "or use all available codes. The year of the population density data can also be specified."
     )
 
     # Add the command line arguments.
@@ -53,7 +55,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest.",
+        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest",
         required=False,
     )
     parser.add_argument(
@@ -61,7 +63,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "--year",
         type=int,
         choices=[2000, 2005, 2010, 2015, 2020],
-        help="Year of the population density data to download.",
+        help="Year of the population density data to be downloaded",
         default=2020,
         required=False,
     )

@@ -40,15 +40,17 @@ def harmonize_coords(
 
 
 def load_xarray(
-    file_path: str, engine: str = "netcdf4", dataarray_or_dataset: str = "dataarray"
+    file_paths: str | list[str],
+    engine: str = "netcdf4",
+    dataarray_or_dataset: str = "dataarray",
 ) -> xarray.DataArray | xarray.Dataset:
     """
     Load an xarray dataset from a file.
 
     Parameters
     ----------
-    file_path : str
-        The path to the file to load
+    file_paths : str or list of str
+        The path to the file or list of files to load
     engine : str
         The engine to use to load the xarray dataset
     dataarray_or_dataset : str
@@ -60,14 +62,36 @@ def load_xarray(
         The loaded dataset
     """
 
-    # Load the xarray.
-    if dataarray_or_dataset == "dataarray":
-        xarray_data = xarray.open_dataarray(file_path, engine=engine)
-    elif dataarray_or_dataset == "dataset":
-        xarray_data = xarray.open_dataset(file_path, engine=engine)
+    # Check if the file_paths is a string or a list of strings.
+    if isinstance(file_paths, str):
+        file_paths = [file_paths]
 
-    # Harmonize the coordinates of the xarray dataset.
-    xarray_data = harmonize_coords(xarray_data)
+    # Initialize an empty list to store the xarray data.
+    xarray_data = []
+
+    # Loop through the file paths and load the xarray data.
+    for file_path in file_paths:
+        # Load the xarray data.
+        if dataarray_or_dataset == "dataarray":
+            xarray_to_append = xarray.open_dataarray(file_path, engine=engine)
+        elif dataarray_or_dataset == "dataset":
+            xarray_to_append = xarray.open_dataset(file_path, engine=engine)
+        else:
+            raise ValueError(
+                "dataarray_or_dataset must be either 'dataarray' or 'dataset'."
+            )
+        # Harmonize the coordinates of the xarray data.
+        xarray_to_append = harmonize_coords(xarray_to_append)
+
+        # Append the xarray data to the list.
+        xarray_data.append(xarray_to_append)
+
+    if len(xarray_data) > 1:
+        # Concatenate the xarray data along the time dimension.
+        xarray_data = xarray.concat(xarray_data, dim="time")
+    else:
+        # If there is only one xarray data, return it.
+        xarray_data = xarray_data[0]
 
     return xarray_data
 

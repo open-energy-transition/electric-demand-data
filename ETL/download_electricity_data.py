@@ -97,7 +97,7 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes",
+        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest.",
         required=False,
     )
 
