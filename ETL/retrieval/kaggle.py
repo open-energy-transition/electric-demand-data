@@ -6,8 +6,8 @@ Description:
 
     This script retrieves the electricity demand data from the website of Kaggle in Turkey.
 
-    The data is retrieved for the years from 2020 to 2022. 
-    
+    The data is retrieved for the years from 2020 to 2022.
+
     The data is retrieved by logging into the Kaggle website.
 
     Source: https://www.kaggle.com/datasets/dharanikra/electrical-power-demand-in-turkey
@@ -75,11 +75,8 @@ def download_and_extract_data() -> pandas.Series:
     # Extract the electricity demand time series.
     electricity_demand_time_series = pandas.Series(
         dataset["onsumption (MWh)"].values,
-        index=pandas.to_datetime(
-            dataset["Date_Time"], format="%Y-%m-%d %H:%M:%S %p"
-        ),
+        index=pandas.to_datetime(dataset["Date_Time"], format="%Y-%m-%d %H:%M:%S %p"),
     )
-
 
     # Add the timezone information to the index.
     electricity_demand_time_series.index = (
