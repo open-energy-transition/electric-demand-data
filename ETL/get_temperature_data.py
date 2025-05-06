@@ -391,7 +391,7 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
                 logging.info(f"Temperature time series for {code} already exists.")
 
 
-def main() -> None:
+if __name__ == "__main__":
     # Read the command line arguments.
     args = read_command_line_arguments()
 
@@ -408,7 +408,3 @@ def main() -> None:
 
     # Run the temperature calculation.
     run_temperature_calculation(args)
-
-
-if __name__ == "__main__":
-    main()

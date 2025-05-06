@@ -196,7 +196,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             )
 
 
-def main() -> None:
+if __name__ == "__main__":
     # Read the command line arguments.
     args = read_command_line_arguments()
 
@@ -213,7 +213,3 @@ def main() -> None:
 
     # Run the data retrieval.
     run_data_retrieval(args)
-
-
-if __name__ == "__main__":
-    main()
