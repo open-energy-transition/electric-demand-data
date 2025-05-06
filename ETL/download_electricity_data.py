@@ -29,6 +29,7 @@ import retrieval.entsoe
 import retrieval.eskom
 import retrieval.hydroquebec
 import retrieval.ieso
+import retrieval.kaggle
 import retrieval.nbpower
 import retrieval.neso
 import retrieval.nigeria
@@ -53,6 +54,7 @@ retrieval_module = {
     "ESKOM": retrieval.eskom,
     "HYDROQUEBEC": retrieval.hydroquebec,
     "IESO": retrieval.ieso,
+    "KAGGLE": retrieval.kaggle,
     "NBPOWER": retrieval.nbpower,
     "NESO": retrieval.neso,
     "NIGERIA": retrieval.nigeria,
