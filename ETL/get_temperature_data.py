@@ -240,15 +240,6 @@ def build_temperature_database(
     # Get the rank of the monthly average temperature.
     monthly_average_temperature_rank = monthly_average_temperature.rank(ascending=False)
 
-    # Get the annual average temperature.
-    annual_average_temperature = (
-        temperature_time_series_top_1.resample("YE").mean().values[0]
-    )
-
-    # The the 5 and 95 percentiles of the temperature.
-    temperature_5_percentile = temperature_time_series_top_1.quantile(0.05)
-    temperature_95_percentile = temperature_time_series_top_1.quantile(0.95)
-
     # Map the monthly average temperature to the original temperature time series.
     monthly_average_temperature = temperature_time_series_top_1.index.month.map(
         monthly_average_temperature
@@ -261,15 +252,20 @@ def build_temperature_database(
     ).to_series()
     monthly_average_temperature_rank.index = temperature_time_series_top_1.index
 
-    # Map the annual average temperature, 5 and 95 percentiles to the original temperature time series.
+    # Get the annual average temperature.
     annual_average_temperature = pandas.Series(
-        annual_average_temperature, index=temperature_time_series_top_1.index
+        temperature_time_series_top_1.resample("YE").mean().values[0],
+        index=temperature_time_series_top_1.index,
     )
+
+    # Get the 5 and 95 percentiles of the temperature.
     temperature_5_percentile = pandas.Series(
-        temperature_5_percentile, index=temperature_time_series_top_1.index
+        temperature_time_series_top_1.quantile(0.05),
+        index=temperature_time_series_top_1.index,
     )
     temperature_95_percentile = pandas.Series(
-        temperature_95_percentile, index=temperature_time_series_top_1.index
+        temperature_time_series_top_1.quantile(0.95),
+        index=temperature_time_series_top_1.index,
     )
 
     # Add the hour of the day, day of the week, month of the year, and year to the DataFrame.
@@ -291,19 +287,19 @@ def build_temperature_database(
     temperature_database["Temperature - Top 3 (K)"] = (
         temperature_time_series_top_3.values
     )
-    temperature_database["Monthly average temperature - Top 1  (K)"] = (
+    temperature_database["Monthly average temperature - Top 1 (K)"] = (
         monthly_average_temperature.values
     )
-    temperature_database["Monthly average temperature rank - Top 1 "] = (
+    temperature_database["Monthly average temperature rank - Top 1"] = (
         monthly_average_temperature_rank.values
     )
-    temperature_database["Annual average temperature - Top 1  (K)"] = (
+    temperature_database["Annual average temperature - Top 1 (K)"] = (
         annual_average_temperature.values
     )
-    temperature_database["5 percentile temperature - Top 1  (K)"] = (
+    temperature_database["5 percentile temperature - Top 1 (K)"] = (
         temperature_5_percentile.values
     )
-    temperature_database["95 percentile temperature - Top 1  (K)"] = (
+    temperature_database["95 percentile temperature - Top 1 (K)"] = (
         temperature_95_percentile.values
     )
     temperature_database.index.name = "Time (UTC)"
