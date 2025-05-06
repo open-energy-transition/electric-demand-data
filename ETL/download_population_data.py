@@ -159,41 +159,48 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     ]
     os.makedirs(result_directory, exist_ok=True)
 
-    # Load the population density data.
-    population_density = xarray.open_dataarray(get_url(args.year), engine="rasterio")
-
-    # Harmonize the population density data.
-    population_density = util.geospatial.harmonize_coords(population_density)
+    if args.year is not None:
+        years = [args.year]
+    else:
+        years = [2000, 2005, 2010, 2015, 2020]
 
     # Get the list of codes of the countries and subdivisions of interest.
     codes = util.entities.check_and_get_codes(args)
 
-    # Loop over the countries and subdivisions of interest.
-    for code in codes:
-        # Define the file path of the population density data for the country or subdivision.
-        population_file_path = os.path.join(
-            result_directory, f"{code}_0.25_deg_{args.year}.nc"
-        )
+    # Loop over the years.
+    for year in years:
+        # Load the population density data.
+        population_density = xarray.open_dataarray(get_url(year), engine="rasterio")
 
-        if not os.path.exists(population_file_path):
-            logging.info(f"Extracting population density of {code}.")
+        # Harmonize the population density data.
+        population_density = util.geospatial.harmonize_coords(population_density)
 
-            # Get the shape of the country or subdivision.
-            entity_shape = util.shapes.get_entity_shape(code)
-
-            # Extract the population density of the country or subdivision.
-            extract_population_density_of_entity(
-                population_density, entity_shape, population_file_path
+        # Loop over the countries and subdivisions of interest.
+        for code in codes:
+            # Define the file path of the population density data for the country or subdivision.
+            population_file_path = os.path.join(
+                result_directory, f"{code}_0.25_deg_{year}.nc"
             )
 
-            logging.info(
-                f"Population density data for {code} has been successfully extracted and saved."
-            )
+            if not os.path.exists(population_file_path):
+                logging.info(f"Extracting population density of {code}.")
 
-        else:
-            logging.info(
-                f"Population density data for {code} already exists. Skipping extraction."
-            )
+                # Get the shape of the country or subdivision.
+                entity_shape = util.shapes.get_entity_shape(code)
+
+                # Extract the population density of the country or subdivision.
+                extract_population_density_of_entity(
+                    population_density, entity_shape, population_file_path
+                )
+
+                logging.info(
+                    f"Population density data for {code} has been successfully extracted and saved."
+                )
+
+            else:
+                logging.info(
+                    f"Population density data for {code} already exists. Skipping extraction."
+                )
 
 
 if __name__ == "__main__":

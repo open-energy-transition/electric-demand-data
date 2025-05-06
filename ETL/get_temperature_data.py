@@ -55,51 +55,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     return args
 
 
-def get_largest_population_densities_in_entity(
-    entity_shape: geopandas.GeoDataFrame,
-    population_density: xarray.DataArray,
-    number_of_grid_cells: int,
-) -> xarray.DataArray:
-    """
-    Get the population density data in the given country or subdivision, ready to be sorted.
-
-    Parameters
-    ----------
-    entity_shape : geopandas.GeoDataFrame
-        The shape of the country or subdivision of interest
-    population_density : xarray.DataArray
-        Population density data
-    number_of_grid_cells : int
-        The number of grid cells to consider
-
-    Returns
-    -------
-    largest_population_densities : xarray.DataArray
-        Population density in the largest population density areas
-    """
-
-    # Calculate the fraction of each grid cell that is in the given shapes.
-    fraction_of_grid_cells_in_shape = (
-        util.geospatial.get_fraction_of_grid_cells_in_shape(
-            entity_shape, make_plot=False
-        )
-    )
-
-    # Rearrange the population density data to sort the values.
-    population_density_rearranged = (
-        population_density.where(fraction_of_grid_cells_in_shape > 0.0)
-        .stack(z=("y", "x"))
-        .dropna(dim="z")
-    )
-
-    # Get the grid cells with the largest population densities.
-    largest_population_densities = population_density_rearranged.sortby(
-        population_density_rearranged
-    ).tail(number_of_grid_cells)
-
-    return largest_population_densities
-
-
 def get_temperature_in_largest_population_density_areas(
     year: int,
     entity_shape: geopandas.GeoDataFrame,
@@ -175,9 +130,9 @@ def get_temperature_in_largest_population_density_areas(
     # Harmonize the population density data.
     population_density = util.geospatial.harmonize_coords(population_density)
 
-    # Get the population density data in the given country or subdivions, ready to be sorted.
-    largest_population_densities = get_largest_population_densities_in_entity(
-        entity_shape, population_density, number_of_grid_cells=number_of_grid_cells
+    # Get the grid cells with the largest population densities in the given shape.
+    largest_population_densities = util.geospatial.get_largest_values_in_shape(
+        entity_shape, population_density, number_of_grid_cells
     )
 
     # Get the temperature data for the grid cells with the largest population densities.

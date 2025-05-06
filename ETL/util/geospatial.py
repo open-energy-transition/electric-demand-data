@@ -113,6 +113,47 @@ def get_fraction_of_grid_cells_in_shape(
     return fraction_of_grid_cells_in_shape
 
 
+def get_largest_values_in_shape(
+    entity_shape: geopandas.GeoDataFrame,
+    xarray_data: xarray.DataArray,
+    number_of_grid_cells: int,
+) -> xarray.DataArray:
+    """
+    Get the grid cells with the largest values in the given shape.
+
+    Parameters
+    ----------
+    entity_shape : geopandas.GeoDataFrame
+        The shape of the country or subdivision of interest
+    xarray_data : xarray.DataArray
+        The xarray data to extract the largest values from
+    number_of_grid_cells : int
+        The number of grid cells to consider
+
+    Returns
+    -------
+    xarray.DataArray
+        The grid cells with the largest values in the given shape
+    """
+
+    # Calculate the fraction of each grid cell that is in the given shapes.
+    fraction_of_grid_cells_in_shape = get_fraction_of_grid_cells_in_shape(
+        entity_shape, make_plot=False
+    )
+
+    # Rearrange the xarray data.
+    xarray_data_rearranged = (
+        xarray_data.where(fraction_of_grid_cells_in_shape > 0.0)
+        .stack(z=("y", "x"))
+        .dropna(dim="z")
+    )
+
+    # Return the grid cells with the largest values.
+    return xarray_data_rearranged.sortby(xarray_data_rearranged).tail(
+        number_of_grid_cells
+    )
+
+
 def coarsen(
     original_xarray: xarray.DataArray,
     bounds: list[float],
@@ -187,7 +228,5 @@ def coarsen(
         0.25,
     )
 
-    # Rename the bins to "x" and "y".
-    coarsened_xarray = coarsened_xarray.rename({"x_bins": "x", "y_bins": "y"})
-
-    return coarsened_xarray
+    # Rename the bins to "x" and "y" and return the coarsened xarray data.
+    return coarsened_xarray.rename({"x_bins": "x", "y_bins": "y"})
