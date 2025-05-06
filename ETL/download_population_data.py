@@ -160,9 +160,10 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     os.makedirs(result_directory, exist_ok=True)
 
     # Load the population density data.
-    population_density = util.geospatial.load_xarray(
-        get_url(args.year), engine="rasterio"
-    )
+    population_density = xarray.open_dataarray(get_url(args.year), engine="rasterio")
+
+    # Harmonize the population density data.
+    population_density = util.geospatial.harmonize_coords(population_density)
 
     # Get the list of codes of the countries and subdivisions of interest.
     codes = util.entities.check_and_get_codes(args)

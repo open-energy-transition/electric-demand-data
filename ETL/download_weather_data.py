@@ -105,26 +105,8 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             # If the year is provided, use it.
             years = [args.year]
         else:
-            # Read the start and end dates of the available data for the country or subdivision of interest.
-            start_date, end_date = util.entities.read_all_date_ranges()[code]
-
-            # Get the time zone of the country or subdivision.
-            entity_time_zone = util.entities.get_time_zone(code)
-
-            # Convert the start and end dates to the time zone of the country or subdivision.
-            start_date = (
-                pandas.to_datetime(start_date)
-                .tz_localize(entity_time_zone)
-                .tz_convert("UTC")
-            )
-            end_date = (
-                pandas.to_datetime(end_date)
-                .tz_localize(entity_time_zone)
-                .tz_convert("UTC")
-            )
-
-            # Get the years of the data retrieval.
-            years = [year for year in range(start_date.year, end_date.year + 1)]
+            # Get the years of available data for the country or subdivision of interest.
+            years = util.entities.get_available_years(code)
 
         # Get the shape of the country or subdivision.
         entity_shape = util.shapes.get_entity_shape(code)
@@ -138,7 +120,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         for year in years:
             # Define the full file paths of the ERA5 data.
             file_path = os.path.join(
-                result_directory, f"{args.variable}_{code}_{year}.nc"
+                result_directory, f"{code}_{args.variable}_{year}.nc"
             )
 
             # Check if the file does not exist or if the year is the current year.

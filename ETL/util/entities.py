@@ -12,6 +12,7 @@ import datetime
 import logging
 import os
 
+import pandas
 import pycountry
 import pytz
 import util.directories
@@ -481,3 +482,36 @@ def read_all_date_ranges() -> dict[str, tuple[datetime.date, datetime.date]]:
                 start_and_end_dates[code] = (start_date, end_date)
 
     return start_and_end_dates
+
+
+def get_available_years(code: str) -> list[int]:
+    """
+    Get the years of the available data for a country or subdivision.
+
+    Parameters
+    ----------
+    code : str
+        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 and the subdivision code
+
+    Returns
+    -------
+    years : list[int]
+        The years of the available data for the country or subdivision
+    """
+
+    # Read the start and end dates of the available data for the country or subdivision of interest.
+    start_date, end_date = read_all_date_ranges()[code]
+
+    # Get the time zone of the country or subdivision.
+    entity_time_zone = get_time_zone(code)
+
+    # Convert the start and end dates to the time zone of the country or subdivision.
+    start_date = (
+        pandas.to_datetime(start_date).tz_localize(entity_time_zone).tz_convert("UTC")
+    )
+    end_date = (
+        pandas.to_datetime(end_date).tz_localize(entity_time_zone).tz_convert("UTC")
+    )
+
+    # Return the years of the data availability.
+    return [year for year in range(start_date.year, end_date.year + 1)]
