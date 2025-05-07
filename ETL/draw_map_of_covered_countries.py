@@ -84,7 +84,7 @@ for code in codes:
         alpha=alpha,
     )
 
-# Extract the base color of the colormap.
+# Extract the base colors of the colormap.
 base_colors = [
     map_cmap(lower_bound),
     map_cmap(lower_bound + (upper_bound - lower_bound) / 3),
