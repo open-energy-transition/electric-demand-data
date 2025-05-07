@@ -119,7 +119,7 @@ cbar.set_label("Years of available data", fontsize=14, weight="bold", labelpad=1
 
 # Add title.
 ax.set_title(
-    "Countries and subdivisions for which retreival scripts\nof electricity demand data are available",
+    "Countries and subdivisions for which retrieval scripts\nof electricity demand data are available",
     fontsize=18,
     y=1.04,
     weight="bold",
