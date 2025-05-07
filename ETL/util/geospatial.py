@@ -39,6 +39,32 @@ def harmonize_coords(
     return ds
 
 
+def clean_raster(xarray_data: xarray.DataArray, variable_name: str) -> xarray.DataArray:
+    """
+    Clean the xarray data by dropping unnecessary variables and renaming the variable.
+
+    Parameters
+    ----------
+    xarray_data : xarray.DataArray
+        The xarray data to clean
+    variable_name : str
+        The name of the variable to rename
+
+    Returns
+    -------
+    xarray.DataArray
+        The cleaned xarray data
+    """
+
+    # Drop unnecessary variables.
+    xarray_data = xarray_data.squeeze("band")
+    xarray_data = xarray_data.drop_vars(["band", "spatial_ref"])
+    xarray_data = xarray_data.drop_attrs()
+    xarray_data = xarray_data.rename(variable_name)
+
+    return xarray_data
+
+
 def get_fraction_of_grid_cells_in_shape(
     entity_shape: geopandas.GeoDataFrame,
     resolution: float = 0.25,

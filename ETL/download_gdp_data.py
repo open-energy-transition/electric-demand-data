@@ -4,22 +4,26 @@ License: AGPL-3.0
 
 Description:
 
-    This script downloads population density data from SEDAC (Socioeconomic Data and Applications Center).
+    This script downloads GPD data from a Zenodo repository.
 
-    It then extracts the population density data for the countries and subdivisions of interest, coarsens the data to a 0.25-degree resolution, and saves it into NetCDF files.
+    It then extracts the GDP data for the countries and subdivisions of interest at a 0.25-degree resolution, and saves it into NetCDF files.
 
-    The country and subdivision code can be specified or a list can be provided as a yaml file. If no file or code is provided, the script will use all available codes.
+    The year of the GPD data can be specified as a command line argument. The default year is 2020.
 
-    The year of the population density data can be specified as a command line argument. The default year is 2020.
+    Source: https://zenodo.org/records/7898409
+    Source: https://doi.org/10.1038/s41597-022-01300-x
+
 """
 
 import argparse
+import io
 import logging
 import os
 
+import py7zr
+import requests
 import util.directories
 import util.entities
-import util.figures
 import util.geospatial
 import util.shapes
 import xarray
@@ -37,9 +41,9 @@ def read_command_line_arguments() -> argparse.Namespace:
 
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
-        description="Download and process population density data from SEDAC. "
+        description="Download and process GPD data from a Zenodo repository. "
         "You can specify the country or subdivision code, provide a file containing the list of codes, "
-        "or use all available codes. The year of the population density data can also be specified."
+        "or use all available codes. The year of the GDP data can also be specified."
     )
 
     # Add the command line arguments.
@@ -61,8 +65,8 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-y",
         "--year",
         type=int,
-        choices=[2000, 2005, 2010, 2015, 2020],
-        help="Year of the population density data to be downloaded",
+        choices=list(range(2000, 2021)),
+        help="Year of the GDP data to be downloaded",
         required=False,
     )
 
@@ -74,7 +78,7 @@ def read_command_line_arguments() -> argparse.Namespace:
 
 def run_data_retrieval(args: argparse.Namespace) -> None:
     """
-    Download the population density data from SEDAC and extract the population density data for the countries and subdivisions of interest.
+    Download and extract GDP data from a Zenodo repository for the countries and subdivisions of interest.
 
     Parameters
     ----------
@@ -83,38 +87,40 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     """
 
     # Get the directory to store the population density data.
-    result_directory = util.directories.read_folders_structure()[
-        "population_density_folder"
-    ]
+    result_directory = util.directories.read_folders_structure()["gdp_folder"]
     os.makedirs(result_directory, exist_ok=True)
 
     if args.year is not None:
         years = [args.year]
     else:
-        years = [2000, 2005, 2010, 2015, 2020]
+        years = list(range(2000, 2021))
 
     # Get the list of codes of the countries and subdivisions of interest.
     codes = util.entities.check_and_get_codes(args)
 
     # Loop over the years.
     for year in years:
-        logging.info(f"Downloading population density data for the year {year}.")
+        logging.info(f"Downloading GDP data for the year {year}.")
 
-        # Define the URL of the population density data.
-        url = f"https://data.ghg.center/sedac-popdensity-yeargrid5yr-v4.11/gpw_v4_population_density_rev11_{year}_30_sec_{year}.tif"
-
-        # Download the population density data.
-        global_population_density = xarray.open_dataarray(url, engine="rasterio")
-
-        # Harmonize the population density data.
-        global_population_density = util.geospatial.harmonize_coords(
-            global_population_density
+        # Fetch the GDP data from Zenodo.
+        response = requests.get(
+            "https://zenodo.org/records/7898409/files/GDP_025d%20(2000-2100).7z?download=1"
         )
+
+        # Extract the archive from the response.
+        archive = py7zr.SevenZipFile(io.BytesIO(response.content), mode="r")
+
+        # Extract the GDP data for the specified year.
+        global_gdp = xarray.open_dataarray(
+            archive.read([f"025d/GDP{year}.tif"])[f"025d/GDP{year}.tif"],
+            engine="rasterio",
+        )
+
+        # Harmonize the GDP data.
+        global_gdp = util.geospatial.harmonize_coords(global_gdp)
 
         # Clean the dataset.
-        global_population_density = util.geospatial.clean_raster(
-            global_population_density, "population_density"
-        )
+        global_gdp = util.geospatial.clean_raster(global_gdp, "gdp")
 
         # Loop over the countries and subdivisions of interest.
         for code in codes:
@@ -122,7 +128,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             file_path = os.path.join(result_directory, f"{code}_0.25_deg_{year}.nc")
 
             if not os.path.exists(file_path):
-                logging.info(f"Extracting population density data of {code}.")
+                logging.info(f"Extracting GDP data of {code}.")
 
                 # Get the shape of the country or subdivision.
                 entity_shape = util.shapes.get_entity_shape(code, make_plot=False)
@@ -132,32 +138,27 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                     entity_shape
                 )  # West, South, East, North
 
-                # Select the population density data in the bounding box of the country or subdivision of interest.
-                population_density = global_population_density.sel(
+                # Select the GDP data for the country or subdivision of interest.
+                gdp = global_gdp.sel(
                     x=slice(entity_bounds[0], entity_bounds[2]),
                     y=slice(entity_bounds[1], entity_bounds[3]),
                 )
 
-                # Coarsen the population density data to the same resolution as the weather data.
-                population_density = util.geospatial.coarsen(
-                    population_density, entity_bounds
-                )
+                # Save the GDP data.
+                gdp.to_netcdf(file_path)
 
-                # Save the population density data.
-                population_density.to_netcdf(file_path)
-
-                # Make a plot of the population density data.
+                # Make a plot of the GDP data.
                 # util.figures.simple_plot(
-                #     population_density, f"population_density_{entity_shape.index[0]}"
+                #     gdp, f"gdp_{entity_shape.index[0]}"
                 # )
 
                 logging.info(
-                    f"Population density data for {code} has been successfully extracted and saved."
+                    f"GDP data for {code} has been successfully extracted and saved."
                 )
 
             else:
                 logging.info(
-                    f"Population density data for {code} already exists. Skipping extraction."
+                    f"GDP data for {code} already exists. Skipping extraction."
                 )
 
 
@@ -166,7 +167,7 @@ if __name__ == "__main__":
     args = read_command_line_arguments()
 
     # Set up the logging configuration.
-    log_file_name = "population_density_data.log"
+    log_file_name = "gdp_data.log"
     log_files_directory = util.directories.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(

@@ -127,9 +127,6 @@ def get_temperature_in_largest_population_density_areas(
         )
     )
 
-    # Harmonize the population density data.
-    population_density = util.geospatial.harmonize_coords(population_density)
-
     # Get the grid cells with the largest population densities in the given shape.
     largest_population_densities = util.geospatial.get_largest_values_in_shape(
         entity_shape, population_density, number_of_grid_cells
