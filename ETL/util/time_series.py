@@ -206,7 +206,7 @@ def harmonize_time_series(
 
 def clean_data(time_series: pandas.Series) -> pandas.Series:
     """
-    Clean the time series data by setting the time zone to UTC and removing NaN and zero values.
+    Clean the time series data by setting the time zone to UTC and removing NaN, zero values, and duplicated time steps.
 
     Parameters
     ----------
@@ -216,7 +216,7 @@ def clean_data(time_series: pandas.Series) -> pandas.Series:
     Returns
     -------
     time_series : pandas.Series
-        Time series of interest without NaN and zero values
+        Time series of interest without NaN, zero values, and duplicated time steps
     """
 
     # Check if the time series is timezone-aware.
