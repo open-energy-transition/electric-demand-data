@@ -1,5 +1,8 @@
-items:
-  - region_name: Kantō
-    region_code: Kantō
+entities:
+  - subdivision_name: Kantō
+    subdivision_code: Kantō
     country_name: Japan
     country_code: JP
+    start_date: 2016-04-01
+    end_date: today
+    time_zone: Asia/Tokyo

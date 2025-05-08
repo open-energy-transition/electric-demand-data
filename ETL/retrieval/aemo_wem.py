@@ -16,12 +16,35 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(
-    code: str | None = None,
-) -> list[tuple[bool, int, int | None, int | None]]:
+def _check_input_parameters(
+    pre_reform: bool, year: int, month: int | None, day: int | None
+) -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    pre_reform : bool
+        A boolean flag to indicate if the request is for the pre-reform period (until 2023)
+    year : int
+        The year of the data to retrieve
+    month : int
+        The month of the data to retrieve
+    day : int
+        The day of the data to retrieve
+    """
+
+    # Check if the input parameters are valid.
+    assert (pre_reform, year, month, day) in get_available_requests(), (
+        "The request is not supported."
+    )
+
+
+def get_available_requests() -> list[tuple[bool, int, int | None, int | None]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the AEMO website.
 
@@ -31,14 +54,24 @@ def get_available_requests(
         List of tuples in the format (year, month, day)
     """
 
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="aemo_wem")[
+        "AU_WA"
+    ]
+
+    # Define the date that marks the beginning of the post-reform period.
+    post_reform_start_date = pandas.Timestamp("2023-10-01")
+
     # Define the list of available requests for the pre-reform period, which are the years from 2006 to 2023 to be used for the CSV files.
-    pre_reform_values = [year for year in range(2006, 2024)]
+    pre_reform_values = [
+        year for year in range(start_date.year, post_reform_start_date.year + 1)
+    ]
 
     # Define the list of available requests for the post-reform period, which are the year, month, and day from October 1, 2023, to today to be used for the JSON files.
     post_reform_values = (
         pandas.date_range(
-            start="2023-10-01",
-            end=pandas.Timestamp.today() - pandas.Timedelta(days=5),
+            start=post_reform_start_date,
+            end=end_date,
             freq="D",
         )
         .strftime("%Y-%m-%d")
@@ -75,9 +108,7 @@ def get_url(pre_reform: bool, year: int, month: int | None, day: int | None) -> 
     """
 
     # Check if the input parameters are valid.
-    assert (pre_reform, year, month, day) in get_available_requests(), (
-        "The request is not supported."
-    )
+    _check_input_parameters(pre_reform, year, month, day)
 
     if pre_reform:
         # If the request is for the pre-reform period, set the URL to fetch .csv files for data from 2006 to 2023
@@ -112,12 +143,10 @@ def download_and_extract_data_for_request(
     """
 
     # Check if the input parameters are valid.
-    assert (pre_reform, year, month, day) in get_available_requests(), (
-        "The request is not supported."
-    )
+    _check_input_parameters(pre_reform, year, month, day)
 
     if pre_reform:
-        logging.info(f"Retrieving electricity demand data for {year}.")
+        logging.info(f"Retrieving electricity demand data for the year {year}.")
 
         # Get the URL of the electricity demand data.
         url = get_url(pre_reform, year, month, day)
@@ -154,7 +183,13 @@ def download_and_extract_data_for_request(
         url = get_url(pre_reform, year, month, day)
 
         # Fetch the data from the URL.
-        dataset = util.fetcher.fetch_data(url, "json", json_keys=["data", "data"])
+        dataset = util.fetcher.fetch_data(
+            url,
+            "html",
+            read_with="requests.get",
+            read_as="json",
+            json_keys=["data", "data"],
+        )
 
         # Extract the electricity demand data from the dataset.
         electricity_demand_time_series = pandas.Series(

@@ -15,12 +15,12 @@ import pandas
 from shapely.geometry import Polygon
 
 # Load the shapefile containing the shapes of the countries from the Natural Earth database.
-region_shapes = cartopy.io.shapereader.natural_earth(
+all_shapes = cartopy.io.shapereader.natural_earth(
     resolution="50m", category="cultural", name="admin_0_countries"
 )
 
 # Define a reader for the shapefile.
-reader = cartopy.io.shapereader.Reader(region_shapes)
+reader = cartopy.io.shapereader.Reader(all_shapes)
 
 # Read the shapefile of the United Kingdom.
 uk_shape = [
@@ -49,14 +49,14 @@ new_bounds = geopandas.GeoDataFrame.from_features(new_bounds, crs=4326)
 # Cut the UK shape.
 gb_shape = uk_shape.overlay(new_bounds, how="intersection")
 
-# Add the name and code of the region.
+# Add the name and code of the subdivision.
 gb_shape["name"] = ["Great Britain"]
 gb_shape["code"] = ["GB_GB"]
 
 # Reorder the columns.
 gb_shape = gb_shape[["name", "code", "geometry"]]
 
-# Save the shape of the region to a shapefile.
+# Save the shape of the subdivision to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "neso")
 os.makedirs(shapes_dir, exist_ok=True)
 gb_shape.to_file(os.path.join(shapes_dir, "neso.shp"), driver="ESRI Shapefile")
