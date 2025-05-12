@@ -19,7 +19,6 @@ import os
 
 import util.directories
 import util.entities
-import util.figures
 import util.geospatial
 import util.shapes
 import xarray

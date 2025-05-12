@@ -224,9 +224,9 @@ def build_temperature_database(
     temperature_database["Local hour of the day"] = (
         temperature_time_series_top_1.index.hour
     )
-    temperature_database["Local day of the week"] = (
-        temperature_time_series_top_1.index.dayofweek
-    )
+    temperature_database["Local weekend indicator"] = (
+        temperature_time_series_top_1.index.dayofweek >= 5
+    ).astype(int)
     temperature_database["Local month of the year"] = (
         temperature_time_series_top_1.index.month
     )
