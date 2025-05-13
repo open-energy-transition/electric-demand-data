@@ -13,10 +13,10 @@ Description:
 
 import logging
 import os
-from pathlib import Path
 
 import pandas
 import util.fetcher
+import util.general
 from dotenv import load_dotenv
 
 
@@ -86,8 +86,11 @@ def get_url(
         "The beginning of the data availability is 2020-01-01."
     )
 
+    # Get the root directory of the project.
+    root_directory = util.general.read_folders_structure()["root_folder"]
+
     # Load the environment variables.
-    load_dotenv(dotenv_path=Path(".") / ".env")
+    load_dotenv(dotenv_path=os.path.join(root_directory, ".env"))
 
     # Get the API key.
     api_key = os.getenv("EIA_API_KEY")

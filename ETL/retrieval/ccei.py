@@ -28,7 +28,6 @@ def get_available_requests(code: str | None = None) -> None:
     """
 
     logging.info("The data is retrieved all at once.")
-    return None
 
 
 def get_url(region_code: str) -> str:

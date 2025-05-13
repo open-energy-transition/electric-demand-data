@@ -1,9 +1,9 @@
-import datetime
 import logging
-import os
 
 import pandas
 import pytz
+from google.cloud import storage
+from google.cloud.exceptions import GoogleCloudError
 
 
 def add_missing_time_steps(
@@ -268,14 +268,16 @@ def save_time_series(
         raise ValueError("The file name must end with .parquet or .csv.")
 
 
-def clean_data(time_series: pandas.Series) -> pandas.Series:
+def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
     """
-    Clean the time series data by setting the time zone to UTC and removing NaN and zero values.
+    Clean the time series data by setting the time zone to UTC, removing NaN and zero values, removing duplicated time steps, and setting consistent names.
 
     Parameters
     ----------
     time_series : pandas.Series
         Original time series
+    variable_name : str
+        The name of the variable in the time series
 
     Returns
     -------
@@ -287,8 +289,12 @@ def clean_data(time_series: pandas.Series) -> pandas.Series:
     if time_series.index.tz is None:
         raise ValueError("The time series must be timezone-aware.")
     else:
-        # Convert the time zone of the electricity demand time series to UTC.
-        time_series.index = time_series.index.tz_convert("UTC")
+        # Convert the time zone of the electricity demand time series to UTC and remove the time zone information.
+        time_series.index = time_series.index.tz_convert("UTC").tz_localize(None)
+
+    # Set the name of the index and the series.
+    time_series.index.name = "Time (UTC)"
+    time_series.name = variable_name
 
     # Remove timestamps with NaT values.
     time_series = time_series[time_series.index.notnull()]
@@ -302,44 +308,38 @@ def clean_data(time_series: pandas.Series) -> pandas.Series:
     return time_series
 
 
-def simple_save(
-    time_series: pandas.Series,
-    variable_name: str,
-    result_directory: str,
-    identifier: str,
+def upload_to_gcs(
+    file_path: str,
+    bucket_name: str,
+    destination_blob_name: str,
 ) -> None:
     """
-    Save the time series to parquet and csv files.
+    Upload a file to Google Cloud Storage (GCS).
 
     Parameters
     ----------
-    time_series : pandas.Series
-        The time series in UTC time
-    variable_name : str
-        The name of the variable in the time series
-    result_directory : str
-        The directory to store the time series
-    identifier : str
-        The identifier of the time series
+    file_path : str
+        The path to the file to be uploaded
+    bucket_name : str
+        The name of the GCS bucket
+    destination_blob_name : str
+        The name of the blob in the GCS bucket
     """
 
-    # The input time series must be in UTC time.
-    if time_series.index.tz != datetime.timezone.utc:
-        raise ValueError("The time series must be in UTC time.")
-    else:
-        time_series = time_series.tz_localize(None)
+    # Create a GCS client.
+    storage_client = storage.Client()
 
-    # Set the name of the index and the series.
-    time_series.index.name = "Time (UTC)"
-    time_series.name = variable_name
+    # Get the bucket.
+    bucket = storage_client.bucket(bucket_name)
 
-    # Save the time series.
-    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
-    time_series.to_frame().to_parquet(
-        os.path.join(
-            result_directory, identifier + "_" + date_of_retrieval + ".parquet"
+    # Create a new blob.
+    blob = bucket.blob(destination_blob_name)
+
+    # Updload the file to GCS.
+    try:
+        blob.upload_from_filename(file_path)
+    except (OSError, GoogleCloudError) as e:
+        logging.error(
+            f"Failed to upload file {file_path} to GCS bucket {bucket_name} as {destination_blob_name}: {e}"
         )
-    )
-    time_series.to_csv(
-        os.path.join(result_directory, identifier + "_" + date_of_retrieval + ".csv")
-    )
+        raise

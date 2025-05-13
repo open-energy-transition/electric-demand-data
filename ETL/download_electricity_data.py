@@ -9,6 +9,8 @@ Description:
     Users can specify a data source and optionally provide a country or region code to retrieve specific data.
 
     The retrieved data is cleaned and saved in a structured format for further analysis.
+
+    The script also supports uploading the data to Google Cloud Storage (GCS) if a bucket name is provided.
 """
 
 import argparse
@@ -81,6 +83,8 @@ def read_command_line_arguments() -> argparse.Namespace:
         "You can specify the country or region code or provide a file containing the list of codes. "
         "If no code or file is provided, the data retrieval will be run for all the countries or regions available on the data source platform."
     )
+
+    # Add the command line arguments.
     parser.add_argument(
         "data_source",
         type=str,
@@ -98,7 +102,14 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes",
+        help="The path to the yaml file containing the list of codes of the countries or regions of interest.",
+        required=False,
+    )
+    parser.add_argument(
+        "-u",
+        "--upload_to_gcs",
+        type=str,
+        help="The bucket name of the Google Cloud Storage (GCS) to upload the data",
         required=False,
     )
 
@@ -248,13 +259,62 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
 
     # Clean the data.
     electricity_demand_time_series = util.time_series.clean_data(
-        electricity_demand_time_series
+        electricity_demand_time_series, "Load (MW)"
     )
 
     return electricity_demand_time_series
 
 
-def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
+def save_data(
+    electricity_demand_time_series: pandas.Series,
+    data_source: str,
+    code: str,
+    upload_to_gcs: str | None,
+) -> None:
+    """
+    Save the electricity demand time series to a file and upload it to Google Cloud Storage (GCS).
+
+    Parameters
+    ----------
+    electricity_demand_time_series : pandas.Series
+        The electricity demand time series in MW
+    data_source : str
+        The data source
+    code : str, optional
+        The code of the country or region
+    upload_to_gcs : str, optional
+        The bucket name of the Google Cloud Storage (GCS) to upload the data
+    """
+
+    # Get the directory to store the electricity demand time series.
+    result_directory = util.general.read_folders_structure()[
+        "electricity_demand_folder"
+    ]
+    os.makedirs(result_directory, exist_ok=True)
+
+    # Get the date of retrieval.
+    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
+
+    # Define the identifier of the file to be saved.
+    identifier = code + "_" + data_source
+
+    # Define the path to the file to be saved without the extension.
+    file_path = os.path.join(result_directory, identifier + "_" + date_of_retrieval)
+
+    # Save the time series to both parquet and csv files.
+    electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
+    electricity_demand_time_series.to_csv(file_path + ".csv")
+
+    if upload_to_gcs:
+        # Upload the parquet file of the electricity demand time series to GCS.
+        util.time_series.upload_to_gcs(
+            file_path + ".parquet",
+            upload_to_gcs,
+            "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
+        )
+
+
+def run_data_retrieval(args: argparse.Namespace) -> None:
     """
     Run the electricity demand data retrieval for the countries or regions of interest.
 
@@ -262,8 +322,6 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     ----------
     args : argparse.Namespace
         The command line arguments
-    result_directory : str
-        The directory to store the electricity demand time series
     """
 
     # Get the list of codes of the countries or regions of interest.
@@ -280,12 +338,12 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
             args.data_source, None if one_code_on_platform else code
         )
 
-        # Save the electricity demand time series.
-        util.time_series.simple_save(
+        # Save the electricity demand time series to a file and upload it to GCS.
+        save_data(
             electricity_demand_time_series,
-            "Load (MW)",
-            result_directory,
-            code + "_" + args.data_source,
+            args.data_source,
+            code,
+            args.upload_to_gcs,
         )
 
     logging.info(
@@ -308,14 +366,8 @@ def main() -> None:
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
-    # Create a directory to store the electricity demand time series.
-    result_directory = util.general.read_folders_structure()[
-        "electricity_demand_folder"
-    ]
-    os.makedirs(result_directory, exist_ok=True)
-
     # Run the data retrieval.
-    run_data_retrieval(args, result_directory)
+    run_data_retrieval(args)
 
 
 if __name__ == "__main__":
