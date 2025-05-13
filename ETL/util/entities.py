@@ -56,6 +56,10 @@ def _read_entities_info(file_path: str = "", data_source: str = "") -> list[dict
         The list of dictionaries containing the information for each country and subdivision
     """
 
+    if data_source != "":
+        # Make sure the data source is in uppercase.
+        data_source = data_source.upper()
+
     if file_path == "" and data_source != "":
         # Check if the data source is valid.
         if data_source not in _read_data_sources():
