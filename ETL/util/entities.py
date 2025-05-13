@@ -213,6 +213,35 @@ def check_and_get_codes(
     return codes
 
 
+def get_iso_alpha_3_code(code: str) -> str:
+    """
+    Get the ISO Alpha-3 code of the country from the ISO Alpha-2 code or the ISO Alpha-3 code of the country that contains the subdivision.
+
+    Parameters
+    ----------
+    code : str
+        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 codes and the subdivision codes
+
+    Returns
+    -------
+    iso_alpha_3_code : str
+        The ISO Alpha-3 code of the country
+    """
+
+    # Check if the code specifies a subdivision.
+    if "_" in code:
+        # Extract the ISO Alpha-2 code of the country.
+        iso_alpha_2_code = code.split("_")[0]
+    else:
+        # If the code does not specify a subdivision, use the ISO Alpha-2 code directly.
+        iso_alpha_2_code = code
+
+    # Get the ISO Alpha-3 code of the country.
+    iso_alpha_3_code = pycountry.countries.get(alpha_2=iso_alpha_2_code).alpha_3
+
+    return iso_alpha_3_code
+
+
 def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
     """
     Get the time zone of a country.
