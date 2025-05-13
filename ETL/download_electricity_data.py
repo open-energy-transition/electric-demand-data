@@ -25,6 +25,7 @@ import retrieval.ccei
 import retrieval.cen
 import retrieval.coes
 import retrieval.eia
+import retrieval.emi
 import retrieval.entsoe
 import retrieval.eskom
 import retrieval.hydroquebec
@@ -49,6 +50,7 @@ retrieval_module = {
     "CEN": retrieval.cen,
     "COES": retrieval.coes,
     "EIA": retrieval.eia,
+    "EMI": retrieval.emi,
     "ENTSOE": retrieval.entsoe,
     "ESKOM": retrieval.eskom,
     "HYDROQUEBEC": retrieval.hydroquebec,
