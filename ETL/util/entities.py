@@ -7,7 +7,6 @@ Description:
     This script povides utility functions to read country and subdivision codes, time zones, and date ranges from yaml files.
 """
 
-import argparse
 import datetime
 import logging
 import os
@@ -164,15 +163,21 @@ def check_code(code: str, data_source: str) -> None:
 
 
 def check_and_get_codes(
-    args: argparse.Namespace,
+    data_source: str | None = None,
+    code: str | None = None,
+    file_path: str | None = None,
 ) -> list[str]:
     """
     Check the validity of the country and subdivision codes and return the list of codes of interest.
 
     Parameters
     ----------
-    args : argparse.Namespace
-        The command line arguments
+    data_source : str
+        The name of the data source
+    code : str
+        The code of the country or subdivision
+    file_path : str
+        The path to the file containing the information of the countries and subdivisions
 
     Returns
     -------
@@ -181,23 +186,23 @@ def check_and_get_codes(
     """
 
     # Get the list of available countries and subdivisions according to the arguments.
-    if "data_source" in args and args.data_source is not None:
-        all_codes = read_codes(data_source=args.data_source)
+    if data_source is not None:
+        all_codes = read_codes(data_source=data_source)
     else:
         all_codes = read_all_codes()
 
-    if args.code is not None:
+    if code is not None:
         # Check if the code is available.
-        if args.code not in all_codes:
+        if code not in all_codes:
             raise ValueError(
-                f"Code {args.code} is not available. Please choose one of the following: {', '.join(all_codes)}"
+                f"Code {code} is not available. Please choose one of the following: {', '.join(all_codes)}"
             )
         else:
-            codes = [args.code]
+            codes = [code]
 
-    elif args.file is not None:
+    elif file_path is not None:
         # Get the list of countries and subdivisions available on the specified file.
-        codes = read_codes(file_path=args.file)
+        codes = read_codes(file_path=file_path)
 
         # Check if the codes are available.
         for code in codes:
