@@ -24,6 +24,7 @@ import py7zr
 import requests
 import util.directories
 import util.entities
+import util.figures
 import util.geospatial
 import util.shapes
 import xarray
@@ -147,10 +148,10 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 # Save the GDP data.
                 gdp.to_netcdf(file_path)
 
-                # Make a plot of the GDP data.
-                # util.figures.simple_plot(
-                #     gdp, f"gdp_{entity_shape.index[0]}"
-                # )
+                make_plot = False
+                if make_plot:
+                    # Make a plot of the GDP data.
+                    util.figures.simple_plot(gdp, f"gdp_{code}_{year}")
 
                 logging.info(
                     f"GDP data for {code} has been successfully extracted and saved."

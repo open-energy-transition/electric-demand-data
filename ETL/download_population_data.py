@@ -19,6 +19,7 @@ import os
 
 import util.directories
 import util.entities
+import util.figures
 import util.geospatial
 import util.shapes
 import xarray
@@ -145,10 +146,13 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 # Save the population density data.
                 population_density.to_netcdf(file_path)
 
-                # Make a plot of the population density data.
-                # util.figures.simple_plot(
-                #     population_density, f"population_density_{entity_shape.index[0]}"
-                # )
+                make_plot = False
+                if make_plot:
+                    # Make a plot of the population density data.
+                    util.figures.simple_plot(
+                        population_density,
+                        f"population_density_{code}_{year}",
+                    )
 
                 logging.info(
                     f"Population density data for {code} has been successfully extracted and saved."
