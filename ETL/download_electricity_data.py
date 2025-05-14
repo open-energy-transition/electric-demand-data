@@ -229,20 +229,21 @@ def save_data(
         The bucket name of the Google Cloud Storage (GCS) to upload the data
     """
 
+    # Get the date of retrieval.
+    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
+
     # Get the directory to store the electricity demand time series.
     result_directory = util.directories.read_folders_structure()[
         "electricity_demand_folder"
     ]
+    result_directory = os.path.join(result_directory, date_of_retrieval)
     os.makedirs(result_directory, exist_ok=True)
-
-    # Get the date of retrieval.
-    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
 
     # Define the identifier of the file to be saved.
     identifier = code + "_" + data_source
 
     # Define the path to the file to be saved without the extension.
-    file_path = os.path.join(result_directory, identifier + "_" + date_of_retrieval)
+    file_path = os.path.join(result_directory, identifier)
 
     # Save the time series to both parquet and csv files.
     electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
