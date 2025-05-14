@@ -93,7 +93,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         years = [2000, 2005, 2010, 2015, 2020]
 
     # Get the list of codes of the countries and subdivisions of interest.
-    codes = util.entities.check_and_get_codes(args)
+    codes = util.entities.check_and_get_codes(code=args.code, file_path=args.file)
 
     # Loop over the years.
     for year in years:

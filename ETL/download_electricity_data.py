@@ -120,7 +120,7 @@ def read_command_line_arguments() -> argparse.Namespace:
     return args
 
 
-def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
+def retrieve_data(data_source: str, code: str) -> pandas.Series:
     """
     Retrieve the electricity demand data from the specified data source and code.
 
@@ -128,7 +128,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     ----------
     data_source : str
         The data source
-    code : str, optional
+    code : str
         The code of the country or subdivision
 
     Returns
@@ -137,12 +137,17 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
         The electricity demand time series in MW
     """
 
+    # Check if there is only one code in the data source.
+    one_code_in_data_source = (
+        len(util.entities.read_codes(data_source=args.data_source)) == 1
+    )
+
     # Get the list of requests to retrieve the electricity demand time series.
-    if code is None:
-        # If there is only one code on the platform (code is None), there is no need to specify the code.
+    if one_code_in_data_source:
+        # If there is only one code in the data source, there is no need to specify the code.
         requests = retrieval_module[data_source].get_available_requests()
     else:
-        # If there are multiple codes on the platform (code is not None), the code needs to be specified.
+        # If there are multiple codes in the data source, the code needs to be specified.
         requests = retrieval_module[data_source].get_available_requests(code)
 
     if requests is None:
@@ -150,11 +155,11 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
         # Get the retrieval function to download and extract the data.
         retrieval_function = retrieval_module[data_source].download_and_extract_data
 
-        if code is None:
-            # If there is only one code on the platform (code is None), there is no need to specify the code.
+        if one_code_in_data_source:
+            # If there is only one code in the data source, there is no need to specify the code.
             electricity_demand_time_series = retrieval_function()
         else:
-            # If there are multiple codes on the platform (code is not None), the code needs to be specified.
+            # If there are multiple codes in the data source, the code needs to be specified.
             electricity_demand_time_series = retrieval_function(code)
 
     else:
@@ -164,8 +169,8 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
             data_source
         ].download_and_extract_data_for_request
 
-        if code is None:
-            # If there is only one code on the platform (code is None), there is no need to specify the code.
+        if one_code_in_data_source:
+            # If there is only one code in the data source, there is no need to specify the code.
             # Loop over the requests to retrieve the electricity demand time series of each request.
             electricity_demand_time_series_list = [
                 retrieval_function(*request)
@@ -174,7 +179,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
                 for request in requests
             ]
         else:
-            # If there are multiple codes on the platform (code is not None), the code needs to be specified.
+            # If there are multiple codes in the data source, the code needs to be specified.
             # Loop over the requests to retrieve the electricity demand time series of each request.
             electricity_demand_time_series_list = [
                 retrieval_function(*request, code)
@@ -243,7 +248,7 @@ def save_data(
     electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
     electricity_demand_time_series.to_csv(file_path + ".csv")
 
-    if upload_to_gcs:
+    if upload_to_gcs is not None:
         # Upload the parquet file of the electricity demand time series to GCS.
         util.time_series.upload_to_gcs(
             file_path + ".parquet",
@@ -263,12 +268,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     """
 
     # Get the list of codes of the countries and subdivisions of interest.
-    codes = util.entities.check_and_get_codes(args)
-
-    # Check if there is only one code on the platform.
-    one_code_in_data_source = (
-        len(util.entities.read_codes(data_source=args.data_source)) == 1
-    )
+    codes = util.entities.check_and_get_codes(args.data_source, args.code, args.file)
 
     logging.info(f"Retrieving electricity data from the {args.data_source} website.")
 
@@ -277,9 +277,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         logging.info(f"Retrieving data for {code}.")
 
         # Retrieve the electricity demand time series.
-        electricity_demand_time_series = retrieve_data(
-            args.data_source, None if one_code_in_data_source else code
-        )
+        electricity_demand_time_series = retrieve_data(args.data_source, code)
 
         # Save the electricity demand time series to a file and upload it to GCS.
         save_data(
