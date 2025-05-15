@@ -256,7 +256,7 @@ def fetch_entsoe_demand(
     except NoMatchingDataError:
         # If the data is not available, skip to the next country.
         logging.warning(
-            f"No data available for {iso_alpha_2_code} between {start_date_and_time} and {end_date_and_time}."
+            f"No data available for {iso_alpha_2_code} between {start_date_and_time.date()} and {end_date_and_time.date()}."
         )
 
         return pandas.Series()
