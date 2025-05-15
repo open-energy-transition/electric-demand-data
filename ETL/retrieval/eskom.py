@@ -17,7 +17,7 @@ import logging
 import os
 
 import pandas
-import util.general
+import util.directories
 
 
 def get_available_requests() -> None:
@@ -25,7 +25,7 @@ def get_available_requests() -> None:
     Get the list of available requests to retrieve the electricity demand data from the Eskom website.
     """
 
-    logging.info("The data is retrieved all at once.")
+    logging.debug("The data is retrieved all at once.")
 
 
 def get_url() -> str:
@@ -55,7 +55,7 @@ def download_and_extract_data() -> pandas.Series:
     """
 
     # Get the data folder.
-    data_directory = util.general.read_folders_structure()["data_folder"]
+    data_directory = util.directories.read_folders_structure()["data_folder"]
 
     # Get the paths of the downloaded files. Each file starts with "ESK".
     downloaded_file_paths = [

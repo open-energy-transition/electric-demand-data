@@ -15,19 +15,50 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(
-    code: str | None = None,
-) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
+def _check_input_parameters(
+    start_date: pandas.Timestamp,
+    end_date: pandas.Timestamp,
+) -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    start_date : pandas.Timestamp
+        The start date of the data retrieval
+    end_date : pandas.Timestamp
+        The end date of the data retrieval
+    """
+
+    # Check if the retrieval period is less than 1 year.
+    assert (end_date - start_date) <= pandas.Timedelta("366days"), (
+        "The retrieval period must be less than or equal to 1 year. start_date: "
+        f"{start_date}, end_date: {end_date}"
+    )
+
+    # Read the start date of the available data.
+    start_date_of_data_availability = pandas.to_datetime(
+        util.entities.read_date_ranges(data_source="emi")["NZ"][0]
+    )
+
+    # Check that the start date is greater than or equal to the beginning of the data availability.
+    assert start_date >= start_date_of_data_availability, (
+        f"The beginning of the data availability is {start_date_of_data_availability}."
+    )
+
+
+def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the EMI website.
 
     Parameters
     ----------
     code : str, optional
-        The code of the country or region (not used in this function)
+        The code of the country or subdivision (not used in this function)
 
     Returns
     -------
@@ -35,20 +66,19 @@ def get_available_requests(
         The list of available requests
     """
 
-    # Define the start and end date according to the data availability.
-    start_date_and_time = pandas.to_datetime("2005-01-01")
-    end_date_and_time = pandas.Timestamp.today()
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="emi")["NZ"]
 
-    # Define start and end dates and times for one-year retrieval periods.
-    start_date_and_time_of_period = pandas.date_range(
-        start_date_and_time, end_date_and_time, freq="YS"
-    )
-    end_date_and_time_of_period = (
-        start_date_and_time_of_period[1:] - pandas.Timedelta("24h")
-    ).union(pandas.to_datetime([end_date_and_time]))
+    # Define intervals for the retrieval periods.
+    intervals = pandas.date_range(start_date, end_date, freq="YS")
+    intervals = intervals.union(pandas.to_datetime([start_date, end_date]))
+
+    # Define start and end dates of the retrieval periods.
+    start_dates_and_times = intervals[:-1]
+    end_dates_and_times = intervals[1:]
 
     # Return the available requests, which are the beginning and end of each one-year period.
-    return list(zip(start_date_and_time_of_period, end_date_and_time_of_period))
+    return list(zip(start_dates_and_times, end_dates_and_times))
 
 
 def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
@@ -67,6 +97,9 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     str
         The URL of the electricity demand data
     """
+
+    # Check if the input parameters are valid.
+    _check_input_parameters(start_date, end_date)
 
     return (
         "https://www.emi.ea.govt.nz/Wholesale/Download/DataReport/CSV/W_GD_C"
@@ -95,6 +128,9 @@ def download_and_extract_data_for_request(
         The electricity demand time series in MW
     """
 
+    # Check if the input parameters are valid.
+    _check_input_parameters(start_date, end_date)
+
     logging.info(f"Retrieving data from {start_date.date()} to {end_date.date()}.")
 
     # Get the URL of the electricity demand data.
@@ -103,7 +139,7 @@ def download_and_extract_data_for_request(
     # Fetch the electricity demand data from the URL.
     dataset = util.fetcher.fetch_data(
         url,
-        target_content_type="csv",
+        content_type="csv",
         csv_kwargs={"skiprows": 11},
     )
 

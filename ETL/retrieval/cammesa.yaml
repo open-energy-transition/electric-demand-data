@@ -1,3 +1,5 @@
-items:
+entities:
   - country_name: Argentina
     country_code: AR
+    start_date: 2024-09-01
+    end_date: today

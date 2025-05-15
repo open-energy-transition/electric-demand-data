@@ -17,17 +17,12 @@ import pandas
 import util.fetcher
 
 
-def get_available_requests(code: str | None = None) -> None:
+def get_available_requests() -> None:
     """
     Get the list of available requests to retrieve the electricity demand data from the Hydro-Québec website.
-
-    Parameters
-    ----------
-    code : str, optional
-        The code of the country or region (not used in this function)
     """
 
-    logging.info("The data is retrieved all at once.")
+    logging.debug("The data is retrieved all at once.")
 
 
 def get_url() -> str:

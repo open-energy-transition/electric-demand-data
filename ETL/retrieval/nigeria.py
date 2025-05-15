@@ -23,7 +23,7 @@ def get_available_requests() -> None:
     Get the list of available requests to retrieve the electricity demand data for Nigeria.
     """
 
-    logging.info("The data is retrieved all at once.")
+    logging.debug("The data is retrieved all at once.")
 
 
 def get_url() -> str:

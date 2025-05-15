@@ -15,8 +15,8 @@ import cartopy.io.shapereader
 import geopandas
 import pandas
 
-# Define the codes of the Brazilian states and their corresponding regions.
-codes_of_brazilian_regions = {
+# Define the codes of the Brazilian states and their corresponding subdivisions.
+codes_of_brazilian_subdivisions = {
     "BR-AC": "BR_N",
     "BR-AP": "BR_N",
     "BR-AM": "BR_N",
@@ -46,62 +46,64 @@ codes_of_brazilian_regions = {
     "BR-RS": "BR_S",
 }
 
-# Define the names of the Brazilian regions.
-names_of_brazilian_regions = {
+# Define the names of the Brazilian subdivisions.
+names_of_brazilian_subdivisions = {
     "BR_N": "North",
     "BR_NE": "North-East",
     "BR_SE": "South-East",
     "BR_S": "South",
 }
 
-# Load the shapefile containing the shapes of the regions from the Natural Earth database.
-region_shapes = cartopy.io.shapereader.natural_earth(
+# Load the shapefile containing the subdivision shapes from the Natural Earth database.
+all_shapes = cartopy.io.shapereader.natural_earth(
     resolution="50m", category="cultural", name="admin_1_states_provinces"
 )
 
 # Define a reader for the shapefile.
-reader = cartopy.io.shapereader.Reader(region_shapes)
+reader = cartopy.io.shapereader.Reader(all_shapes)
 
-# Read the shapefiles of all Brazilian regions.
-region_shapes = [
+# Read the shapefiles of all Brazilian states.
+state_shapes = [
     shape for shape in list(reader.records()) if shape.attributes["iso_a2"] == "BR"
 ]
 
-# Create a DataFrame from the shapes of the regions.
-regions = pandas.DataFrame(columns=["name", "code", "parent", "geometry"])
-for region in region_shapes:
-    region_shape = pandas.Series(
+# Create a DataFrame from the shapes of the states.
+states = pandas.DataFrame(columns=["name", "code", "parent", "geometry"])
+for state_shape in state_shapes:
+    state = pandas.Series(
         {
-            "name": region.attributes["name"],
-            "code": region.attributes["iso_3166_2"],
-            "parent": codes_of_brazilian_regions[region.attributes["iso_3166_2"]],
-            "geometry": region.geometry,
+            "name": state_shape.attributes["name"],
+            "code": state_shape.attributes["iso_3166_2"],
+            "parent": codes_of_brazilian_subdivisions[
+                state_shape.attributes["iso_3166_2"]
+            ],
+            "geometry": state_shape.geometry,
         }
     )
-    regions = pandas.concat([regions, region_shape.to_frame().T], ignore_index=True)
+    states = pandas.concat([states, state.to_frame().T], ignore_index=True)
 
 # Add the coordinate reference system to the GeoDataFrame.
-regions = geopandas.GeoDataFrame(regions, geometry="geometry", crs="EPSG:4326")
+states = geopandas.GeoDataFrame(states, geometry="geometry", crs="EPSG:4326")
 
-# Merge the states belonging to the same region.
-regions = regions.dissolve(by="parent")
+# Merge the states belonging to the same subdivision.
+subdivisions = states.dissolve(by="parent")
 
 # Reset the index of the GeoDataFrame.
-regions = regions.reset_index()
+subdivisions = subdivisions.reset_index()
 
 # Drop the columns that are not needed.
-regions = regions[["name", "parent", "geometry"]]
+subdivisions = subdivisions[["name", "parent", "geometry"]]
 
 # Rename the columns of the GeoDataFrame.
-regions = regions.rename(columns={"parent": "code"})
+subdivisions = subdivisions.rename(columns={"parent": "code"})
 
-# Add the names of the regions to the GeoDataFrame.
-for region_code in regions["code"]:
-    regions.loc[regions["code"] == region_code, "name"] = names_of_brazilian_regions[
-        region_code
-    ]
+# Add the names of the subdivisions to the GeoDataFrame.
+for subdivision_code in subdivisions["code"]:
+    subdivisions.loc[subdivisions["code"] == subdivision_code, "name"] = (
+        names_of_brazilian_subdivisions[subdivision_code]
+    )
 
-# Save the shapes of the regions to a shapefile.
+# Save the shapes of the subdivisions to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "ons")
 os.makedirs(shapes_dir, exist_ok=True)
-regions.to_file(os.path.join(shapes_dir, "ons.shp"), driver="ESRI Shapefile")
+subdivisions.to_file(os.path.join(shapes_dir, "ons.shp"), driver="ESRI Shapefile")
