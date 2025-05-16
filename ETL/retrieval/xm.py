@@ -151,14 +151,12 @@ def download_and_extract_data_for_request(
 
         # Extract the values for each hour of the day.
         hourly_values = [
-            (values_dict["Values"].values[0])["Hour{:02d}".format(hour)]
+            (values_dict["Values"].values[0])[f"Hour{hour:02d}"]
             for hour in range(1, 25)
         ]
 
         # Define the date and time for each hour of the day.
-        date_and_time = [
-            date + f" {(min(hour, 24) - 1):02d}:00" for hour in range(1, 25)
-        ]
+        date_and_time = [date + f" {hour:02d}:00" for hour in range(24)]
 
         # Create and append a pandas Series for the day.
         dayly_values_list.append(
@@ -170,6 +168,9 @@ def download_and_extract_data_for_request(
 
     # Concatenate the daily values into a single pandas Series.
     electricity_demand_time_series = pandas.concat(dayly_values_list)
+
+    # Values are in kWh with a frequency of 1 hour. Convert to MW.
+    electricity_demand_time_series = electricity_demand_time_series / 1000
 
     # Add the timezone to the index.
     electricity_demand_time_series.index = (
