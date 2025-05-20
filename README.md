@@ -15,18 +15,19 @@
 </h3>
 
 <p align="center">
-  <img src="docs/BE_logo.png" alt="Breakthrough Energy Logo" width="512"/>
+    <a href="https://www.breakthroughenergy.org/">
+        <img src="docs/BE_logo.png" alt="Breakthrough Energy Logo" width="512"/>
+    </a>
 </p>
-
----
 
 ## About
 
 This project is aimed at improving the demand forecasts that are used in energy planning studies.
 It includes the process to obtain the open data from various sources (see [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)) and the models that use the data to predict electricity demand (see [models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)).
+
 The project is in active development, we are always looking for suggestions and contributions!
 
-## Countries and regions for which retreival scripts of electricity demand data are available
+## Data collection progress
 
 ![Data availability](ETL/figures/available_countries.png "Countries and regions with available electricity demand data")
 Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL) folder.
