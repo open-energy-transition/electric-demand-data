@@ -1,13 +1,23 @@
 <p align="center">
-   	<h1>Electricity Demand Data</h1>
+    <h1>Electricity Demand Data</h1>
 </p>
 
 <h3 align="center">
-Global hourly electricity demand forecasting
+    Global hourly electricity demand forecasting
 </h3>
 
 <p align="center">
-| <a href="https://open-energy-transition.github.io/electric-demand-data/"><b>Documentation</b></a> |
+    <a href="https://open-energy-transition.github.io/electric-demand-data/">
+        <b>Documentation</b>
+    </a>
+</p>
+
+<h3 align="center">
+    <b>Supported by</b>
+</h3>
+
+<p align="center">
+  <img src="docs/BE_logo.png" alt="Breakthrough Energy Logo" width="200"/>
 </p>
 
 ---
