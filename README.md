@@ -15,7 +15,7 @@
 </h3>
 
 <p align="center">
-  <img src="docs/BE_logo.png" alt="Breakthrough Energy Logo"/>
+  <img src="docs/BE_logo.png" alt="Breakthrough Energy Logo" width="512"/>
 </p>
 
 ---
