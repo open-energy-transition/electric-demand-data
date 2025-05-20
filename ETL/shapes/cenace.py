@@ -9,6 +9,7 @@ Description:
     Source: https://www.geni.org/globalenergy/library/national_energy_grid/mexico/index.shtml
     Source: https://github.com/jschleuss/mexican-states
     Source: https://acclaimenergy.com.mx/wp-content/uploads/2019/03/TMCA-Map.jpg
+    Source: https://doi.org/10.1016/j.tej.2022.107142
 """
 
 import os
