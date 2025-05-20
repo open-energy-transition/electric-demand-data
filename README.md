@@ -23,6 +23,7 @@
 ## About
 
 This project is aimed at improving the demand forecasts that are used in energy planning studies.
+
 It includes the process to obtain the open data from various sources (see [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)) and the models that use the data to predict electricity demand (see [models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)).
 
 The project is in active development, we are always looking for suggestions and contributions!
