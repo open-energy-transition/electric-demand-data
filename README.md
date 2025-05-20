@@ -1,6 +1,4 @@
-<p align="center">
-    <h1>Electricity Demand Data</h1>
-</p>
+<h1 align="center">Electricity Demand Data</h1>
 
 <h3 align="center">
     Global hourly electricity demand forecasting
