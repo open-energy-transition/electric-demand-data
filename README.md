@@ -28,7 +28,7 @@ Electric Demand Data is a Python-based project focused on collecting, processing
 
 - Retrieval of open hourly and sub-hourly electricity demand data from public sources ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
 - Retrieval of weather and socio-economic data ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
-- Forecasting using machine learning models ([models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)
+- Forecasting using machine learning models ([models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)).
 - Modular design for adding new countries or data sources.
 - Support for reproducible, containerized development.
 
@@ -36,6 +36,7 @@ The project is in active development, we are always looking for suggestions and 
 
 ## Repository structure
 
+```
 electric-demand-data/
 ├── ETL/                 # Scripts for extracting, transforming, and loading data
 ├── models/              # Machine learning models for demand forecasting
@@ -44,58 +45,61 @@ electric-demand-data/
 ├── .devcontainer/       # Development container configuration
 ├── Dockerfile           # Docker setup for containerized runs
 └── pyproject.toml       # Project metadata and dependencies
-
+```
 
 ## Data collection progress
 
 ![Data availability](ETL/figures/available_entities.png "Countries and subdivisions with available electricity demand data")
 Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL) folder.
 
-## Development
+## Getting started
 
-This project uses [uv](https://github.com/astral-sh/uv) as a pacakge manager.
-It can be used within the provided Dockerfile or installed standalone, see:
-[Installing uv](https://docs.astral.sh/uv/getting-started/installation/)
-
-Then clone the repository, and run:
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/open-energy-transition/electric-demand-data.git
+cd electric-demand-data
+```
+
+### 2. Set Up Your Environment
+
+This project uses `[uv](https://github.com/astral-sh/uv)` as a pacakge manager. It can be used within the provided Dockerfile or installed standalone (see [installing uv](https://docs.astral.sh/uv/getting-started/installation/))
+
+```bash
 uv sync
 ```
 
-### Useful commands
+Alternatively, you may use `conda` by installing the packages listed in `pyproject.toml`.
 
-Jupyter [(details)](https://docs.astral.sh/uv/guides/integration/jupyter/#using-jupyter-within-a-project):
+### 3. Run Scripts
+
+Scripts can be run directly using:
+
+```bash
+uv run path/to/script.py
+```
+
+Jupyter notebooks ([details](https://docs.astral.sh/uv/guides/integration/jupyter/#using-jupyter-within-a-project)) can be launched with:
 
 ```bash
 uv run --with jupyter jupyter lab --allow-root
 ```
 
-Testing:
+## Development workflow
+
+### Run tests and check test coverage
 
 ```bash
 uv run pytest
+uv run pytest --cov
 ```
 
-Run this before commits:
+### Pre-commit and lint code
 
 ```bash
 uvx pre-commit
-```
-
-Only run ruff:
-
-```bash
-uvx ruff check
-# automatically fix issues
-uvx ruff check --fix
-```
-
-Check the code coverage:
-
-```bash
-uv run pytest --cov
+uvx ruff format
+uvx mypy
 ```
 
 ## Documentation
@@ -107,3 +111,7 @@ To run it locally:
 ```bash
 uv run mkdocs serve
 ```
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
