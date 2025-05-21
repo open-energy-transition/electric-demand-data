@@ -112,6 +112,15 @@ To run it locally:
 uv run mkdocs serve
 ```
 
+## Contributing
+
+We welcome contributions in the form of:
+- Country-specific ETL modules
+- New or improved forecasting models
+- Documentation and testing enhancements
+
+Please follow the repository’s structure and submit your changes via pull request.
+
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
