@@ -63,13 +63,13 @@ cd electric-demand-data
 
 ### 2. Set Up Your Environment
 
-This project uses `[uv](https://github.com/astral-sh/uv)` as a pacakge manager. It can be used within the provided Dockerfile or installed standalone (see [installing uv](https://docs.astral.sh/uv/getting-started/installation/))
+This project uses [`uv`](https://github.com/astral-sh/uv) as a pacakge manager. It can be used within the provided Dockerfile or installed standalone (see [installing uv](https://docs.astral.sh/uv/getting-started/installation/))
 
 ```bash
 uv sync
 ```
 
-Alternatively, you may use `conda` by installing the packages listed in `pyproject.toml`.
+Alternatively, you may use `conda` to install the packages listed in `pyproject.toml`.
 
 ### 3. Run Scripts
 
