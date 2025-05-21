@@ -104,8 +104,8 @@ uvx mypy
 
 ## Documentation
 
-The [documentation](https://open-energy-transition.github.io/electric-demand-data/) is currently hosted on GitHub pages connected to this repository.
-It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
+The [documentation](https://open-energy-transition.github.io/electric-demand-data/) is currently hosted on GitHub pages connected to this repository. It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
+
 To run it locally:
 
 ```bash
