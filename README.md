@@ -22,11 +22,29 @@
 
 ## About
 
-This project is aimed at improving the demand forecasts that are used in energy planning studies.
+Electric Demand Data is a Python-based project focused on collecting, processing, and forecasting electricity demand data. The aim of this project is to support energy planning studies by using machine learning models to generate time series of future electricity demand or for countries without available data.
 
-It includes the process to obtain the open data from various sources (see [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)) and the models that use the data to predict electricity demand (see [models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)).
+### Features
+
+- Retrieval of open hourly and sub-hourly electricity demand data from public sources ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
+- Retrieval of weather and socio-economic data ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
+- Forecasting using machine learning models ([models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)
+- Modular design for adding new countries or data sources.
+- Support for reproducible, containerized development.
 
 The project is in active development, we are always looking for suggestions and contributions!
+
+## Repository structure
+
+electric-demand-data/
+├── ETL/                 # Scripts for extracting, transforming, and loading data
+├── models/              # Machine learning models for demand forecasting
+│   └── xgboost/
+├── docs/                # Project documentation (MkDocs)
+├── .devcontainer/       # Development container configuration
+├── Dockerfile           # Docker setup for containerized runs
+└── pyproject.toml       # Project metadata and dependencies
+
 
 ## Data collection progress
 
