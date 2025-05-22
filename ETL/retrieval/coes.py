@@ -14,17 +14,29 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(code: str | None = None) -> list[int]:
+def _check_input_parameters(year: int) -> None:
     """
-    Get the list of available requests to retrieve the electricity demand data from the COES website.
+    Check if the input parameters are valid.
 
     Parameters
     ----------
-    code : str, optional
-        The code of the country or region (not used in this function)
+    year : int
+        The year of the data to retrieve
+    """
+
+    # Check if the year is supported.
+    assert year in get_available_requests(), (
+        f"The year {year} is not in the supported range."
+    )
+
+
+def get_available_requests() -> list[int]:
+    """
+    Get the list of available requests to retrieve the electricity demand data from the COES website.
 
     Returns
     -------
@@ -32,8 +44,11 @@ def get_available_requests(code: str | None = None) -> list[int]:
         The list of available requests
     """
 
-    # Return the available requests, which are the years from 2000 to current date.
-    return [year for year in range(1997, pandas.Timestamp.today().year + 1)]
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="coes")["PE"]
+
+    # Return the available requests, which are the years.
+    return [year for year in range(start_date.year, end_date.year + 1)]
 
 
 def get_url() -> str:
@@ -65,9 +80,10 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         The electricity demand time series in MW
     """
 
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(year)
 
-    logging.info(f"Retrieving electricity demand data for {year}.")
+    logging.info(f"Retrieving electricity demand data for the year {year}.")
 
     # Get the URL of the electricity demand data.
     url = get_url()
@@ -75,16 +91,14 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     # Define the request parameters.
     request_params = {"fechaInicial": f"01/01/{year}", "fechaFinal": f"31/12/{year}"}
 
-    # Define the json keys to extract the data.
-    json_keys = ["Chart", "Series"]
-
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(
         url,
-        "json",
-        request_type="post",
+        "html",
+        read_with="requests.post",
         request_params=request_params,
-        json_keys=json_keys,
+        read_as="json",
+        json_keys=["Chart", "Series"],
     )
 
     # Extract the electricity demand data from the dataset.

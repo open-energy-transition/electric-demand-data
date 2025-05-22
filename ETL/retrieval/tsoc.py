@@ -17,17 +17,34 @@ import logging
 import re
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(code: str | None = None) -> list[pandas.Timestamp]:
+def _check_input_parameters(start_date: pandas.Timestamp) -> None:
     """
-    Get the list of available requests to retrieve the electricity generation data from the TSOC website.
+    Check if the input parameters are valid.
 
     Parameters
     ----------
-    code : str, optional
-        The code of the country or region (not used in this function)
+    start_date : pandas.Timestamp
+        The start date of the data retrieval
+    """
+
+    # Read the start date of the available data.
+    start_date_of_data_availability = pandas.to_datetime(
+        util.entities.read_date_ranges(data_source="tsoc")["CY"][0]
+    )
+
+    # Check that the start date is greater than or equal to the beginning of the data availability.
+    assert start_date >= start_date_of_data_availability, (
+        f"The beginning of the data availability is {start_date_of_data_availability}."
+    )
+
+
+def get_available_requests() -> list[pandas.Timestamp]:
+    """
+    Get the list of available requests to retrieve the electricity generation data from the TSOC website.
 
     Returns
     -------
@@ -35,14 +52,11 @@ def get_available_requests(code: str | None = None) -> list[pandas.Timestamp]:
         The list of available requests
     """
 
-    # Define the start and end date according to the data availability.
-    start_date_and_time = pandas.Timestamp(
-        "2008-01-01 00:00:00"
-    )  # This is in local time (Asia/Nicosia).
-    end_date_and_time = pandas.Timestamp.today()
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="tsoc")["CY"]
 
     # Return the available requests, which are the start dates of the retrieval periods. We use 15-day intervals (the maximum available on the website) to minimize the number of requests.
-    return list(pandas.date_range(start_date_and_time, end_date_and_time, freq="15D"))
+    return list(pandas.date_range(start_date, end_date, freq="15D"))
 
 
 def get_url(start_date: pandas.Timestamp) -> str:
@@ -60,10 +74,8 @@ def get_url(start_date: pandas.Timestamp) -> str:
         The URL of the electricity generation data
     """
 
-    # Check that the beginning of the period is on or after 2008-01-01.
-    assert start_date >= pandas.Timestamp("2008-01-01 00:00:00"), (
-        "The beginning of the data availability is 2008-01-01."
-    )
+    # Check if input parameters are valid.
+    _check_input_parameters(start_date)
 
     # Convert the start and end dates and times to the required format.
     start_date = start_date.strftime("%d-%m-%Y")
@@ -147,7 +159,7 @@ def _read_timestamp_and_generation(
 
 def download_and_extract_data_for_request(
     start_date: pandas.Timestamp,
-) -> tuple[list[str], list[str], list[str], list[float | None]]:
+) -> pandas.Series:
     """
     Download and extract the electricity generation data from the TSOC website.
 
@@ -162,18 +174,23 @@ def download_and_extract_data_for_request(
         The electricity generation time series in MW
     """
 
-    # Check that the beginning of the period is on or after 2008-01-01.
-    assert start_date >= pandas.Timestamp("2008-01-01 00:00:00"), (
-        "The beginning of the data availability is 2008-01-01."
-    )
+    # Check if the input parameters are valid.
+    _check_input_parameters(start_date)
 
-    logging.info(f"Retrieving data for the 15-day period starting from {start_date}.")
+    logging.info(
+        f"Retrieving electricity demand data for the 15-day period starting from {start_date.date()}."
+    )
 
     # Get the URL of the electricity generation data.
     url = get_url(start_date)
 
     # Fetch HTML content from the URL.
-    page = util.fetcher.fetch_data(url, "text", output_content_type="text")
+    page = util.fetcher.fetch_data(
+        url,
+        "html",
+        read_with="urllib.request",
+        header_params={"User-Agent": "Mozilla/5.0"},
+    )
 
     # Extract time and generation data.
     dates, hours, minutes, generation = _read_timestamp_and_generation(page)

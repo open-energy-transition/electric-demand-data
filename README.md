@@ -30,7 +30,7 @@ The project is in active development, we are always looking for suggestions and 
 
 ## Data collection progress
 
-![Data availability](ETL/figures/available_countries.png "Countries and regions with available electricity demand data")
+![Data availability](ETL/figures/available_entities.png "Countries and subdivisions with available electricity demand data")
 Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL) folder.
 
 ## Development

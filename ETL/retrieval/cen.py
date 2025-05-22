@@ -14,19 +14,43 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests(
-    code: str | None = None,
-) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
+def _check_input_parameters(
+    start_date: pandas.Timestamp, end_date: pandas.Timestamp
+) -> None:
     """
-    Get the list of available requests to retrieve the electricity demand data from the CEN website.
+    Check if the input parameters are valid.
 
     Parameters
     ----------
-    code : str, optional
-        The code of the country or region (not used in this function)
+    start_date : pandas.Timestamp
+        The start date of the data retrieval
+    end_date : pandas.Timestamp
+        The end date of the data retrieval
+    """
+
+    # Check that the retrieval period is less than one year.
+    assert (end_date - start_date) <= pandas.Timedelta("366days"), (
+        "The retrieval period is greater than 1 year. Please reduce the period to 1 year."
+    )
+
+    # Read the start date of the available data.
+    start_date_of_data_availability = pandas.to_datetime(
+        util.entities.read_date_ranges(data_source="cen")["CL"][0]
+    )
+
+    # Check that the start date is greater than or equal to the beginning of the data availability.
+    assert start_date >= start_date_of_data_availability, (
+        f"The beginning of the data availability is {start_date_of_data_availability}."
+    )
+
+
+def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
+    """
+    Get the list of available requests to retrieve the electricity demand data from the CEN website.
 
     Returns
     -------
@@ -34,20 +58,19 @@ def get_available_requests(
         The list of available requests
     """
 
-    # Define the start and end date according to the data availability.
-    start_date_and_time = pandas.Timestamp("1999-01-01 00:00:00")
-    end_date_and_time = pandas.Timestamp.today()
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="cen")["CL"]
 
-    # Define start and end dates and times for one-year retrieval periods. A one-year period is the maximum available on the platform.
-    start_date_and_time_of_period = pandas.date_range(
-        start_date_and_time, end_date_and_time, freq="YS"
-    )
-    end_date_and_time_of_period = (
-        start_date_and_time_of_period[1:] - pandas.Timedelta("24h")
-    ).union(pandas.to_datetime([end_date_and_time]))
+    # Define one-year intervals for the retrieval periods.
+    intervals = pandas.date_range(start_date, end_date, freq="YS")
+    intervals = intervals.union(pandas.to_datetime([start_date, end_date]))
+
+    # Define start and end dates of the retrieval periods.
+    start_dates_and_times = intervals[:-1]
+    end_dates_and_times = intervals[1:]
 
     # Return the available requests, which are the beginning and end of each one-year period.
-    return list(zip(start_date_and_time_of_period, end_date_and_time_of_period))
+    return list(zip(start_dates_and_times, end_dates_and_times))
 
 
 def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
@@ -57,9 +80,9 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date and time of the data retrieval
+        The start date of the data retrieval
     end_date : pandas.Timestamp
-        The end date and time of the data retrieval
+        The end date of the data retrieval
 
     Returns
     -------
@@ -67,17 +90,10 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
         The URL of the electricity demand data
     """
 
-    # Check that the retrieval period is less than one year.
-    assert (end_date - start_date).days < 366, (
-        "The retrieval period is greater than 1 year. Please reduce the period to 1 year."
-    )
+    # Check if the input parameters are valid.
+    _check_input_parameters(start_date, end_date)
 
-    # Check that the start date and time is greater than or equal to the beginning of the data availability.
-    assert start_date >= pandas.Timestamp("1999-01-01 00:00:00"), (
-        "The beginning of the data availability is 1999-01-01 00:00:00."
-    )
-
-    # Convert the start and end date and time to string format.
+    # Convert the start and end date to string format.
     start_date = start_date.strftime("%Y-%m-%d")
     end_date = end_date.strftime("%Y-%m-%d")
 
@@ -86,17 +102,17 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
 
 
 def download_and_extract_data_for_request(
-    start_date_and_time: pandas.Timestamp, end_date_and_time: pandas.Timestamp
+    start_date: pandas.Timestamp, end_date: pandas.Timestamp
 ) -> pandas.Series:
     """
     Download and extract the electricity demand data from the CEN website.
 
     Parameters
     ----------
-    start_date_and_time : pandas.Timestamp
-        The start date and time of the data retrieval
-    end_date_and_time : pandas.Timestamp
-        The end date and time of the data retrieval
+    start_date : pandas.Timestamp
+        The start date of the data retrieval
+    end_date : pandas.Timestamp
+        The end date of the data retrieval
 
     Returns
     -------
@@ -104,20 +120,15 @@ def download_and_extract_data_for_request(
         The electricity demand time series in MW
     """
 
-    # Check that the retrieval period is less than one year.
-    assert (end_date_and_time - start_date_and_time).days < 366, (
-        "The retrieval period is greater than 1 year. Please reduce the period to 1 year."
-    )
+    # Check if the input parameters are valid.
+    _check_input_parameters(start_date, end_date)
 
-    # Check that the start date and time is greater than or equal to the beginning of the data availability.
-    assert start_date_and_time >= pandas.Timestamp("1999-01-01 00:00:00"), (
-        "The beginning of the data availability is 1999-01-01 00:00:00."
+    logging.info(
+        f"Retrieving electricity demand data from {start_date.date()} to {end_date.date()}."
     )
-
-    logging.info(f"Retrieving data from {start_date_and_time} to {end_date_and_time}.")
 
     # Get the URL of the electricity demand data.
-    url = get_url(start_date_and_time, end_date_and_time)
+    url = get_url(start_date, end_date)
 
     # Define the headers for the request.
     header_params = {
@@ -127,7 +138,12 @@ def download_and_extract_data_for_request(
 
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(
-        url, "json", header_params=header_params, json_keys=["data"]
+        url,
+        "html",
+        read_with="requests.get",
+        header_params=header_params,
+        read_as="json",
+        json_keys=["data"],
     )
 
     # Merge the date and time columns into a single column. Consider that the time is given at the end of the hour. In some years where there is the switch to or from daylight saving time, there is a 25th hour.
