@@ -4,7 +4,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script downloads electricity demand data from various data sources.
+    This script downloads hourly or sub-hourly electricity demand data from various data sources.
 
     Users can specify a data source and optionally provide a country or subdivision code to retrieve specific data.
 
