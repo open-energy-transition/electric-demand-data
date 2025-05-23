@@ -28,5 +28,5 @@ repos:
     rev: 0.8.1
     hooks:
       - id: nbstripout
-      
+
 autoupdate_schedule: "quaterly"
