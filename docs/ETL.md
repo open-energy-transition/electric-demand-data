@@ -12,7 +12,7 @@ Retrieve raw data from online sources or APIs.
 
 ### 2. Transform into tabular format
 
-Convert raw data into structured, tabular (parquet-compatible) formats.
+Convert raw data into structured, tabular (Parquet-compatible) formats.
 
 ### 3. Data cleaning
 
@@ -33,11 +33,10 @@ ETL/
 ├── retrieval/                        # Data source-specific scripts and configuration
 │   ├── entsoe.py, eia.py, ...        # Retrieval logic for each data provider
 │   ├── entsoe.yaml, eia.yaml, ...    # Lists of country/subdivision codes per source
-│   └── copernicus.py                 # Copernicus's Climate Data Store (CDS) retrieval functions
+│   └── copernicus.py                 # Copernicus Climate Data Store (CDS) retrieval functions
 ├── shapes/                           # Non-standard subdivision shapes
-│   └── eia.py, ons.py, ...           # Scripts that generates non-standard shapefiles
-│── util/                             # Shared utilities
-│   └── eia.py, ons.py, ...           # Scripts that generates non-standard shapefiles
+│   └── eia.py, ons.py, ...           # Scripts that generate non-standard shapefiles
+├── util/                             # Shared utilities
 │   ├── directories.py                # Functions to read directories
 │   ├── directories.yaml              # Keys to define the ETL folder structure
 │   ├── entities.py                   # Functions to read country and subdivision information
@@ -50,7 +49,7 @@ ETL/
 
 ## Electricity demand data
 
-Scripts in this section download and process electricity demand data from multiple sources such as ENTSO-E, EIA, and CCEI. It then processes the data to have all timestamps in UTC and electricity demand in MW.
+Scripts in this section download and process electricity demand data from multiple sources such as ENTSO-E, EIA, and CCEI. The data is processed to have all timestamps in UTC and electricity demand in MW.
 
 ### Main script
 
@@ -63,8 +62,8 @@ uv run download_electricity_data.py <data_source> [-c country_or_subdivision_cod
 Arguments:
 
 - `<data_source>`: The acronym of the data source as defined in the retrieval modules (e.g., `ENTSOE`).
-- `-c, --code`: (Optional) The ISO Alpha-2 code (example: `FR`) or a combination of ISO Alpha-2 code and subdivision code (example: `US_CAL`).
-- `-f, --file`: (Optional) The path to the yaml file containing the list of codes of the countries and subdivisions of interest.
+- `-c, --code`: (Optional) The ISO Alpha-2 code (e.g., `FR`) or a combination of ISO Alpha-2 code and subdivision code (e.g., `US_CAL`).
+- `-f, --file`: (Optional) The path to the YAML file containing the list of codes for the countries and subdivisions of interest.
 - `-u, --upload_to_gcs`: (Optional) The bucket name of the Google Cloud Storage (GCS) to upload the data.
 
 #### Example
@@ -82,15 +81,15 @@ Each retrieval script in the `retrieval/` folder is designed to fetch electricit
 - **Check input parameters (`_check_input_parameters`)**: Checks that the input parameters are valid.
 - **Data request construction (`get_available_requests`)**: Builds all data requests based on the availability of the data source.
 - **URL construction (`get_url`)**: Generates the appropriate web request URL.
-- **Data download and processing (`download_end_extract_data_for_request`)**: Fetches the data using `util.fetcher` functions and transforms it into a `pandas.Series`.
+- **Data download and processing (`download_and_extract_data_for_request`)**: Fetches the data using `util.fetcher` functions and transforms it into a `pandas.Series`.
 
-### Names, codes, time zone, and data time range of countries and subdivisions
+### Names, codes, time zones, and data time ranges for countries and subdivisions
 
-For each retrieval script in the `retrieval/` folder, a corresponding YAML file must be created. The YAML file should contain a list of dictionaries, each representing a country or subdivision from the respective data source.
+For each retrieval script in the `retrieval/` folder, a corresponding YAML file must be created. The YAML file should contain a list of dictionaries, each representing a country or subdivision from the respective data source. The following rules apply:
 
-- The names and codes should adhere to the ISO 3166 standard.
-- For country codes, please use alpha-2 codes.
-- For non-standard subdivisions, please use a widely accepted name and code.
+- Names and codes should adhere to the ISO 3166 standard.
+- For countries and standard subdivisions, use alpha-2 codes.
+- For non-standard subdivisions, use a widely accepted name and code.
 - Data time range must be specified.
 - For subdivisions, time zone must be specified.
 
@@ -100,7 +99,7 @@ Some countries have subdivisions that are not standard ISO subdivisions. For the
 
 ## Population data
 
-To download and prepare population data from the Socioeconomic Data and Applications Center (SEDAC)
+To download and prepare population data from the Socioeconomic Data and Applications Center (SEDAC):
 
 ```bash
 uv run download_population_data.py [-c country_or_subdivision_code] [-f code_file] [-y year]
@@ -108,15 +107,15 @@ uv run download_population_data.py [-c country_or_subdivision_code] [-f code_fil
 
 Arguments:
 
-- `-c, --code`: (Optional) The ISO Alpha-2 code (example: `FR`) or a combination of ISO Alpha-2 code and subdivision code (example: `US_CAL`).
-- `-f, --file`: (Optional) The path to the yaml file containing the list of codes of the countries and subdivisions of interest.
+- `-c, --code`: (Optional) The ISO Alpha-2 code (e.g., `FR`) or a combination of ISO Alpha-2 code and subdivision code (e.g., `US_CAL`).
+- `-f, --file`: (Optional) The path to the YAML file containing the list of codes for the countries and subdivisions of interest.
 - `-y, --year`: (Optional) The year of the population data to be downloaded.
 
-The scripts:
+The script:
 
-- Downloads 30-second resolution data from SEDAC
-- Aggregates to 0.25° resolution to match weather data
-- Saves `.nc` files in `data/population_density/`
+- Downloads 30-second resolution data from SEDAC.
+- Aggregates to 0.25° resolution to match weather data.
+- Saves `.nc` files in `data/population_density/`.
 
 ## Weather data
 
@@ -128,14 +127,14 @@ uv run download_weather_data.py [-c country_or_subdivision_code] [-f code_file] 
 
 Arguments:
 
-- `-c, --code`: (Optional) The ISO Alpha-2 code (example: `FR`) or a combination of ISO Alpha-2 code and subdivision code (example: `US_CAL`).
-- `-f, --file`: (Optional) The path to the yaml file containing the list of codes of the countries and subdivisions of interest.
+- `-c, --code`: (Optional) The ISO Alpha-2 code (e.g., `FR`) or a combination of ISO Alpha-2 code and subdivision code (e.g., `US_CAL`).
+- `-f, --file`: (Optional) The path to the YAML file containing the list of codes for the countries and subdivisions of interest.
 - `-y, --year`: (Optional) The year of the weather data to be downloaded.
 
-The scripts:
+The script:
 
-- Retrieves temperature data from the Copernicus Climate Data Store
-- Stores `.nc` files in `data/weather/`
+- Retrieves temperature data from the Copernicus Climate Data Store.
+- Stores `.nc` files in `data/weather/`.
 
 ## Gross Domestic Product (GDP) data
 
@@ -144,10 +143,14 @@ To retrieve gridded GDP data, run:
 ```bash
 uv run download_gdp_data.py [-c country_or_subdivision_code] [-f code_file] [-y year]
 ```
+
 Arguments:
-- `-c, --code`: (Optional) The ISO Alpha-2 code (example: `FR`) or a combination of ISO Alpha-2 code and subdivision code (example: `US_CAL`).
-- `-f, --file`: (Optional) The path to the yaml file containing the list of codes of the countries and subdivisions of interest.
+
+- `-c, --code`: (Optional) The ISO Alpha-2 code (e.g., `FR`) or a combination of ISO Alpha-2 code and subdivision code (e.g., `US_CAL`).
+- `-f, --file`: (Optional) The path to the YAML file containing the list of codes for the countries and subdivisions of interest.
 - `-y, --year`: (Optional) The year of the GDP data to be downloaded.
+
+The script will download GDP data from Zenodo and store it in `data/gdp/`.
 
 ## Temperature time series extraction
 
@@ -159,8 +162,8 @@ uv run ETL/get_temperature_data.py
 
 Arguments:
 
-- `-c, --code`: (Optional) The ISO Alpha-2 code (example: `FR`) or a combination of ISO Alpha-2 code and subdivision code (example: `US_CAL`).
-- `-f, --file`: (Optional) The path to the yaml file containing the list of codes of the countries and subdivisions of interest.
+- `-c, --code`: (Optional) The ISO Alpha-2 code (e.g., `FR`) or a combination of ISO Alpha-2 code and subdivision code (e.g., `US_CAL`).
+- `-f, --file`: (Optional) The path to the YAML file containing the list of codes for the countries and subdivisions of interest.
 - `-y, --year`: (Optional) The year of the weather data to use.
 
 The script will extract time series of temperature based on the largest and three largest population density areas and output `.csv` or `.parquet` files in `data/temperature/`.
