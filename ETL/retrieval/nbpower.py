@@ -108,13 +108,13 @@ def download_and_extract_data_for_request(year: int, month: int) -> pandas.Serie
     dataset = util.fetcher.fetch_data(
         url,
         "html",
-        read_with="requests.get",
-        read_as="query",
-        query_event_target="ctl00$cphMainContent$lbGetData",
-        query_params={
+        read_with="requests.post",
+        post_data_params={
+            "__EVENTTARGET": "ctl00$cphMainContent$lbGetData",
             "ctl00$cphMainContent$ddlMonth": month,
             "ctl00$cphMainContent$ddlYear": year,
         },
+        query_aspx_webpage=True,
     )
 
     # Extract the electricity demand time series.

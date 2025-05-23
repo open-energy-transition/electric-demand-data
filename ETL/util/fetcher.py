@@ -12,6 +12,47 @@ from entsoe import EntsoePandasClient
 from entsoe.exceptions import NoMatchingDataError
 
 
+def _read_aspx_params(
+    response: requests.Response, post_data_params: dict[str, str]
+) -> dict[str, str]:
+    """
+    Read the ASPX parameters from the response and add them to the POST data parameters.
+
+    Parameters
+    ----------
+    response : requests.Response
+        The response object from the GET request.
+    post_data_params : dict[str, str]
+        The original POST data parameters.
+
+    Returns
+    -------
+    dict[str, str]
+        The updated POST data parameters with the ASPX parameters added.
+    """
+
+    # Read the content of the response.
+    html_content = response.text
+
+    # Extract the viewstate and eventvalidation parameters from the HTML content.
+    viewstate = re.findall(r"id=\"__VIEWSTATE\" value=\"(.+)\"", html_content)[0]
+    eventvalidation = re.findall(
+        r"id=\"__EVENTVALIDATION\" value=\"(.+)\"", html_content
+    )[0]
+
+    # Prepare the parameters for the POST request.
+    additional_post_data_params = {
+        "__VIEWSTATE": viewstate,
+        "__EVENTVALIDATION": eventvalidation,
+    }
+
+    # Add the additional parameters for the POST request.
+    for key, value in additional_post_data_params.items():
+        post_data_params[key] = value
+
+    return post_data_params
+
+
 def fetch_data(
     url: str,
     content_type: str,
@@ -26,9 +67,8 @@ def fetch_data(
     post_data_params: dict[str, str] = {},
     header_params: dict[str, str] = {},
     json_keys: list[str] = [],
-    query_event_target: str = "",
-    query_params: dict[str, str] = {},
-) -> pandas.DataFrame | str:
+    query_aspx_webpage: bool = False,
+) -> pandas.DataFrame | str | requests.Response:
     """
     Fetch the data from the specified URL.
 
@@ -52,23 +92,21 @@ def fetch_data(
         The keyword arguments for reading Excel files, by default {}
     verify_ssl : bool, optional
         Verify the SSL certificate, by default True
+    header_params : dict[str, str], optional
+        The headers for the request, by default {}
     request_params : dict[str, str], optional
         The parameters for the request, by default {}
     post_data_params : dict[str, str], optional
         The data for the POST request, by default {}
-    header_params : dict[str, str], optional
-        The headers for the request, by default {}
     json_keys : list[str], optional
         The keys to extract from the JSON response, by default []
-    query_event_target : str, optional
-        The event target for the query, by default ""
-    query_params : dict[str, str], optional
-        The parameters for the query, by default {}
+    query_aspx_webpage : bool, optional
+        Whether to query the ASPX webpage, by default False
 
     Returns
     -------
-    pandas.DataFrame | str
-        The fetched data as a DataFrame or a string.
+    pandas.DataFrame | str | requests.Response
+        The fetched data as a DataFrame, string, or response object.
     """
 
     for attempt in range(retries):
@@ -103,6 +141,21 @@ def fetch_data(
                         )
 
                     elif read_with == "requests.post":
+                        if query_aspx_webpage:
+                            # Read the HTML content from the URL using the requests module.
+                            response = requests.get(
+                                url,
+                                timeout=10,
+                                verify=verify_ssl,
+                                headers=header_params,
+                                params=request_params,
+                            )
+
+                            # Read the ASPX parameters from the response and add them to the POST data parameters.
+                            post_data_params = _read_aspx_params(
+                                response, post_data_params
+                            )
+
                         # Send a POST request to the URL.
                         response = requests.post(
                             url,
@@ -132,39 +185,9 @@ def fetch_data(
 
                         # Return the content as a DataFrame.
                         return pandas.DataFrame(content)
-
-                    elif read_as == "query":
-                        # Read the content of the response.
-                        html_content = response.text
-
-                        # Extract the viewstate and eventvalidation parameters from the HTML content.
-                        viewstate = re.findall(
-                            r"id=\"__VIEWSTATE\" value=\"(.+)\"", html_content
-                        )[0]
-                        eventvalidation = re.findall(
-                            r"id=\"__EVENTVALIDATION\" value=\"(.+)\"", html_content
-                        )[0]
-
-                        # Prepare the parameters for the POST request.
-                        payload = {
-                            "__VIEWSTATE": viewstate,
-                            "__EVENTVALIDATION": eventvalidation,
-                            "__EVENTTARGET": query_event_target,
-                        }
-
-                        # Add the additional parameters to the payload.
-                        for key, value in query_params.items():
-                            payload[key] = value
-
-                        # Send the POST request.
-                        response = requests.post(url, data=payload, timeout=10)
-                        response.raise_for_status()
-
-                        # Read the content of the response.
-                        content = response.text
-
-                        # Return the content as a DataFrame.
-                        return pandas.read_csv(StringIO(content))
+                    elif read_as == "plain":
+                        # Return just the response.
+                        return response
                     else:
                         raise ValueError(
                             f"The read_as parameter {read_as} is not supported."
