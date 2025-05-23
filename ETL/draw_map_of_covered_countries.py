@@ -41,11 +41,14 @@ fig, ax = matplotlib.pyplot.subplots(
 # Plot the land.
 ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
 
+# Plot the ocean.
+ax.add_feature(cartopy.feature.OCEAN, facecolor="lightblue")
+
 # Get the range of available data for all countries and subdivisions.
 date_ranges = util.entities.read_all_date_ranges()
 
 # Define the colormap.
-map_cmap = matplotlib.pyplot.get_cmap("Blues")
+map_cmap = matplotlib.pyplot.get_cmap("Greens")
 
 # Set the transparency of the shapes.
 alpha = 0.8
@@ -116,7 +119,6 @@ cbar.ax.set_xticklabels(["0-4", "5-9", "10-19", "20+"])
 cbar.ax.tick_params(labelsize=12)
 cbar.set_label("Years of available data", fontsize=14, weight="bold", labelpad=10)
 
-
 # Add title.
 ax.set_title(
     "Countries and subdivisions for which retrieval scripts\nof electricity demand data are available",
@@ -127,7 +129,22 @@ ax.set_title(
 
 # Save the figure.
 fig.savefig(
-    os.path.join(figure_directory, "available_entities.png"),
+    os.path.join(figure_directory, "available_entities_light_mode.png"),
     dpi=300,
     bbox_inches="tight",
+    transparent=True,
+)
+
+# Change the color of all the text to white.
+ax.title.set_color("white")
+for tick in cbar.ax.get_xticklabels():
+    tick.set_color("white")
+cbar.ax.xaxis.label.set_color("white")
+
+# Save the figure.
+fig.savefig(
+    os.path.join(figure_directory, "available_entities_dark_mode.png"),
+    dpi=300,
+    bbox_inches="tight",
+    transparent=True,
 )
