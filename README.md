@@ -49,7 +49,12 @@ electric-demand-data/
 
 ## Data collection progress
 
-![Data availability](ETL/figures/available_entities.png "Countries and subdivisions with available electricity demand data")
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="ETL/figures/available_entities_dark_mode.png">
+  <source media="(prefers-color-scheme: light)" srcset="ETL/figures/available_entities_light_mode.png">
+  <img alt="Countries and subdivisions with available electricity demand data" src="ETL/figures/available_entities.png">
+</picture>
+
 Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL) folder.
 
 ## Getting started

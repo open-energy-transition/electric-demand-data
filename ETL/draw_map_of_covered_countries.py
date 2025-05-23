@@ -129,6 +129,13 @@ ax.set_title(
 
 # Save the figure.
 fig.savefig(
+    os.path.join(figure_directory, "available_entities.png"),
+    dpi=300,
+    bbox_inches="tight",
+)
+
+# Save the figure without the background color in the light mode.
+fig.savefig(
     os.path.join(figure_directory, "available_entities_light_mode.png"),
     dpi=300,
     bbox_inches="tight",
@@ -141,7 +148,7 @@ for tick in cbar.ax.get_xticklabels():
     tick.set_color("white")
 cbar.ax.xaxis.label.set_color("white")
 
-# Save the figure.
+# Save the figure without the background color in the dark mode.
 fig.savefig(
     os.path.join(figure_directory, "available_entities_dark_mode.png"),
     dpi=300,
