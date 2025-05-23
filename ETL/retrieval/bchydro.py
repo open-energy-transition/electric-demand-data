@@ -15,7 +15,24 @@ import logging
 
 import numpy
 import pandas
+import util.entities
 import util.fetcher
+
+
+def _check_input_parameters(year: int) -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    year : int
+        The year of the data to retrieve
+    """
+
+    # Check if the year is supported.
+    assert year in get_available_requests(), (
+        f"The year {year} is not in the supported range."
+    )
 
 
 def get_available_requests() -> list[int]:
@@ -28,8 +45,13 @@ def get_available_requests() -> list[int]:
         The list of available requests
     """
 
-    # Return the available requests, which are the years from 2001 to current year.
-    return list(range(2001, pandas.Timestamp.now().year + 1))
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="bchydro")[
+        "CA_BC"
+    ]
+
+    # Return the available requests, which are the years.
+    return list(range(start_date.year, end_date.year + 1))
 
 
 def get_url(year: int) -> str:
@@ -47,8 +69,8 @@ def get_url(year: int) -> str:
         The URL of the electricity demand data
     """
 
-    # Check if the year is supported.
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(year)
 
     # Define the URL of the electricity demand data.
     url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/balancing_authority_load_data/Historical%20Transmission%20Data/"
@@ -68,6 +90,8 @@ def get_url(year: int) -> str:
         url += "BalancingAuthorityLoad%202024.xls"
     elif year == 2025:
         url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/actual_flow_data/historical_data/BalancingAuthorityLoad%202025.xls"
+    else:
+        raise ValueError(f"The year {year} is not implemented yet.")
 
     return url
 
@@ -95,8 +119,8 @@ def _get_excel_information(
         The names of the load columns in the Excel file
     """
 
-    # Check if the year is supported.
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(year)
 
     # Define the number of rows to skip.
     if (year >= 2001 and year <= 2006) or (year >= 2014 and year <= 2021):
@@ -105,12 +129,16 @@ def _get_excel_information(
         rows_to_skip = 2
     elif (year >= 2012 and year <= 2013) or (year >= 2022 and year <= 2025):
         rows_to_skip = 3
+    else:
+        raise ValueError(f"The year {year} is not implemented yet.")
 
     # Define the header of the Excel file.
     if year == 2007:
         header = None
     elif year >= 2001 and year <= 2006 or year >= 2008 and year <= 2025:
         header = 0
+    else:
+        raise ValueError(f"The year {year} is not implemented yet.")
 
     # Define the index columns of the Excel file.
     index_columns: list[str] | list[int]
@@ -128,6 +156,8 @@ def _get_excel_information(
         index_columns = ["Date ?", "HE"]
     elif year == 2025:
         index_columns = ["Date ", "HE"]
+    else:
+        raise ValueError(f"The year {year} is not implemented yet.")
 
     # Define the column of the electricity demand data.
     load_column: list[str] | list[int]
@@ -139,6 +169,8 @@ def _get_excel_information(
         load_column = ["MWh"]
     elif year >= 2012 and year <= 2014 or year >= 2021 and year <= 2025:
         load_column = ["Control Area Load"]
+    else:
+        raise ValueError(f"The year {year} is not implemented yet.")
 
     return rows_to_skip, header, index_columns, load_column
 
@@ -158,7 +190,8 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         The electricity demand time series in MW
     """
 
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(year)
 
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 

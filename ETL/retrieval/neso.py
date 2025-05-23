@@ -14,8 +14,24 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
-import util.general
+
+
+def _check_input_parameters(year: int) -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    year : int
+        The year of the data to retrieve
+    """
+
+    # Check if the year is supported.
+    assert year in get_available_requests(), (
+        f"The year {year} is not in the supported range."
+    )
 
 
 def get_available_requests() -> list[int]:
@@ -28,8 +44,11 @@ def get_available_requests() -> list[int]:
         The list of available requests
     """
 
-    # Return the available requests, which are the years from 2009 to 2025.
-    return list(range(2009, 2026))
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="neso")["GB_GB"]
+
+    # Return the available requests, which are the years.
+    return list(range(start_date.year, end_date.year + 1))
 
 
 def get_url(year: int) -> str:
@@ -47,8 +66,8 @@ def get_url(year: int) -> str:
         The URL of the electricity demand data
     """
 
-    # Check if the year is supported.
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if input parameters are valid.
+    _check_input_parameters(year)
 
     # Define the dataset names for the electricity demand data.
     dataset_name = {
@@ -71,6 +90,9 @@ def get_url(year: int) -> str:
         2025: "b2bde559-3455-4021-b179-dfe60c0337b0",
     }
 
+    # Check if the year of the dataset is supported.
+    assert year in dataset_name, f"The year {year} is not supported for the dataset."
+
     # Return the URL of the electricity demand data.
     return f"https://api.neso.energy/api/3/action/datastore_search_sql?sql=SELECT%20*%20FROM%20%22{dataset_name[year]}%22%20ORDER%20BY%20%22_id%22%20ASC%20LIMIT%20100000"
 
@@ -90,8 +112,8 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         The electricity demand time series in MW
     """
 
-    # Check if the year is supported.
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if input parameters are valid.
+    _check_input_parameters(year)
 
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 
@@ -99,10 +121,13 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     url = get_url(year)
 
     # Fetch the electricity demand data from the URL.
-    dataset = util.fetcher.fetch_data(url, "json", json_keys=["result", "records"])
-
-    # Get the time zone of the country.
-    local_time_zone = util.general.get_time_zone("GB")
+    dataset = util.fetcher.fetch_data(
+        url,
+        "html",
+        read_with="requests.get",
+        read_as="json",
+        json_keys=["result", "records"],
+    )
 
     # Extract the electricity demand time series.
     electricity_demand_time_series = pandas.Series(
@@ -111,7 +136,7 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
             start=f"{year}-01-01 00:30",
             periods=len(dataset),
             freq="30min",
-            tz=local_time_zone,
+            tz="Europe/London",
         ),
     )
 

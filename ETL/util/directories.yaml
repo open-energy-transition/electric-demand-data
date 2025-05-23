@@ -10,6 +10,9 @@ electricity_demand_folder:
 population_density_folder:
   - *data_folder
   - population_density
+gdp_folder:
+  - *data_folder
+  - gdp
 weather_folder:
   - *data_folder
   - weather

@@ -6,9 +6,11 @@ Description:
 
     This script downloads electricity demand data from various data sources.
 
-    Users can specify a data source and optionally provide a country or region code to retrieve specific data.
+    Users can specify a data source and optionally provide a country or subdivision code to retrieve specific data.
 
     The retrieved data is cleaned and saved in a structured format for further analysis.
+
+    The script also supports uploading the data to Google Cloud Storage (GCS) if a bucket name is provided.
 """
 
 import argparse
@@ -16,6 +18,8 @@ import logging
 import os
 
 import pandas
+import retrieval.aemo_nem
+import retrieval.aemo_wem
 import retrieval.aeso
 import retrieval.bchydro
 import retrieval.cammesa
@@ -23,6 +27,7 @@ import retrieval.ccei
 import retrieval.cen
 import retrieval.coes
 import retrieval.eia
+import retrieval.emi
 import retrieval.entsoe
 import retrieval.eskom
 import retrieval.hydroquebec
@@ -34,10 +39,13 @@ import retrieval.ons
 import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
-import util.general
+import util.directories
+import util.entities
 import util.time_series
 
 retrieval_module = {
+    "AEMO_NEM": retrieval.aemo_nem,
+    "AEMO_WEM": retrieval.aemo_wem,
     "AESO": retrieval.aeso,
     "BCHYDRO": retrieval.bchydro,
     "CAMMESA": retrieval.cammesa,
@@ -45,6 +53,7 @@ retrieval_module = {
     "CEN": retrieval.cen,
     "COES": retrieval.coes,
     "EIA": retrieval.eia,
+    "EMI": retrieval.emi,
     "ENTSOE": retrieval.entsoe,
     "ESKOM": retrieval.eskom,
     "HYDROQUEBEC": retrieval.hydroquebec,
@@ -72,9 +81,11 @@ def read_command_line_arguments() -> argparse.Namespace:
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
         description="Download electricity demand data from the specified data source. "
-        "You can specify the country or region code or provide a file containing the list of codes. "
-        "If no code or file is provided, the data retrieval will be run for all the countries or regions available on the data source platform."
+        "You can specify the country or subdivision code or provide a file containing the list of codes. "
+        "If no code or file is provided, the data retrieval will be run for all the countries and subdivisions available on the data source website."
     )
+
+    # Add the command line arguments.
     parser.add_argument(
         "data_source",
         type=str,
@@ -85,14 +96,21 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-c",
         "--code",
         type=str,
-        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and region code (example: "US_CAL")',
+        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and subdivision code (example: "US_CAL")',
         required=False,
     )
     parser.add_argument(
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes",
+        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest.",
+        required=False,
+    )
+    parser.add_argument(
+        "-u",
+        "--upload_to_gcs",
+        type=str,
+        help="The bucket name of the Google Cloud Storage (GCS) to upload the data",
         required=False,
     )
 
@@ -102,75 +120,7 @@ def read_command_line_arguments() -> argparse.Namespace:
     return args
 
 
-def check_and_get_codes(
-    args: argparse.Namespace,
-) -> tuple[list[str], bool]:
-    """
-    Check the validity of the country or region codes and return the list of codes of the countries or regions of interest.
-
-    Parameters
-    ----------
-    args : argparse.Namespace
-        The command line arguments
-
-    Returns
-    -------
-    codes : list[str]
-        The list of codes of the countries or regions of interest
-    one_code_on_platform : bool
-        A flag to check if there is only one code on the platform
-    """
-
-    # Get the directory of the retrieval scripts.
-    retrieval_scripts_directory = util.general.read_folders_structure()[
-        "retrieval_scripts_folder"
-    ]
-
-    # Define the yaml file containing the list of codes.
-    yaml_file_path = os.path.join(
-        retrieval_scripts_directory, args.data_source.lower() + ".yaml"
-    )
-
-    # Get the list of codes available on the platform.
-    codes_on_platform = util.general.read_codes_from_file(yaml_file_path)
-
-    # Define a flag to check if there is only one code on the platform.
-    one_code_on_platform = len(codes_on_platform) == 1
-
-    if args.code is not None:
-        # Check if the code is in the list of countries or regions available on the platform.
-        if args.code not in codes_on_platform:
-            raise ValueError(
-                f"Code {args.code} is not available on the {args.data_source} platform. Please choose one of the following: {', '.join(codes_on_platform)}"
-            )
-        else:
-            codes = [args.code]
-
-    elif args.file is not None:
-        # Read the codes from the file.
-        codes = util.general.read_codes_from_file(args.file)
-
-        # Check if the codes are in the list of countries or regions available on the platform.
-        for code in codes:
-            if code not in codes_on_platform:
-                logging.error(
-                    f"Code {code} is not available on the {args.data_source} platform."
-                )
-                codes.remove(code)
-
-        # Check if there are any codes left.
-        if len(codes) == 0:
-            raise ValueError(
-                f"None of the codes in the file are available on the {args.data_source} platform. Please choose from the following: {', '.join(codes_on_platform)}"
-            )
-    else:
-        # Run the data retrieval for all the countries or regions available on the platform.
-        codes = codes_on_platform
-
-    return codes, one_code_on_platform
-
-
-def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
+def retrieve_data(data_source: str, code: str) -> pandas.Series:
     """
     Retrieve the electricity demand data from the specified data source and code.
 
@@ -178,8 +128,8 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
     ----------
     data_source : str
         The data source
-    code : str, optional
-        The code of the country or region
+    code : str
+        The code of the country or subdivision
 
     Returns
     -------
@@ -187,19 +137,29 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
         The electricity demand time series in MW
     """
 
+    # Check if there is only one code in the data source.
+    one_code_in_data_source = (
+        len(util.entities.read_codes(data_source=args.data_source)) == 1
+    )
+
     # Get the list of requests to retrieve the electricity demand time series.
-    requests = retrieval_module[data_source].get_available_requests()
+    if one_code_in_data_source:
+        # If there is only one code in the data source, there is no need to specify the code.
+        requests = retrieval_module[data_source].get_available_requests()
+    else:
+        # If there are multiple codes in the data source, the code needs to be specified.
+        requests = retrieval_module[data_source].get_available_requests(code)
 
     if requests is None:
         # If there are no requests (requests is None), it means that the electricity demand time series can be retrieved all at once.
         # Get the retrieval function to download and extract the data.
         retrieval_function = retrieval_module[data_source].download_and_extract_data
 
-        if code is None:
-            # If there is only one code on the platform (code is None), there is no need to specify the code.
+        if one_code_in_data_source:
+            # If there is only one code in the data source, there is no need to specify the code.
             electricity_demand_time_series = retrieval_function()
         else:
-            # If there are multiple codes on the platform (code is not None), the code needs to be specified.
+            # If there are multiple codes in the data source, the code needs to be specified.
             electricity_demand_time_series = retrieval_function(code)
 
     else:
@@ -209,8 +169,8 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
             data_source
         ].download_and_extract_data_for_request
 
-        if code is None:
-            # If there is only one code on the platform (code is None), there is no need to specify the code.
+        if one_code_in_data_source:
+            # If there is only one code in the data source, there is no need to specify the code.
             # Loop over the requests to retrieve the electricity demand time series of each request.
             electricity_demand_time_series_list = [
                 retrieval_function(*request)
@@ -219,7 +179,7 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
                 for request in requests
             ]
         else:
-            # If there are multiple codes on the platform (code is not None), the code needs to be specified.
+            # If there are multiple codes in the data source, the code needs to be specified.
             # Loop over the requests to retrieve the electricity demand time series of each request.
             electricity_demand_time_series_list = [
                 retrieval_function(*request, code)
@@ -242,26 +202,74 @@ def retrieve_data(data_source: str, code: str | None) -> pandas.Series:
 
     # Clean the data.
     electricity_demand_time_series = util.time_series.clean_data(
-        electricity_demand_time_series
+        electricity_demand_time_series, "Load (MW)"
     )
 
     return electricity_demand_time_series
 
 
-def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
+def save_data(
+    electricity_demand_time_series: pandas.Series,
+    data_source: str,
+    code: str,
+    upload_to_gcs: str | None,
+) -> None:
     """
-    Run the electricity demand data retrieval for the countries or regions of interest.
+    Save the electricity demand time series to a file and upload it to Google Cloud Storage (GCS).
+
+    Parameters
+    ----------
+    electricity_demand_time_series : pandas.Series
+        The electricity demand time series in MW
+    data_source : str
+        The data source
+    code : str, optional
+        The code of the country or subdivision
+    upload_to_gcs : str, optional
+        The bucket name of the Google Cloud Storage (GCS) to upload the data
+    """
+
+    # Get the date of retrieval.
+    date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
+
+    # Get the directory to store the electricity demand time series.
+    result_directory = util.directories.read_folders_structure()[
+        "electricity_demand_folder"
+    ]
+    result_directory = os.path.join(result_directory, date_of_retrieval)
+    os.makedirs(result_directory, exist_ok=True)
+
+    # Define the identifier of the file to be saved.
+    identifier = code + "_" + data_source
+
+    # Define the path to the file to be saved without the extension.
+    file_path = os.path.join(result_directory, identifier)
+
+    # Save the time series to both parquet and csv files.
+    electricity_demand_time_series.to_frame().to_parquet(file_path + ".parquet")
+    electricity_demand_time_series.to_csv(file_path + ".csv")
+
+    if upload_to_gcs is not None:
+        # Upload the parquet file of the electricity demand time series to GCS.
+        util.time_series.upload_to_gcs(
+            file_path + ".parquet",
+            upload_to_gcs,
+            "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
+        )
+
+
+def run_data_retrieval(args: argparse.Namespace) -> None:
+    """
+    Run the electricity demand data retrieval for the countries and subdivisions of interest.
 
     Parameters
     ----------
     args : argparse.Namespace
         The command line arguments
-    result_directory : str
-        The directory to store the electricity demand time series
     """
 
-    # Get the list of codes of the countries or regions of interest.
-    codes, one_code_on_platform = check_and_get_codes(args)
+    # Get the list of codes of the countries and subdivisions of interest.
+    codes = util.entities.check_and_get_codes(args.data_source, args.code, args.file)
 
     logging.info(f"Retrieving electricity data from the {args.data_source} website.")
 
@@ -270,16 +278,14 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
         logging.info(f"Retrieving data for {code}.")
 
         # Retrieve the electricity demand time series.
-        electricity_demand_time_series = retrieve_data(
-            args.data_source, None if one_code_on_platform else code
-        )
+        electricity_demand_time_series = retrieve_data(args.data_source, code)
 
-        # Save the electricity demand time series.
-        util.time_series.simple_save(
+        # Save the electricity demand time series to a file and upload it to GCS.
+        save_data(
             electricity_demand_time_series,
-            "Load (MW)",
-            result_directory,
-            code + "_" + args.data_source,
+            args.data_source,
+            code,
+            args.upload_to_gcs,
         )
 
     logging.info(
@@ -287,13 +293,13 @@ def run_data_retrieval(args: argparse.Namespace, result_directory: str) -> None:
     )
 
 
-def main() -> None:
+if __name__ == "__main__":
     # Read the command line arguments.
     args = read_command_line_arguments()
 
     # Set up the logging configuration.
     log_file_name = f"electricity_data_from_{args.data_source}.log"
-    log_files_directory = util.general.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.directories.read_folders_structure()["log_files_folder"]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),
@@ -302,15 +308,5 @@ def main() -> None:
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
-    # Create a directory to store the electricity demand time series.
-    result_directory = util.general.read_folders_structure()[
-        "electricity_demand_folder"
-    ]
-    os.makedirs(result_directory, exist_ok=True)
-
     # Run the data retrieval.
-    run_data_retrieval(args, result_directory)
-
-
-if __name__ == "__main__":
-    main()
+    run_data_retrieval(args)

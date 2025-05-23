@@ -1,5 +1,8 @@
-items:
-  - region_name: Alberta
-    region_code: AB
+entities:
+  - subdivision_name: Alberta
+    subdivision_code: AB
     country_name: Canada
     country_code: CA
+    start_date: 2011-01-01
+    end_date: 2024-12-31
+    time_zone: America/Edmonton

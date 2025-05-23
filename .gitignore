@@ -1,6 +1,7 @@
 # Folders used for local data storage
 data/
 figures/
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

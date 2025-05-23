@@ -15,18 +15,43 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests() -> list[tuple[int, bool] | tuple[None, bool]]:
+def _check_input_parameters(year: int | None, before_Apr_2002: bool) -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    year : int
+        The year of the data to retrieve
+    before_Apr_2002 : bool
+        Whether the url is for the time period before April 2002
+    """
+
+    # Check if the request is supported.
+    assert (year, before_Apr_2002) in get_available_requests(), (
+        "The request is not available."
+    )
+
+
+def get_available_requests() -> list[tuple[int | None, bool]]:
     """
     Get the list of available requests to retrieve the electricity demand data from the IESO website.
 
     Returns
     -------
-    list[tuple[int, bool] | tuple[None, bool]]
+    list[tuple[int | None, bool]]
         The list of available requests
     """
+
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="ieso")["CA_ON"]
+
+    # Define the date that separates the two periods of data.
+    date_after_Apr_2002 = pandas.Timestamp("2002-04-01")
 
     # Return the available requests, which are a combination of a year number and a boolean indicating whether the data is before April 2002.
     # available_requests = [(year = None, before_Apr_2002 = True)
@@ -35,7 +60,7 @@ def get_available_requests() -> list[tuple[int, bool] | tuple[None, bool]]:
     #                       ...
     #                       (year = current year, before_Apr_2002 = False)]
     return [(None, True)] + [
-        (year, False) for year in range(2002, pandas.Timestamp.now().year + 1)
+        (year, False) for year in range(date_after_Apr_2002.year, end_date.year + 1)
     ]
 
 
@@ -56,9 +81,8 @@ def get_url(year: int | None, before_Apr_2002: bool) -> str:
         The URL of the electricity demand data
     """
 
-    assert (year, before_Apr_2002) in get_available_requests(), (
-        "The request is not available."
-    )
+    # Check if the input parameters are valid.
+    _check_input_parameters(year=year, before_Apr_2002=before_Apr_2002)
 
     # Define the URL of the electricity demand data.
     if before_Apr_2002:
@@ -88,9 +112,8 @@ def download_and_extract_data_for_request(
         The electricity demand time series in MW
     """
 
-    assert (year, before_Apr_2002) in get_available_requests(), (
-        "The request is not available."
-    )
+    # Check if the input parameters are valid.
+    _check_input_parameters(year=year, before_Apr_2002=before_Apr_2002)
 
     # Get the URL of the electricity demand data.
     url = get_url(year=year, before_Apr_2002=before_Apr_2002)
@@ -99,7 +122,9 @@ def download_and_extract_data_for_request(
         logging.info("Retrieving electricity demand data for the years 1994 to 2002.")
 
         # Fetch HTML content from the URL.
-        dataset = util.fetcher.fetch_data(url, "text", verify_ssl=False)
+        dataset = util.fetcher.fetch_data(
+            url, "html", read_with="requests.get", read_as="tabular", verify_ssl=False
+        )
 
         # Extract the electricity demand time series.
         electricity_demand_time_series = pandas.Series(

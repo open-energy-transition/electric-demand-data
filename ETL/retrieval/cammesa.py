@@ -16,9 +16,10 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
-region_id = {
+province_id = {
     "AR": 1002,  # Argentina
     "BAS": [425, 426],  # Provincia de Buenos Aires
     "CEN": 422,  # Centro
@@ -31,6 +32,22 @@ region_id = {
 }
 
 
+def _check_input_parameters(date: str) -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    date : str
+        The date of the electricity demand data in the format YYYY-MM-DD
+    """
+
+    # Check if the date is supported.
+    assert date in get_available_requests(), (
+        f"The date {date} is not in the supported range."
+    )
+
+
 def get_available_requests() -> list[str]:
     """
     Get the list of available requests to retrieve the electricity demand data from the CAMMESA website.
@@ -41,9 +58,12 @@ def get_available_requests() -> list[str]:
         The list of available requests
     """
 
-    # Return the available requests, which are the days from 2024-08-01 to current date.
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="cammesa")["AR"]
+
+    # Return the available requests, which are the dates in the format YYYY-MM-DD.
     return (
-        pandas.date_range(start="2024-08-01", end=pandas.Timestamp.today(), freq="D")
+        pandas.date_range(start=start_date, end=end_date, freq="D")
         .strftime("%Y-%m-%d")
         .to_list()
     )
@@ -64,8 +84,8 @@ def get_url(date: str) -> str:
         The URL of the electricity demand data
     """
 
-    # Check if the date is supported.
-    assert date in get_available_requests(), f"The date {date} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(date)
 
     # Return the URL of the electricity demand data.
     return f"https://api.cammesa.com/demanda-svc/demanda/ObtieneDemandaYTemperaturaRegionByFecha?id_region=1002&fecha={date}"
@@ -86,7 +106,8 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
         The electricity demand time series in MW
     """
 
-    assert date in get_available_requests(), f"The date {date} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(date)
 
     logging.info(f"Retrieving electricity demand data for {date}.")
 
@@ -94,7 +115,9 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
     url = get_url(date)
 
     # Fetch the data from the URL.
-    dataset = util.fetcher.fetch_data(url, "json")
+    dataset = util.fetcher.fetch_data(
+        url, "html", read_with="requests.get", read_as="json"
+    )
 
     # Remove rows with NaN values for demand.
     dataset = dataset.dropna(subset=["dem"])

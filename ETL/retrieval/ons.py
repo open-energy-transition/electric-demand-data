@@ -14,12 +14,40 @@ Description:
 import logging
 
 import pandas
+import util.entities
 import util.fetcher
 
 
-def get_available_requests() -> list[int]:
+def _check_input_parameters(year: int | None = None, code: str = "BR_N") -> None:
+    """
+    Check if the input parameters are valid.
+
+    Parameters
+    ----------
+    year : int
+        The year of the data to retrieve
+    code : str
+        The code of the subdivision of interest
+    """
+
+    # Check if the code is valid.
+    util.entities.check_code(code, "ons")
+
+    if year is not None:
+        # Check if the year is supported.
+        assert year in get_available_requests(code), (
+            f"The year {year} is not in the supported range."
+        )
+
+
+def get_available_requests(code: str) -> list[int]:
     """
     Get the list of available requests to retrieve the electricity demand data from the ONS website.
+
+    Parameters
+    ----------
+    code : str, optional
+        The code of the subdivision
 
     Returns
     -------
@@ -27,8 +55,14 @@ def get_available_requests() -> list[int]:
         The list of available requests
     """
 
-    # Return the available requests, which are the years from 2000 to current year.
-    return [year for year in range(2000, pandas.Timestamp.now().year + 1)]
+    # Check if input parameters are valid.
+    _check_input_parameters(code=code)
+
+    # Read the start and end date of the available data.
+    start_date, end_date = util.entities.read_date_ranges(data_source="ons")[code]
+
+    # Return the available requests, which are the years.
+    return list(range(start_date.year, end_date.year + 1))
 
 
 def get_url(year: int) -> str:
@@ -46,13 +80,14 @@ def get_url(year: int) -> str:
         The URL of the electricity demand data
     """
 
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if input parameters are valid.
+    _check_input_parameters(year=year)
 
     # Return the URL of the electricity demand data.
     return f"https://ons-aws-prod-opendata.s3.amazonaws.com/dataset/curva-carga-ho/CURVA_CARGA_{year}.csv"
 
 
-def download_and_extract_data_for_request(year: int, region_code: str) -> pandas.Series:
+def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series:
     """
     Download and extract the electricity demand data from the ONS website.
 
@@ -60,8 +95,8 @@ def download_and_extract_data_for_request(year: int, region_code: str) -> pandas
     ----------
     year : int
         The year of the electricity demand data
-    region_code : str
-        The code of the region of interest
+    code : str
+        The code of the subdivision of interest
 
     Returns
     -------
@@ -69,12 +104,13 @@ def download_and_extract_data_for_request(year: int, region_code: str) -> pandas
         The electricity demand time series in MW
     """
 
-    assert year in get_available_requests(), f"The year {year} is not available."
+    # Check if the input parameters are valid.
+    _check_input_parameters(year=year, code=code)
 
     logging.info(f"Retrieving electricity demand data for the year {year}.")
 
-    # Extract the region code.
-    region_code = region_code.split("_")[1]
+    # Extract the subdivision code from the code.
+    subdivision_code = code.split("_")[1]
 
     # Get the URL of the electricity demand data.
     url = get_url(year)
@@ -82,8 +118,8 @@ def download_and_extract_data_for_request(year: int, region_code: str) -> pandas
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"sep": ";"})
 
-    # Filter the dataset for the region of interest.
-    dataset = dataset[dataset["id_subsistema"] == region_code]
+    # Filter the dataset for the subdivision of interest.
+    dataset = dataset[dataset["id_subsistema"] == subdivision_code]
 
     # Extract the electricity demand time series.
     electricity_demand_time_series = pandas.Series(
