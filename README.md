@@ -38,13 +38,21 @@ The project is in active development, we are always looking for suggestions and 
 
 ```
 electric-demand-data/
-├── ETL/                 # Scripts for extracting, transforming, and loading data
-├── models/              # Machine learning models for demand forecasting
+├── docs/                   # Project documentation (MkDocs)
+├── ETL/                    # Scripts for extracting, transforming, and loading data
+├── models/                 # Machine learning models for demand forecasting
 │   └── xgboost/
-├── docs/                # Project documentation (MkDocs)
-├── .devcontainer/       # Development container configuration
-├── Dockerfile           # Docker setup for containerized runs
-└── pyproject.toml       # Project metadata and dependencies
+├── .devcontainer/          # Development container configuration
+├── .github/                # Github specifics such as actions
+├── .gitignore              # File lists what git ignores
+├── .pre-commit-config.yaml # Pre-commit configuration
+├── .python-version         # Python version
+├── CONTRIBUTING.md         # Guide to contributing
+├── Dockerfile              # Docker setup for containerized runs
+├── mkdocs.yml              # Documentation configuration file
+├── pyproject.toml          # Project metadata and dependencies
+├── ruff.toml               # Ruff configuration
+└── uv.lock                 # Lockfile for project's dependencies
 ```
 
 ## Data collection progress
