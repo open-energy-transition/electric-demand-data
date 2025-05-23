@@ -6,7 +6,7 @@
 
 <p align="center">
     <a href="https://www.breakthroughenergy.org/">
-        <img src="docs/BE_logo.png" alt="Breakthrough Energy Logo" width="512"/>
+        <img src="BE_logo.png" alt="Breakthrough Energy Logo" width="512"/>
     </a>
 </p>
 
@@ -48,9 +48,9 @@ electric-demand-data/
 ## Data collection progress
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="ETL/figures/available_entities_dark_mode.png">
-  <source media="(prefers-color-scheme: light)" srcset="ETL/figures/available_entities_light_mode.png">
-  <img alt="Countries and subdivisions with available electricity demand data" src="ETL/figures/available_entities.png">
+  <source media="(prefers-color-scheme: dark)" srcset="./../ETL/figures/available_entities_dark_mode.png">
+  <source media="(prefers-color-scheme: light)" srcset="./../ETL/figures/available_entities_light_mode.png">
+  <img alt="Countries and subdivisions for which retrieval scripts of electricity demand data are available" src="./../ETL/figures/available_entities.png">
 </picture>
 
 Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL) folder.
@@ -107,7 +107,7 @@ uvx mypy
 
 ## Documentation
 
-The [documentation](https://open-energy-transition.github.io/electric-demand-data/) is currently hosted on GitHub pages connected to this repository. It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
+The documentation is currently hosted on GitHub pages. It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
 
 To run it locally:
 
