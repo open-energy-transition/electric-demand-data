@@ -42,13 +42,13 @@ fig, ax = matplotlib.pyplot.subplots(
 ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
 
 # Plot the ocean.
-ax.add_feature(cartopy.feature.OCEAN, facecolor="lightblue")
+ax.add_feature(cartopy.feature.OCEAN, facecolor="white")
 
 # Get the range of available data for all countries and subdivisions.
 date_ranges = util.entities.read_all_date_ranges()
 
 # Define the colormap.
-map_cmap = matplotlib.pyplot.get_cmap("Greens")
+map_cmap = matplotlib.pyplot.get_cmap("Blues")
 
 # Set the transparency of the shapes.
 alpha = 0.8
