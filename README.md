@@ -67,14 +67,14 @@ Find the code that we used to retrieve the data in their respective files inside
 
 ## Getting started
 
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/open-energy-transition/electric-demand-data.git
 cd electric-demand-data
 ```
 
-### 2. Set Up Your Environment
+### 2. Set up your environment
 
 This project uses [`uv`](https://github.com/astral-sh/uv) as a pacakge manager. It can be used within the provided Dockerfile or installed standalone (see [installing uv](https://docs.astral.sh/uv/getting-started/installation/))
 
@@ -84,7 +84,7 @@ uv sync
 
 Alternatively, you may use `conda` to install the packages listed in `pyproject.toml`.
 
-### 3. Run Scripts
+### 3. Run scripts
 
 Scripts can be run directly using:
 
