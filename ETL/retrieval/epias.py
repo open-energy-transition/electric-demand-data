@@ -4,7 +4,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity demand data the website of EEpias in Turkey.
+    This script retrieves the electricity demand data the website of Epias in Turkey.
 
     The data is retrieved by registering through email in the epias website.
 
