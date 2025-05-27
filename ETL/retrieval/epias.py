@@ -4,13 +4,13 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity demand data the website of Eskom in South Africa.
+    This script retrieves the electricity demand data the website of EEpias in Turkey.
 
-    The data is retrieved by submitting a request to the Eskom website.
+    The data is retrieved by registering through email in the epias website.
 
-    The user then receives a link on the provided email address to download the data.
+    The user then login into the website and download the data.
 
-    Source: https://www.eskom.co.za/dataportal/data-request-form/
+    Source: https://giris.epias.com.tr/cas/login?service=https://seffaflik.epias.com.tr
 """
 
 import logging
@@ -22,15 +22,15 @@ import util.directories
 
 def get_available_requests() -> None:
     """
-    Get the list of available requests to retrieve the electricity demand data from the Eskom website.
+    Get the list of available requests to retrieve the electricity demand data from the Epias website.
     """
 
-    logging.debug("The data is retrieved all at once.")
+    logging.debug("TThe data is retrieved in one-year intervals.")
 
 
 def get_url() -> str:
     """
-    Get the URL of the electricity demand data from the Eskom website.
+    Get the URL of the electricity demand data from the Epias website.
 
     Returns
     -------
@@ -39,12 +39,12 @@ def get_url() -> str:
     """
 
     # Return the URL of the electricity demand data.
-    return "https://www.eskom.co.za/dataportal/cf-api/CF600011bdba174"
+    return "https://seffaflik.epias.com.tr/electricity/electricity-consumption/ex-post-consumption/real-time-consumption"
 
 
 def download_and_extract_data() -> pandas.Series:
     """
-    Extract the electricity demand data retrieved from the Eskom website.
+    Extract the electricity demand data retrieved from the Epias website.
 
     This function assumes that the data has been downloaded and is available in the specified folder.
 
@@ -57,23 +57,27 @@ def download_and_extract_data() -> pandas.Series:
     # Get the data folder.
     data_directory = util.directories.read_folders_structure()["data_folder"]
 
-    # Get the paths of the downloaded files. Each file starts with "ESK".
+    # Get the paths of the downloaded files. Each file starts with "EPI".
     downloaded_file_paths = [
         os.path.join(data_directory, file)
         for file in os.listdir(data_directory)
-        if file.startswith("ESK")
+        if file.startswith("EPI")
     ]
 
     # Load the data from the downloaded files into a pandas DataFrame.
     dataset = pandas.concat(
         [pandas.read_csv(file_path) for file_path in downloaded_file_paths]
     )
+    
+    # Combine date and time columns
+    dataset["Tarih Saat"] = dataset["Tarih"] + " " + dataset["Saat"]
+
 
     # Extract the electricity demand time series.
     electricity_demand_time_series = pandas.Series(
-        dataset["RSA Contracted Demand"].values,
+        dataset["Tüketim Miktarı(MWh)"].values,
         index=pandas.to_datetime(
-            dataset["Date Time Hour Beginning"], format="%Y-%m-%d %H:%M:%S %p"
+            dataset["Tarih Saat"], format="%d.%m.%Y %H:%M"
         ),
     )
 
@@ -84,7 +88,7 @@ def download_and_extract_data() -> pandas.Series:
 
     # Add the timezone information to the index.
     electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize("Africa/Johannesburg")
+        electricity_demand_time_series.index.tz_localize("Europe/Istanbul")
     )
 
     return electricity_demand_time_series
