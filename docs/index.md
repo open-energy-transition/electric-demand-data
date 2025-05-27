@@ -12,7 +12,7 @@
 
 ## About
 
-Electric Demand Data is a Python-based project focused on collecting, processing, and forecasting electricity demand data. The aim of this project is to support energy planning studies by using machine learning models to generate time series of future electricity demand or for countries without available data.
+Electric Demand Data is a Python-based project focused on collecting, processing, and forecasting hourly electricity demand data. The aim of this project is to support energy planning studies by using machine learning models to generate hourly time series of future electricity demand or for countries without available data.
 
 ### Features
 
