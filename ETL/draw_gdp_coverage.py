@@ -4,7 +4,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script generates a bar plot showing the coverage of GDP data by income level and continent.
+    This script generates a bar plot showing the years of available electricity demand data falling into different GDP per capita levels, grouped by continent.
 
     It fetches GDP per capita data from the World Bank, categorizes it into income levels, and plots the number of years in which each country or subdivision falls into these income levels, grouped by continent.
 
@@ -142,7 +142,7 @@ for continent_code in gdp_occurrence.keys():
 ax.set_ylim(0, max(cumulative_height) * 1.05)
 
 # Set the title and labels.
-ax.set_title("GDP coverage by income level", fontsize=16, fontweight="bold", pad=20)
+ax.set_title("Available electricity demand data", fontsize=16, pad=15, weight="bold")
 ax.set_xlabel("GDP per capita, PPP (current international $)", fontsize=14)
 ax.set_ylabel("Number of years", fontsize=14)
 ax.set_xticklabels(
