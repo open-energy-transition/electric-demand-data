@@ -66,29 +66,20 @@ def download_and_extract_data() -> pandas.Series:
 
     # Load the data from the downloaded files into a pandas DataFrame.
     dataset = pandas.concat(
-        [pandas.read_csv(file_path) for file_path in downloaded_file_paths]
+        [pandas.read_excel(file_path) for file_path in downloaded_file_paths]
     )
     
-    # Combine date and time columns
-    dataset["Tarih Saat"] = dataset["Tarih"] + " " + dataset["Saat"]
-
-
-    # Extract the electricity demand time series.
+    # Extract the electricity demand data from the dataset.
     electricity_demand_time_series = pandas.Series(
         dataset["Tüketim Miktarı(MWh)"].values,
-        index=pandas.to_datetime(
-            dataset["Tarih Saat"], format="%d.%m.%Y %H:%M"
-        ),
-    )
-
-    # Add one hour to the index because the electricity demand seems to be provided at the beginning of the hour.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index + pandas.Timedelta(hours=1)
+        index=pandas.to_datetime(dataset["Tarih"]),
     )
 
     # Add the timezone information to the index.
     electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize("Europe/Istanbul")
+        electricity_demand_time_series.index.tz_localize(
+            "Europe/Istanbul", ambiguous="NaT", nonexistent="NaT"
+        )
     )
 
     return electricity_demand_time_series
