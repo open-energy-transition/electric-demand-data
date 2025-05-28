@@ -593,14 +593,8 @@ def get_continent_code(code: str) -> str:
         iso_alpha_2_code = code
 
     # Get the continent code.
-    try:
-        continent_code = pycountry_convert.country_alpha2_to_continent_code(
-            iso_alpha_2_code
-        )
-    except LookupError:
-        # If the country code is not recognized, raise an error.
-        raise ValueError(
-            f"Country code {iso_alpha_2_code} is not recognized or not available."
-        )
+    continent_code = pycountry_convert.country_alpha2_to_continent_code(
+        iso_alpha_2_code
+    )
 
     return continent_code
