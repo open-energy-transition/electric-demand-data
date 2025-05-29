@@ -52,9 +52,9 @@ ETL/
 Some scripts require API keys to access data from external services. These keys should be stored in a `.env` file in the `ETL/` directory. The `.env` file should not be included in the repository and should contain the following environment variables:
 
 ```plaintext
-CDS_API_KEY=<your_copernicus_api_key> # For Copernicus Climate Data Store
-ENTSOE_API_KEY=<your_entsoe_api_key> # For ENTSO-E data retrieval
-EIA_API_KEY=<your_eia_api_key> # For EIA data retrieval
+CDS_API_KEY=<your_copernicus_api_key>  # For Copernicus Climate Data Store
+ENTSOE_API_KEY=<your_entsoe_api_key>   # For ENTSO-E data retrieval
+EIA_API_KEY=<your_eia_api_key>         # For EIA data retrieval
 ```
 
 ## Electricity demand data
