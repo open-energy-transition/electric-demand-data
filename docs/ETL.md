@@ -47,6 +47,16 @@ ETL/
 └── .env                              # API keys (not included in repo)
 ```
 
+## Application Programming Interface (API) keys
+
+Some scripts require API keys to access data from external services. These keys should be stored in a `.env` file in the `ETL/` directory. The `.env` file should not be included in the repository and should contain the following environment variables:
+
+```plaintext
+CDS_API_KEY=<your_copernicus_api_key>  # For Copernicus Climate Data Store
+ENTSOE_API_KEY=<your_entsoe_api_key>   # For ENTSO-E data retrieval
+EIA_API_KEY=<your_eia_api_key>         # For EIA data retrieval
+```
+
 ## Electricity demand data
 
 Scripts in this section download and process electricity demand data from multiple sources such as ENTSO-E, EIA, and CCEI. The data is processed to have all timestamps in UTC and electricity demand in MW.

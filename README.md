@@ -41,10 +41,9 @@ electric-demand-data/
 ├── docs/                   # Project documentation (MkDocs)
 ├── ETL/                    # Scripts for extracting, transforming, and loading data
 ├── models/                 # Machine learning models for demand forecasting
-│   └── xgboost/
 ├── .devcontainer/          # Development container configuration
 ├── .github/                # Github specifics such as actions
-├── .gitignore              # File lists what git ignores
+├── .gitignore              # File lists that git ignores
 ├── .pre-commit-config.yaml # Pre-commit configuration
 ├── .python-version         # Python version
 ├── CONTRIBUTING.md         # Guide to contributing
@@ -128,6 +127,7 @@ uv run mkdocs serve
 ## Contributing
 
 We welcome contributions in the form of:
+
 - Country-specific ETL modules
 - New or improved forecasting models
 - Documentation and testing enhancements
