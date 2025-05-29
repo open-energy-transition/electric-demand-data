@@ -4,13 +4,11 @@ License: AGPL-3.0
 
 Description:
 
-    This script retrieves the electricity demand data the website of Epias in Turkey.
+    This script retrieves the electricity demand data from the website of Enerji Piyasaları İşletme A.Ş. (EPIAS) in Turkey.
 
-    The data is retrieved by registering through email in the epias website.
+    The data is retrieved by registering on the website and downloading the data manually. The user needs to create an account on the EPIAS website, which is free of charge. After registration, the user can log in to the website and download the data.
 
-    The user then login into the website and download the data.
-
-    Source: https://giris.epias.com.tr/cas/login?service=https://seffaflik.epias.com.tr
+    Source: https://seffaflik.epias.com.tr/
 """
 
 import logging
@@ -22,15 +20,15 @@ import util.directories
 
 def get_available_requests() -> None:
     """
-    Get the list of available requests to retrieve the electricity demand data from the Epias website.
+    Get the list of available requests to retrieve the electricity demand data from the EPIAS website.
     """
 
-    logging.debug("TThe data is retrieved in one-year intervals.")
+    logging.debug("The data is retrieved manually.")
 
 
 def get_url() -> str:
     """
-    Get the URL of the electricity demand data from the Epias website.
+    Get the URL of the electricity demand data from the EPIAS website.
 
     Returns
     -------
@@ -39,12 +37,12 @@ def get_url() -> str:
     """
 
     # Return the URL of the electricity demand data.
-    return "https://seffaflik.epias.com.tr/electricity/electricity-consumption/ex-post-consumption/real-time-consumption"
+    return "https://seffaflik.epias.com.tr/"
 
 
 def download_and_extract_data() -> pandas.Series:
     """
-    Extract the electricity demand data retrieved from the Epias website.
+    Extract the electricity demand data retrieved from the EPIAS website.
 
     This function assumes that the data has been downloaded and is available in the specified folder.
 
@@ -55,7 +53,9 @@ def download_and_extract_data() -> pandas.Series:
     """
 
     # Get the data folder.
-    data_directory = util.directories.read_folders_structure()["data_folder"]
+    data_directory = util.directories.read_folders_structure()[
+        "manually_downloaded_data_folder"
+    ]
 
     # Get the paths of the downloaded files. Each file starts with "EPI".
     downloaded_file_paths = [
