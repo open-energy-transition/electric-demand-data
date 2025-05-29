@@ -113,6 +113,7 @@ uv run mkdocs serve
 ## Contributing
 
 We welcome contributions in the form of:
+
 - Country-specific ETL modules
 - New or improved forecasting models
 - Documentation and testing enhancements
