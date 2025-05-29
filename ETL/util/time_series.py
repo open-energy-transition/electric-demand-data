@@ -243,6 +243,9 @@ def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
     # Remove duplicated time steps from the time series.
     time_series = time_series[~time_series.index.duplicated()]
 
+    # Sort the time series by index.
+    time_series = time_series.sort_index()
+
     return time_series
 
 
