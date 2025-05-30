@@ -45,7 +45,7 @@ ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
 date_ranges = util.entities.read_all_date_ranges()
 
 # Define the colormap.
-map_cmap = matplotlib.pyplot.get_cmap("Reds")
+map_cmap = matplotlib.pyplot.get_cmap("Blues")
 
 # Set the transparency of the shapes.
 alpha = 0.8
