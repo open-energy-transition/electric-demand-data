@@ -1,13 +1,12 @@
 import argparse
-import os
 import sys
 from typing import Optional
 
+import inference
 import pandas
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from xgboost import XGBRegressor
 
 
 # Define input data model
@@ -41,17 +40,7 @@ def setupFastAPI(args: argparse.Namespace):
     async def load_model():
         global model
         try:
-            model = XGBRegressor()
-            if not os.path.exists(args.model_location):
-                raise FileNotFoundError(
-                    f"Model file not found at {args.model_location}"
-                )
-            model.load_model(args.model_location)
-            app.state.model = model
-        except FileNotFoundError as e:
-            print(f"Error: {e}")
-            app.state.model = None
-            sys.exit(1)
+            app.state.model = inference.load_model(args.model_location)
         except Exception as e:
             print(f"Unexpected error loading model: {e}")
             app.state.model = None
@@ -89,7 +78,7 @@ def setupFastAPI(args: argparse.Namespace):
 
             # Return prediction
             return PredictionOutput(
-                prediction=float(prediction),
+                prediction=prediction,
                 timestamp=pandas.Timestamp.now().isoformat(),
             )
         except Exception as e:
