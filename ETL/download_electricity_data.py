@@ -40,6 +40,7 @@ import retrieval.ons
 import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
+import retrieval.xm
 import util.directories
 import util.entities
 import util.time_series
@@ -67,6 +68,7 @@ retrieval_module = {
     "SONELGAZ": retrieval.sonelgaz,
     "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
+    "XM": retrieval.xm,
 }
 
 
