@@ -1,8 +1,7 @@
-# This file contains the code to serve the model
 import argparse
 import os
 import sys
-from typing import List, Optional
+from typing import Optional
 
 import pandas
 import uvicorn
@@ -95,31 +94,6 @@ def setupFastAPI(args: argparse.Namespace):
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
-
-    @app.post("/predict/batch")
-    def predict_batch(input_data_list: List[PredictionInput]):
-        if app.state.model is None:
-            raise HTTPException(status_code=503, detail="Model not loaded")
-
-        try:
-            results = []
-            for input_data in input_data_list:
-                df_features = pandas.DataFrame.from_dict(input_data.model_dump())
-                prediction = app.state.model.predict(df_features)
-
-                results.append(
-                    PredictionOutput(
-                        prediction=float(prediction),
-                        country=input_data.country,
-                        timestamp=pandas.Timestamp.now().isoformat(),
-                    )
-                )
-
-            return results
-        except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"Batch prediction error: {str(e)}"
-            )
 
     return app
 
