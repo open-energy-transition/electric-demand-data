@@ -39,10 +39,33 @@ continent_codes = {}
 for code in codes:
     continent_codes[code] = util.entities.get_continent_code(code)
 
-# Get the years for which data is available.
-available_years = {}
+# Get the data time range for all countries and subdivisions.
+data_time_ranges = util.entities.read_all_date_ranges()
+
+# Initialize a dictionary to store the fractions of years for which data is available for each country or subdivision.
+fractions_of_years: dict[str, dict[str, float]] = {}
+
+# Loop over the codes of all countries and subdivisions.
 for code in codes:
-    available_years[code] = util.entities.get_available_years(code)
+    # Define a series containing the days in the time range of the data for the country or subdivision.
+    days = pandas.date_range(
+        start=data_time_ranges[code][0],
+        end=data_time_ranges[code][1],
+        freq="d",
+    )
+
+    # Initialize the dictionary for the current country or subdivision.
+    fractions_of_years[code] = {}
+
+    # Loop over the available years for the country or subdivision.
+    for year in days.year.unique():
+        # Define the days in the current year.
+        total_days_in_year = 366 if pandas.Timestamp(year, 1, 1).is_leap_year else 365
+
+        # Append the fraction of year for which data is available.
+        fractions_of_years[code][str(year)] = (
+            len(days[days.year == year]) / total_days_in_year
+        )
 
 # Fetch the GDP data from the World Bank.
 response = requests.get(
@@ -82,7 +105,7 @@ continent_names = {
 
 # Initialize the GDP occurrence in the defined GDP levels and by continent.
 gdp_occurrence = {
-    continent: {level: 0 for level in gdp_levels.keys()}
+    continent: {level: 0.0 for level in gdp_levels.keys()}
     for continent in continent_names.keys()
 }
 
@@ -91,20 +114,22 @@ for code in codes:
     # Get the GDP data for the country or subdivision.
     gdp_series = gdp_data[gdp_data["Country Code"] == alpha_3_codes[code]].iloc[:, 4:]
 
+    # Extract the GDP values for the available years.
+    gdp_series = gdp_series.iloc[
+        0, gdp_series.columns.isin(fractions_of_years[code].keys())
+    ]
+
+    # Remove any NaN values from the GDP series.
+    gdp_series = gdp_series.dropna()
+
     # Loop over the available years for the country or subdivision.
-    for year in available_years[code]:
-        # Check if the year is in the GDP data series.
-        if str(year) in gdp_series.columns:
-            # Get the GDP value for the year.
-            gdp_value = gdp_series[str(year)].values[0]
-
-            # Check if the GDP value is not NaN.
-            if not numpy.isnan(gdp_value):
-                # Loop over the GDP levels and continents and add the occurrence to the corresponding level and continent.
-                for level, (min_val, max_val) in gdp_levels.items():
-                    if min_val <= gdp_value < max_val:
-                        gdp_occurrence[continent_codes[code]][level] += 1
-
+    for year in gdp_series.index:
+        # Loop over the GDP levels and continents and add the occurrence to the corresponding level and continent.
+        for level, (min_val, max_val) in gdp_levels.items():
+            if min_val <= gdp_series[year] < max_val:
+                gdp_occurrence[continent_codes[code]][level] += fractions_of_years[
+                    code
+                ][year]
 
 # Define the colors for the continents.
 colors = {
@@ -136,7 +161,6 @@ for continent_code in gdp_occurrence.keys():
 
     # Update the cumulative height for the next iteration.
     cumulative_height += numpy.array(list(gdp_occurrence[continent_code].values()))
-
 
 # Set the y-axis limit to the maximum cumulative height.
 ax.set_ylim(0, max(cumulative_height) * 1.05)
