@@ -4,7 +4,7 @@ License: AGPL-3.0
 
 Description:
 
-    This script downloads electricity demand data from various data sources.
+    This script downloads hourly or sub-hourly electricity demand data from various data sources.
 
     Users can specify a data source and optionally provide a country or subdivision code to retrieve specific data.
 
@@ -29,6 +29,7 @@ import retrieval.coes
 import retrieval.eia
 import retrieval.emi
 import retrieval.entsoe
+import retrieval.epias
 import retrieval.eskom
 import retrieval.hydroquebec
 import retrieval.ieso
@@ -39,6 +40,7 @@ import retrieval.ons
 import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
+import retrieval.xm
 import util.directories
 import util.entities
 import util.time_series
@@ -55,6 +57,7 @@ retrieval_module = {
     "EIA": retrieval.eia,
     "EMI": retrieval.emi,
     "ENTSOE": retrieval.entsoe,
+    "EPIAS": retrieval.epias,
     "ESKOM": retrieval.eskom,
     "HYDROQUEBEC": retrieval.hydroquebec,
     "IESO": retrieval.ieso,
@@ -65,6 +68,7 @@ retrieval_module = {
     "SONELGAZ": retrieval.sonelgaz,
     "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
+    "XM": retrieval.xm,
 }
 
 
