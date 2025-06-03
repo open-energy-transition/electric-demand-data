@@ -633,6 +633,8 @@ ax.set_ylabel("Annual electricity demand per capita (MWh)", fontsize=14)
 # Add a title to the figure.
 matplotlib.pyplot.suptitle(
     "Data availability by GDP and annual electricity demand per capita",
+    x=0.45,
+    y=1.0,
     fontsize=18,
     weight="bold",
 )
