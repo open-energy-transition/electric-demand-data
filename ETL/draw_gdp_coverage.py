@@ -169,6 +169,7 @@ ax.set_ylim(0, max(cumulative_height) * 1.05)
 ax.set_title("Available electricity demand data", fontsize=16, pad=15, weight="bold")
 ax.set_xlabel("GDP per capita, PPP (current international $)", fontsize=14)
 ax.set_ylabel("Number of years", fontsize=14)
+ax.set_xticks(range(len(gdp_levels)))
 ax.set_xticklabels(
     [
         f"{min_val}+" if numpy.isinf(max_val) else f"{min_val} - {max_val}"
