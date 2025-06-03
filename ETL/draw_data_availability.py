@@ -603,7 +603,10 @@ for alpha_3_code in set(alpha_3_codes.values()):
                 electricity_data_to_plot.iloc[0] / 1000,
             ),
             arrowprops=dict(
-                facecolor=colors[continent_codes[local_codes[0]]], alpha=0.7
+                facecolor=colors[continent_codes[local_codes[0]]],
+                edgecolor=(0, 0, 0, 0.7),
+                linewidth=0.5,
+                alpha=0.7,
             ),
         )
 
