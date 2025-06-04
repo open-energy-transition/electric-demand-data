@@ -38,6 +38,7 @@ import retrieval.nbpower
 import retrieval.neso
 import retrieval.nigeria
 import retrieval.ons
+import retrieval.pucsl
 import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
@@ -67,6 +68,7 @@ retrieval_module = {
     "NESO": retrieval.neso,
     "NIGERIA": retrieval.nigeria,
     "ONS": retrieval.ons,
+    "PUCSL": retrieval.pucsl,
     "SONELGAZ": retrieval.sonelgaz,
     "TEPCO": retrieval.tepco,
     "TSOC": retrieval.tsoc,
