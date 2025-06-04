@@ -4,12 +4,13 @@ License: AGPL-3.0
 
 Description:
 
-    This script generates a bar plot showing the years of available electricity demand data falling into different electricity demand per capita levels, grouped by continent.
+    This script generates a figure showing the availability of hourly and sub-hourly electricity demand data by GDP and annual electricity demand per capita.
 
-    It fetches electricity demand per capita data from Ember and the World Bank, categorizes it into electricity demand levels, and plots the number of years in which each country or subdivision falls into these electricity demand levels, grouped by continent.
+    It uses data from Ember and the World Bank to visualize the coverage of electricity demand data across different countries and continents.
 
     Both sources are used to improve the coverage of the data.
 
+    Source: https://data.worldbank.org/indicator/NY.GDP.PCAP.PP.CD?view=map
     Source: https://data.worldbank.org/indicator/EG.USE.ELEC.KH.PC?view=map
     Source: https://ember-energy.org/data/yearly-electricity-data/
 """
