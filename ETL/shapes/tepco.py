@@ -30,13 +30,12 @@ url = "https://data.humdata.org/dataset/6ba099c6-350b-4711-9a65-d85a1c5e519c/res
 # Download the zip file.
 response = requests.get(url)
 
-# Create a BytesIO object from the response content.
-zip_file = BytesIO(response.content)
-
-# Unzip the file.
+# Define the folder where to extract the shapefile.
 temporary_dir = os.path.join(os.path.dirname(__file__), "tepco_temp")
 os.makedirs(temporary_dir, exist_ok=True)
-with zipfile.ZipFile(zip_file) as z:
+
+# Extract the zip file.
+with zipfile.ZipFile(BytesIO(response.content)) as z:
     # Extract the contents of the zip file to a temporary directory.
     z.extractall(temporary_dir)
 
