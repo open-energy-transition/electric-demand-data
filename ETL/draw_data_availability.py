@@ -688,6 +688,17 @@ ax.annotate(
     color=colors["SA"],
 )
 ax.annotate(
+    "Algeria",
+    xy=(
+        gdp_data_to_plot["DZA"].iloc[0] / 1000,
+        electricity_data_to_plot["DZA"].iloc[0] * 0.9 / 1000,
+    ),
+    ha="center",
+    va="top",
+    fontsize=12,
+    color=colors["AF"],
+)
+ax.annotate(
     text="Canada",
     xy=(
         gdp_data_to_plot["CAN"].iloc[0] * 1.05 / 1000,
