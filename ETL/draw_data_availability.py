@@ -414,7 +414,7 @@ def add_bar_chart(
     ax.set_xticks(range(len(levels)))
     ax.set_xticklabels(
         [
-            f"{int(min_val / 1000)}+"
+            f">{int(min_val / 1000)}"
             if numpy.isinf(max_val)
             else f"{int(min_val / 1000)} - {int(max_val / 1000)}"
             for min_val, max_val in levels.values()
@@ -657,8 +657,8 @@ ax.annotate(text="Last year\nof data", xy=(110, 0.36), ha="center")
 ax.annotate(
     text="Nigeria",
     xy=(
-        gdp_data_to_plot["NGA"][0] * 1.08 / 1000,
-        electricity_data_to_plot["NGA"][0] / 1000,
+        gdp_data_to_plot["NGA"].iloc[0] * 1.08 / 1000,
+        electricity_data_to_plot["NGA"].iloc[0] / 1000,
     ),
     ha="left",
     va="center",
@@ -668,8 +668,8 @@ ax.annotate(
 ax.annotate(
     text="Peru",
     xy=(
-        gdp_data_to_plot["PER"][0] * 1.1 / 1000,
-        electricity_data_to_plot["PER"][0] / 1000,
+        gdp_data_to_plot["PER"].iloc[0] * 1.1 / 1000,
+        electricity_data_to_plot["PER"].iloc[0] / 1000,
     ),
     ha="left",
     va="top",
@@ -679,8 +679,8 @@ ax.annotate(
 ax.annotate(
     text="Colombia",
     xy=(
-        gdp_data_to_plot["COL"][0] / 1000,
-        electricity_data_to_plot["COL"][0] * 1.13 / 1000,
+        gdp_data_to_plot["COL"].iloc[0] / 1000,
+        electricity_data_to_plot["COL"].iloc[0] * 1.13 / 1000,
     ),
     ha="center",
     va="bottom",
@@ -690,8 +690,8 @@ ax.annotate(
 ax.annotate(
     text="Canada",
     xy=(
-        gdp_data_to_plot["CAN"][0] * 1.05 / 1000,
-        electricity_data_to_plot["CAN"][0] * 1.05 / 1000,
+        gdp_data_to_plot["CAN"].iloc[0] * 1.05 / 1000,
+        electricity_data_to_plot["CAN"].iloc[0] * 1.05 / 1000,
     ),
     ha="left",
     va="bottom",
@@ -701,8 +701,8 @@ ax.annotate(
 ax.annotate(
     text="Norway",
     xy=(
-        gdp_data_to_plot["NOR"][0] * 1.05 / 1000,
-        electricity_data_to_plot["NOR"][0] * 0.94 / 1000,
+        gdp_data_to_plot["NOR"].iloc[0] * 1.05 / 1000,
+        electricity_data_to_plot["NOR"].iloc[0] * 0.94 / 1000,
     ),
     ha="left",
     va="top",
@@ -712,8 +712,8 @@ ax.annotate(
 ax.annotate(
     text="Luxembourg",
     xy=(
-        gdp_data_to_plot["LUX"][0] * 0.95 / 1000,
-        electricity_data_to_plot["LUX"][0] * 1.08 / 1000,
+        gdp_data_to_plot["LUX"].iloc[0] * 0.95 / 1000,
+        electricity_data_to_plot["LUX"].iloc[0] * 1.08 / 1000,
     ),
     ha="left",
     va="bottom",
