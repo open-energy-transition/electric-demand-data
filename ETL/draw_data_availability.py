@@ -18,6 +18,7 @@ import os
 import zipfile
 from io import BytesIO
 
+import matplotlib.patches
 import matplotlib.pyplot
 import matplotlib.ticker
 import numpy
@@ -549,40 +550,57 @@ ax.set_ylim(0, 410)
 # Add scatter plot for the GDP and annual demand per capita data.
 ax = fig.add_axes([0.05, 0.05, 0.85, 0.48])
 
+# Make the x and y axes logarithmic.
+ax.set_xscale("log", base=2)
+ax.set_yscale("log", base=2)
+ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+
+# Initialize the GDP and electricity demand data to plot.
+gdp_data_to_plot: dict[str, pandas.Series] = {}
+electricity_data_to_plot: dict[str, pandas.Series] = {}
+
 # Loop over the ISO alpha-3 codes and plot the data.
 for alpha_3_code in set(alpha_3_codes.values()):
     # Get the codes belonging to the current alpha-3 code.
     local_codes = [code for code in codes if alpha_3_codes[code] == alpha_3_code]
 
     # Initialize the GDP and electricity demand data to plot.
-    gdp_data_to_plot = pandas.Series(dtype=float)
-    electricity_data_to_plot = pandas.Series(dtype=float)
+    gdp_data_to_plot[alpha_3_code] = pandas.Series(dtype=float)
+    electricity_data_to_plot[alpha_3_code] = pandas.Series(dtype=float)
 
     # Get the GDP and electricity demand data for the current alpha-3 code with the longest available time range.
     for code in local_codes:
         local_gdp_data = gdp_data[alpha_3_code][code]
         local_electricity_data = electricity_data[alpha_3_code][code]
-        if len(local_gdp_data) > len(gdp_data_to_plot):
-            gdp_data_to_plot = local_gdp_data
-        if len(local_electricity_data) > len(electricity_data_to_plot):
-            electricity_data_to_plot = local_electricity_data
+        if len(local_gdp_data) > len(gdp_data_to_plot[alpha_3_code]):
+            gdp_data_to_plot[alpha_3_code] = local_gdp_data
+        if len(local_electricity_data) > len(electricity_data_to_plot[alpha_3_code]):
+            electricity_data_to_plot[alpha_3_code] = local_electricity_data
 
-    if not gdp_data_to_plot.empty and not electricity_data_to_plot.empty:
+    if (
+        not gdp_data_to_plot[alpha_3_code].empty
+        and not electricity_data_to_plot[alpha_3_code].empty
+    ):
         # Make sure the GDP and electricity demand data are aligned by year.
-        common_index = gdp_data_to_plot.index.intersection(
-            electricity_data_to_plot.index
+        common_index = gdp_data_to_plot[alpha_3_code].index.intersection(
+            electricity_data_to_plot[alpha_3_code].index
         )
-        gdp_data_to_plot = gdp_data_to_plot[common_index]
-        electricity_data_to_plot = electricity_data_to_plot[common_index]
+        gdp_data_to_plot[alpha_3_code] = gdp_data_to_plot[alpha_3_code][common_index]
+        electricity_data_to_plot[alpha_3_code] = electricity_data_to_plot[alpha_3_code][
+            common_index
+        ]
 
         # Get the the first and last values of the GDP and electricity demand data.
-        gdp_data_to_plot = gdp_data_to_plot.iloc[[0, -1]]
-        electricity_data_to_plot = electricity_data_to_plot.iloc[[0, -1]]
+        gdp_data_to_plot[alpha_3_code] = gdp_data_to_plot[alpha_3_code].iloc[[0, -1]]
+        electricity_data_to_plot[alpha_3_code] = electricity_data_to_plot[
+            alpha_3_code
+        ].iloc[[0, -1]]
 
         # Plot the of GDP per capita and annual electricity demand per capita data.
         ax.plot(
-            gdp_data_to_plot / 1000,
-            electricity_data_to_plot / 1000,
+            gdp_data_to_plot[alpha_3_code] / 1000,
+            electricity_data_to_plot[alpha_3_code] / 1000,
             "o",
             alpha=0.7,
             color=colors[continent_codes[local_codes[0]]],
@@ -595,12 +613,12 @@ for alpha_3_code in set(alpha_3_codes.values()):
         ax.annotate(
             text="",
             xy=(
-                gdp_data_to_plot.iloc[1] / 1000,
-                electricity_data_to_plot.iloc[1] / 1000,
+                gdp_data_to_plot[alpha_3_code].iloc[1] / 1000,
+                electricity_data_to_plot[alpha_3_code].iloc[1] / 1000,
             ),
             xytext=(
-                gdp_data_to_plot.iloc[0] / 1000,
-                electricity_data_to_plot.iloc[0] / 1000,
+                gdp_data_to_plot[alpha_3_code].iloc[0] / 1000,
+                electricity_data_to_plot[alpha_3_code].iloc[0] / 1000,
             ),
             arrowprops=dict(
                 facecolor=colors[continent_codes[local_codes[0]]],
@@ -610,23 +628,117 @@ for alpha_3_code in set(alpha_3_codes.values()):
             ),
         )
 
-# Make the x and y axes logarithmic.
-ax.set_xscale("log", base=2)
-ax.set_yscale("log", base=2)
-ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
-ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+# Add sample points for the GDP and electricity demand data to explain the plot.
+ax.plot(
+    [60, 110],
+    [0.3, 0.3],
+    "o",
+    alpha=0.7,
+    color=(0, 0, 0, 0.7),
+    markeredgecolor="none",
+    markersize=10,
+)
+ax.annotate(
+    text="",
+    xy=(110, 0.3),
+    xytext=(60, 0.3),
+    arrowprops=dict(
+        facecolor=(0, 0, 0, 0.5),
+        edgecolor=(0, 0, 0, 0.7),
+        linewidth=0.5,
+        alpha=0.7,
+    ),
+)
+ax.annotate(text="First year\nof data", xy=(60, 0.36), ha="center")
+ax.annotate(text="Last year\nof data", xy=(110, 0.36), ha="center")
+
+# Add the names of a few countries to the plot.
+ax.annotate(
+    text="Nigeria",
+    xy=(
+        gdp_data_to_plot["NGA"][0] * 1.08 / 1000,
+        electricity_data_to_plot["NGA"][0] / 1000,
+    ),
+    ha="left",
+    va="center",
+    fontsize=12,
+    color=colors["AF"],
+)
+ax.annotate(
+    text="Peru",
+    xy=(
+        gdp_data_to_plot["PER"][0] * 1.1 / 1000,
+        electricity_data_to_plot["PER"][0] / 1000,
+    ),
+    ha="left",
+    va="top",
+    fontsize=12,
+    color=colors["SA"],
+)
+ax.annotate(
+    text="Colombia",
+    xy=(
+        gdp_data_to_plot["COL"][0] / 1000,
+        electricity_data_to_plot["COL"][0] * 1.13 / 1000,
+    ),
+    ha="center",
+    va="bottom",
+    fontsize=12,
+    color=colors["SA"],
+)
+ax.annotate(
+    text="Canada",
+    xy=(
+        gdp_data_to_plot["CAN"][0] * 1.05 / 1000,
+        electricity_data_to_plot["CAN"][0] * 1.05 / 1000,
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=12,
+    color=colors["NA"],
+)
+ax.annotate(
+    text="Norway",
+    xy=(
+        gdp_data_to_plot["NOR"][0] * 1.05 / 1000,
+        electricity_data_to_plot["NOR"][0] * 0.94 / 1000,
+    ),
+    ha="left",
+    va="top",
+    fontsize=12,
+    color=colors["EU"],
+)
+ax.annotate(
+    text="Luxembourg",
+    xy=(
+        gdp_data_to_plot["LUX"][0] * 0.95 / 1000,
+        electricity_data_to_plot["LUX"][0] * 1.08 / 1000,
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=12,
+    color=colors["EU"],
+)
 
 # Add a legend to the plot.
 for count, continent_code in enumerate(continent_names.keys()):
-    ax.text(
-        0.05,
-        0.9 - 0.2 * (count) / (len(continent_names.values()) - 1),
-        continent_names[continent_code],
-        color=colors[continent_code],
-        alpha=0.7,
-        transform=ax.transAxes,
-        fontsize=16,
-        weight="bold",
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            (0.02, 0.925 - 0.25 * (count) / (len(continent_names.values()) - 1)),
+            0.19,
+            0.05,
+            facecolor=colors[continent_code],
+            edgecolor="none",
+            alpha=0.7,
+            transform=ax.transAxes,
+        )
+    )
+    ax.annotate(
+        text=continent_names[continent_code],
+        xy=(0.03, 0.94 - 0.25 * (count) / (len(continent_names.values()) - 1)),
+        xycoords="axes fraction",
+        color=(0, 0, 0, 1),
+        fontsize=14,
     )
 
 # Add the axis titles.
@@ -635,9 +747,9 @@ ax.set_ylabel("Annual electricity demand per capita (MWh)", fontsize=14)
 
 # Add a title to the figure.
 matplotlib.pyplot.suptitle(
-    "Data availability by GDP and annual electricity demand per capita",
+    "Availability of hourly and sub-hourly electricity demand data\nby GDP and annual electricity demand per capita",
     x=0.45,
-    y=1.0,
+    y=1.02,
     fontsize=18,
     weight="bold",
 )
