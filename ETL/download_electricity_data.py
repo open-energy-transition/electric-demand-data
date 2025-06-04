@@ -25,6 +25,7 @@ import retrieval.bchydro
 import retrieval.cammesa
 import retrieval.ccei
 import retrieval.cen
+import retrieval.cenace
 import retrieval.coes
 import retrieval.eia
 import retrieval.emi
@@ -53,6 +54,7 @@ retrieval_module = {
     "CAMMESA": retrieval.cammesa,
     "CCEI": retrieval.ccei,
     "CEN": retrieval.cen,
+    "CENACE": retrieval.cenace,
     "COES": retrieval.coes,
     "EIA": retrieval.eia,
     "EMI": retrieval.emi,
