@@ -10,10 +10,21 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  BASE_REPO: ${{ github.repository }}
 
 jobs:
-  build:
+  build-images:
+    strategy:
+      matrix:
+        include:
+          - name: etl
+            context: ./ETL
+            dockerfile: ./Dockerfile
+          - name: xgboost
+            context: ./models/xgboost
+            dockerfile: ./Dockerfile
+    env:
+      IMAGE_NAME: ${{ env.BASE_REPO }}-${{ matrix.name }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,13 +75,13 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          context: .
-          file: Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
