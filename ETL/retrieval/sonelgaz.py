@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
@@ -19,9 +19,7 @@ import util.fetcher
 
 
 def get_available_requests() -> None:
-    """
-    Get the list of available requests to retrieve the electricity demand data from Sonelgaz.
-    """
+    """Get the list of available requests to retrieve the electricity demand data from Sonelgaz."""
     logging.debug("The data is retrieved all at once.")
 
 

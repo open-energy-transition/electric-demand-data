@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
@@ -21,9 +21,7 @@ import util.directories
 
 
 def get_available_requests() -> None:
-    """
-    Get the list of available requests to retrieve the electricity demand data from the Eskom website.
-    """
+    """Get the list of available requests to retrieve the electricity demand data from the Eskom website."""
     logging.debug("The data is retrieved manually.")
 
 

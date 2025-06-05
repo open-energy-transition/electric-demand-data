@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
     This script retrieves electricity demand data from the website of the Electricity Market Information (EMI) in New Zealand.

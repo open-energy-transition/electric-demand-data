@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
     This script sets up the connection to the Copernicus Climate Data Store (CDS) and retrieves weather data from the ERA5 dataset.

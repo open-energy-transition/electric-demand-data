@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
     This script retrieves the electricity load data from the website of the Australian Energy Market Operator (AEMO) for the Wholesale Electricity Market (WEM) in Western Australia.

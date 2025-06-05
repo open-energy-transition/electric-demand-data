@@ -9,9 +9,7 @@ from xgboost import XGBRegressor
 
 
 def load_input_data(data_path: str) -> pandas.DataFrame:
-    """
-    Load input data from local file for inference.
-    """
+    """Load input data from local file for inference."""
     # Determine file format and load accordingly
     if data_path.endswith(".parquet"):
         return pandas.read_parquet(data_path)
@@ -22,9 +20,7 @@ def load_input_data(data_path: str) -> pandas.DataFrame:
 
 
 def load_model(model_path: str) -> XGBRegressor:
-    """
-    Load the pre-trained XGBoost model.
-    """
+    """Load the pre-trained XGBoost model."""
     try:
         model = XGBRegressor()
         if not os.path.exists(model_path):
@@ -36,9 +32,7 @@ def load_model(model_path: str) -> XGBRegressor:
 
 
 def read_command_line_arguments() -> argparse.Namespace:
-    """
-    Create a parser for the command line arguments, returns parsed arguments.
-    """
+    """Create a parser for the command line arguments, returns parsed arguments."""
     parser = argparse.ArgumentParser(
         description="Run inference using a pre-trained XGBoost model"
     )
