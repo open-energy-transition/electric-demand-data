@@ -35,7 +35,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
         description="Download and process weather data from the Copernicus Climate Data Store (CDS)."
@@ -89,7 +88,6 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Get the directory to store the population density data.
     result_directory = util.directories.read_folders_structure()["weather_folder"]
     os.makedirs(result_directory, exist_ok=True)

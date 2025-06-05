@@ -30,7 +30,6 @@ def _read_aspx_params(
     dict[str, str]
         The updated POST data parameters with the ASPX parameters added.
     """
-
     # Read the content of the response.
     html_content = response.text
 
@@ -108,7 +107,6 @@ def fetch_data(
     pandas.DataFrame | str | requests.Response
         The fetched data as a DataFrame, string, or response object.
     """
-
     for attempt in range(retries):
         try:
             if content_type == "csv":
@@ -257,7 +255,6 @@ def fetch_entsoe_demand(
     pandas.Series
         The electricity demand time series in MW
     """
-
     # Define the ENTSO-E API client.
     client = EntsoePandasClient(api_key=api_key)
 

@@ -27,7 +27,6 @@ def get_available_requests(code: str) -> None:
     code : str
         The code of the subdivision
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ccei")
 
@@ -48,7 +47,6 @@ def get_url(code: str) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ccei")
 
@@ -91,7 +89,6 @@ def download_and_extract_data(code: str) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ccei")
 

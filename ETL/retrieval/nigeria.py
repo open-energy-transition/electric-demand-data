@@ -22,7 +22,6 @@ def get_available_requests() -> None:
     """
     Get the list of available requests to retrieve the electricity demand data for Nigeria.
     """
-
     logging.debug("The data is retrieved all at once.")
 
 
@@ -35,7 +34,6 @@ def get_url() -> str:
     str
         The URL of the electricity demand data
     """
-
     # Return the URL of the electricity demand data.
     return "https://prod-dcd-datasets-public-files-eu-west-1.s3.eu-west-1.amazonaws.com/0766cdca-14a5-4522-9380-a15094e0c4c6"
 
@@ -49,7 +47,6 @@ def download_and_extract_data() -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Get the URL of the electricity demand data.
     url = get_url()
 

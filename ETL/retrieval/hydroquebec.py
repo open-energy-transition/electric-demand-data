@@ -21,7 +21,6 @@ def get_available_requests() -> None:
     """
     Get the list of available requests to retrieve the electricity demand data from the Hydro-Québec website.
     """
-
     logging.debug("The data is retrieved all at once.")
 
 
@@ -34,7 +33,6 @@ def get_url() -> str:
     str
         The URL of the electricity demand data
     """
-
     # Return the URL of the electricity demand data.
     return "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/historique-demande-electricite-quebec/exports/csv?lang=en&timezone=America%2FToronto&use_labels=true&delimiter=%2C"
 
@@ -48,7 +46,6 @@ def download_and_extract_data() -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Get the URL of the electricity demand data.
     url = get_url()
 

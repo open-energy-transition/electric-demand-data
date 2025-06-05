@@ -83,7 +83,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
         description="Download electricity demand data from the specified data source. "
@@ -142,7 +141,6 @@ def retrieve_data(data_source: str, code: str) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if there is only one code in the data source.
     one_code_in_data_source = (
         len(util.entities.read_codes(data_source=args.data_source)) == 1
@@ -234,7 +232,6 @@ def save_data(
     upload_to_gcs : str, optional
         The bucket name of the Google Cloud Storage (GCS) to upload the data
     """
-
     # Get the date of retrieval.
     date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
 
@@ -273,7 +270,6 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Get the list of codes of the countries and subdivisions of interest.
     codes = util.entities.check_and_get_codes(args.data_source, args.code, args.file)
 

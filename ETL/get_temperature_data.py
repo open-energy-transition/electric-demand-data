@@ -22,7 +22,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(description="")
 
@@ -78,7 +77,6 @@ def get_temperature_in_largest_population_density_areas(
     temperature_time_series : pandas.Series
         Temperature data for the largest population density areas in the given country or subdivision
     """
-
     # Read the temperature data downloaded from the Copernicus Climate Data Store (CDS).
     temperature_data_directory = util.directories.read_folders_structure()[
         "weather_folder"
@@ -173,7 +171,6 @@ def build_temperature_database(
     temperature_time_series : pandas.DataFrame
         Temperature time series with added statistics
     """
-
     # Create an empty DataFrame to store the temperature data.
     temperature_database = pandas.DataFrame(index=temperature_time_series_top_1.index)
 
@@ -268,7 +265,6 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Create a directory to store the weather data.
     result_directory = util.directories.read_folders_structure()["temperature_folder"]
     os.makedirs(result_directory, exist_ok=True)

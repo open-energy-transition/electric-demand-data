@@ -39,7 +39,6 @@ def _check_input_parameters(
     code : str
         The code of the subdivision of interest
     """
-
     if code is not None:
         # Check if the code is valid.
         util.entities.check_code(code, "entsoe")
@@ -78,7 +77,6 @@ def get_available_requests(
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(code=code)
 
@@ -119,7 +117,6 @@ def get_url(
     str
         The URL of the electricity demand data
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
 
@@ -169,7 +166,6 @@ def download_and_extract_data_for_request(
     pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
 

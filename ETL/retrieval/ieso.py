@@ -30,7 +30,6 @@ def _check_input_parameters(year: int | None, before_Apr_2002: bool) -> None:
     before_Apr_2002 : bool
         Whether the url is for the time period before April 2002
     """
-
     # Check if the request is supported.
     assert (year, before_Apr_2002) in get_available_requests(), (
         "The request is not available."
@@ -46,7 +45,6 @@ def get_available_requests() -> list[tuple[int | None, bool]]:
     list[tuple[int | None, bool]]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="ieso")["CA_ON"]
 
@@ -80,7 +78,6 @@ def get_url(year: int | None, before_Apr_2002: bool) -> str:
     url : str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year=year, before_Apr_2002=before_Apr_2002)
 
@@ -111,7 +108,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year=year, before_Apr_2002=before_Apr_2002)
 

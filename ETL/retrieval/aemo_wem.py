@@ -37,7 +37,6 @@ def _check_input_parameters(
     day : int
         The day of the data to retrieve
     """
-
     # Check if the input parameters are valid.
     assert (pre_reform, year, month, day) in get_available_requests(), (
         "The request is not supported."
@@ -53,7 +52,6 @@ def get_available_requests() -> list[tuple[bool, int, int | None, int | None]]:
     list[tuple[bool, int, int | None, int | None]]
         List of tuples in the format (year, month, day)
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="aemo_wem")[
         "AU_WA"
@@ -106,7 +104,6 @@ def get_url(pre_reform: bool, year: int, month: int | None, day: int | None) -> 
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(pre_reform, year, month, day)
 
@@ -141,7 +138,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity generation time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(pre_reform, year, month, day)
 

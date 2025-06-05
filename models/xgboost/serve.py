@@ -91,7 +91,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     """
     Create a parser for the command line arguments, returns parsed arguments.
     """
-
     parser = argparse.ArgumentParser(description="")
 
     parser.add_argument(

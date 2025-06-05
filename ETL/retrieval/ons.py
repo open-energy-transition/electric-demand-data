@@ -29,7 +29,6 @@ def _check_input_parameters(year: int | None = None, code: str = "BR_N") -> None
     code : str
         The code of the subdivision of interest
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ons")
 
@@ -54,7 +53,6 @@ def get_available_requests(code: str) -> list[int]:
     list[int]
         The list of available requests
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(code=code)
 
@@ -79,7 +77,6 @@ def get_url(year: int) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(year=year)
 
@@ -103,7 +100,6 @@ def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year=year, code=code)
 

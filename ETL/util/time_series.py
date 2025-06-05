@@ -24,7 +24,6 @@ def add_missing_time_steps(
     time_series : pandas.Series
         Time series of interest with the missing time steps added
     """
-
     # Get the time resolution of the time series.
     time_resolution = time_series.index.to_series().diff().min()
 
@@ -71,7 +70,6 @@ def resample_time_resolution(
     time_series : pandas.Series
         Resampled time series
     """
-
     # Get the time resolution of the time series.
     time_resolution = time_series.index.to_series().diff().min()
 
@@ -102,7 +100,6 @@ def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
     time_series : pandas.Series
         Time series of interest with the missing values interpolated
     """
-
     # Get the number of original non-null values.
     original_non_null_values = time_series.notnull().sum()
 
@@ -130,7 +127,6 @@ def check_time_series_data_quality(time_series: pandas.Series) -> None:
     time_series : pandas.Series
         Original time series
     """
-
     # Check if there are any missing values in the time series.
     if time_series.isnull().sum() > 0:
         logging.warning(
@@ -189,7 +185,6 @@ def harmonize_time_series(
     time_series : pandas.Series
         The harmonized time series
     """
-
     # Add the missing time steps to the time series.
     time_series = add_missing_time_steps(time_series, local_time_zone)
 
@@ -222,7 +217,6 @@ def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
     time_series : pandas.Series
         Time series of interest without NaN, zero values, and duplicated time steps
     """
-
     # Check if the time series is timezone-aware.
     if time_series.index.tz is None:
         raise ValueError("The time series must be timezone-aware.")
@@ -266,7 +260,6 @@ def upload_to_gcs(
     destination_blob_name : str
         The name of the blob in the GCS bucket
     """
-
     # Create a GCS client.
     storage_client = storage.Client()
 

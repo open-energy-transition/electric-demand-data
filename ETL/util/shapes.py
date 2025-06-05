@@ -38,7 +38,6 @@ def _remove_islands(
     entity_shape : geopandas.GeoDataFrame
         GeoDataFrame containing the country or subdivision of interest without small remote islands
     """
-
     new_bounds = None
 
     # Create a GeoSeries containing the new bounds of the country or subdivision of interest.
@@ -100,7 +99,6 @@ def _get_standard_shape(
     entity_shape : geopandas.GeoDataFrame
         GeoDataFrame containing the shape of the country or subdivision
     """
-
     # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country, and the entity is therefore the country.
     # If there is an underscore in the code, it is a combination of ISO Alpha-2 code and subdivision code, and the entity is a subdivision of the country.
     if "_" not in code:
@@ -169,7 +167,6 @@ def _read_non_standard_shape_codes() -> dict[str, list[str]]:
     non_standard_shape_codes : dict
         Dictionary containing the non-standard shapes and their respective codes
     """
-
     # Get the path to the shapes directory.
     shapes_directory = util.directories.read_folders_structure()["shapes_folder"]
 
@@ -211,7 +208,6 @@ def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFra
     entity_shape : geopandas.GeoDataFrame
         GeoDataFrame containing the shape of the subdivision
     """
-
     # Get the path to the shapes directory.
     shapes_directory = util.directories.read_folders_structure()["shapes_folder"]
 
@@ -248,7 +244,6 @@ def get_entity_shape(
     entity_shape : geopandas.GeoDataFrame
         GeoDataFrame containing the country or subdivision of interest
     """
-
     # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country.
     # If there is an underscore in the code, it is a combination of ISO Alpha-2 code and subdivision code.
     if "_" not in code:
@@ -300,7 +295,6 @@ def get_entity_bounds(entity_shape: geopandas.GeoDataFrame) -> list[float]:
     entity_bounds : list of float
         List containing the lateral bounds of the country or subdivision of interest
     """
-
     # Get the lateral bounds of the country or subdivision of interest including a buffer layer of one degree.
     entity_bounds = (
         entity_shape.union_all().buffer(1).bounds

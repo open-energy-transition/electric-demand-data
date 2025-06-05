@@ -37,7 +37,6 @@ def _check_input_parameters(
     code : str
         The code of the subdivision of interest
     """
-
     if code is not None:
         # Check if the code is valid.
         util.entities.check_code(code, "cenace")
@@ -76,7 +75,6 @@ def get_available_requests(
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(code=code)
 
@@ -107,7 +105,6 @@ def get_url() -> str:
     str
         The URL of the electricity demand data
     """
-
     # Return the URL of the electricity demand data.
     return "https://www.cenace.gob.mx/Paginas/SIM/Reportes/EstimacionDemandaReal.aspx"
 
@@ -134,7 +131,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
 

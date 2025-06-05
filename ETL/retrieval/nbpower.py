@@ -29,7 +29,6 @@ def _check_input_parameters(year: int, month: int) -> None:
     month : int
         The month of the electricity demand data
     """
-
     # Check if the year and month are supported.
     assert (year, month) in get_available_requests(), (
         f"Year {year} and month {month} are not available."
@@ -45,7 +44,6 @@ def get_available_requests() -> list[tuple[int, int]]:
     list[tuple[int, int]]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="nbpower")[
         "CA_NB"
@@ -72,7 +70,6 @@ def get_url() -> str:
     str
         The URL of the electricity demand data
     """
-
     # Return the URL of the electricity demand data.
     return "https://tso.nbpower.com/Public/en/system_information_archive.aspx"
 
@@ -93,7 +90,6 @@ def download_and_extract_data_for_request(year: int, month: int) -> pandas.Serie
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(year, month)
 

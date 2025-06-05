@@ -26,7 +26,6 @@ def _check_input_parameters(file_number: int) -> None:
     file_number : int
         The number of the file to read
     """
-
     # Check if the file number is supported.
     assert file_number in get_available_requests(), (
         f"File number {file_number} is not supported."
@@ -42,7 +41,6 @@ def get_available_requests() -> list[int]:
     list[int]
         The list of available requests
     """
-
     # Return the available requests, which are the numbers of the Excel files available on the AESO website.
     return [1, 2, 3, 4]
 
@@ -61,7 +59,6 @@ def get_url(file_number: int) -> str:
     url : str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 
@@ -98,7 +95,6 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
     load_columns : list[str]
         The names of the load columns in the Excel file
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 
@@ -170,7 +166,6 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 

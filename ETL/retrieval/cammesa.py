@@ -41,7 +41,6 @@ def _check_input_parameters(date: str) -> None:
     date : str
         The date of the electricity demand data in the format YYYY-MM-DD
     """
-
     # Check if the date is supported.
     assert date in get_available_requests(), (
         f"The date {date} is not in the supported range."
@@ -57,7 +56,6 @@ def get_available_requests() -> list[str]:
     list[str]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="cammesa")["AR"]
 
@@ -83,7 +81,6 @@ def get_url(date: str) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(date)
 
@@ -105,7 +102,6 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(date)
 

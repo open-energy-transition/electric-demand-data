@@ -34,7 +34,6 @@ def _check_input_parameters(
     code : str
         The code of the subdivision
     """
-
     if code is not None:
         # Check if the code is valid.
         util.entities.check_code(code, "aemo_nem")
@@ -60,7 +59,6 @@ def get_available_requests(code: str) -> list[tuple[int, int]]:
     available_requests : list[tuple[int, int]]
         The list of available requests
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(code=code)
 
@@ -97,7 +95,6 @@ def get_url(year: int, month: int, code: str) -> str:
     url : str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year=year, month=month, code=code)
 
@@ -130,7 +127,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity generation time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year=year, month=month, code=code)
 

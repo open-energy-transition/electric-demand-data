@@ -22,7 +22,6 @@ def harmonize_coords(
     ds : xarray.Dataset or xarray.DataArray
         Dataset or DataArray with renamed coordinates and reset longitudes
     """
-
     # Rename longitude and latitude coordinates to x and y coordinates.
     if "longitude" in ds.coords and "latitude" in ds.coords:
         ds = ds.rename({"longitude": "x", "latitude": "y"})
@@ -55,7 +54,6 @@ def clean_raster(xarray_data: xarray.DataArray, variable_name: str) -> xarray.Da
     xarray.DataArray
         The cleaned xarray data
     """
-
     # Drop unnecessary variables.
     xarray_data = xarray_data.squeeze("band")
     xarray_data = xarray_data.drop_vars(["band", "spatial_ref"])
@@ -87,7 +85,6 @@ def get_fraction_of_grid_cells_in_shape(
     fraction_of_grid_cells_in_shape : xarray.DataArray
         Fraction of each grid cell that is in the given shape
     """
-
     # Calculate the lateral bounds for the cutout based on the lateral bounds of the country or subdivision of interest.
     cutout_bounds = util.shapes.get_entity_bounds(entity_shape)
 
@@ -161,7 +158,6 @@ def get_largest_values_in_shape(
     xarray.DataArray
         The grid cells with the largest values in the given shape
     """
-
     # Calculate the fraction of each grid cell that is in the given shapes.
     fraction_of_grid_cells_in_shape = get_fraction_of_grid_cells_in_shape(
         entity_shape, make_plot=False
@@ -202,7 +198,6 @@ def coarsen(
     coarsened_xarray : xarray.DataArray
         The coarsened xarray data
     """
-
     # Get the original resolution of the xarray data.
     original_x_resolution = abs(original_xarray.x[1] - original_xarray.x[0]).item()
     original_y_resolution = abs(original_xarray.y[1] - original_xarray.y[0]).item()

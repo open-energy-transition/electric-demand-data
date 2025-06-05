@@ -43,7 +43,6 @@ def get_year_fractions(codes: list[str]) -> dict[str, dict[str, float]]:
     dict[str, dict[str, float]]
         A dictionary where the keys are entity codes and the values are dictionaries with years as keys and fractions of years as values
     """
-
     # Get the data time range for all countries and subdivisions.
     data_time_ranges = util.entities.read_all_date_ranges()
 
@@ -86,7 +85,6 @@ def retrieve_ember_electricity_data() -> pandas.DataFrame:
     pandas.DataFrame
         The electricity demand data from Ember
     """
-
     # Fetch the data from the Ember dataset.
     ember_data = pandas.read_csv(
         "https://storage.googleapis.com/emb-prod-bkt-publicdata/public-downloads/yearly_full_release_long_format.csv"
@@ -105,7 +103,6 @@ def retrieve_world_bank_data(variable: str) -> pandas.DataFrame:
     pandas.DataFrame
         The data from the World Bank
     """
-
     if variable == "electricity_demand_per_capita":
         url = "https://api.worldbank.org/v2/en/indicator/EG.USE.ELEC.KH.PC?downloadformat=csv"
     elif variable == "gdp_per_capita":
@@ -148,7 +145,6 @@ def extract_ember_electricity_data(
     pandas.Series
         The data for the specified country
     """
-
     # Get the data for the country in the Ember dataset.
     ember_series = ember_data[(ember_data["Country code"] == alpha_3_code)]
 
@@ -184,7 +180,6 @@ def extract_world_bank_data(
     pandas.Series
         The data for the specified country and for the years of interest
     """
-
     # Get the data for the country in the World Bank dataset.
     world_bank_series = world_bank_data[
         world_bank_data["Country Code"] == alpha_3_code
@@ -221,7 +216,6 @@ def get_electricity_demand_data(
     dict[str, dict[str, pandas.Series]]
         The annual electricity demand data for the specified country and for the years of interest.
     """
-
     # Fetch the electricity demand data from Ember.
     ember_electricity_data = retrieve_ember_electricity_data()
 
@@ -287,7 +281,6 @@ def get_world_bank_gdp_data(
     dict[str, dict[str, pandas.Series]]
         The GDP per capita data for the specified country and for the years of interest.
     """
-
     # Fetch the GDP per capita data from the World Bank.
     world_bank_gdp_data = retrieve_world_bank_data("gdp_per_capita")
 
@@ -344,7 +337,6 @@ def get_occurrences(
     dict[str, dict[str, float]]
         A dictionary where the keys are entity codes and the values are dictionaries with levels as keys and occurrences as values
     """
-
     # Initialize the occurrence in the defined levels and by continent.
     occurrence = {
         continent: {level: 0.0 for level in levels.keys()}
@@ -390,7 +382,6 @@ def add_bar_chart(
     matplotlib.axes.Axes
         The axes with the added bar chart
     """
-
     # Initialize the cumulative height for the stacked bars.
     cumulative_height = numpy.zeros(len(levels))
 

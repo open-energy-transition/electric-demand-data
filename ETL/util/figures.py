@@ -19,7 +19,6 @@ def simple_plot(
     figure_name : str
         The name of the figure
     """
-
     # Create a directory to store the figures.
     figure_directory = util.directories.read_folders_structure()["figures_folder"]
     os.makedirs(figure_directory, exist_ok=True)

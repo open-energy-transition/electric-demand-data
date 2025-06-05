@@ -31,7 +31,6 @@ def _check_input_parameters(
     end_date : pandas.Timestamp
         The end date of the data retrieval
     """
-
     # Check that the retrieval period is less than one year.
     assert (end_date - start_date) <= pandas.Timedelta("366days"), (
         "The retrieval period is greater than 1 year. Please reduce the period to 1 year."
@@ -57,7 +56,6 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="cen")["CL"]
 
@@ -89,7 +87,6 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
@@ -119,7 +116,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
