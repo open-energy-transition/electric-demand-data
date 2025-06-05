@@ -110,15 +110,13 @@ def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
         Time series of interest with the missing values interpolated.
     """
     # Get the number of original non-null values.
-    original_non_null_values = time_series.notnull().sum()
+    original_non_null_values = time_series.notna().sum()
 
     # Where there is a NaN value, replace it with the average of the previous and next values. This takes care of replacing isolated NaN values.
-    time_series[time_series.isnull()] = (
-        time_series.shift(-1) + time_series.shift(1)
-    ) / 2
+    time_series[time_series.isna()] = (time_series.shift(-1) + time_series.shift(1)) / 2
 
     # Get the number of interpolated values.
-    interpolated_values = time_series.notnull().sum() - original_non_null_values
+    interpolated_values = time_series.notna().sum() - original_non_null_values
 
     if interpolated_values > 0:
         # Write the number of interpolated values to the log file.
@@ -137,9 +135,9 @@ def check_time_series_data_quality(time_series: pandas.Series) -> None:
         Original time series.
     """
     # Check if there are any missing values in the time series.
-    if time_series.isnull().sum() > 0:
+    if time_series.isna().sum() > 0:
         logging.warning(
-            f"There are {time_series.isnull().sum()} missing values in the time series."
+            f"There are {time_series.isna().sum()} missing values in the time series."
         )
 
     # Check if there are any duplicated time steps in the time series.
@@ -238,10 +236,10 @@ def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
     time_series.name = variable_name
 
     # Remove timestamps with NaT values.
-    time_series = time_series[time_series.index.notnull()]
+    time_series = time_series[time_series.index.notna()]
 
     # Remove NaN and zero values from the time series.
-    time_series = time_series[time_series.notnull() & (time_series != 0)]
+    time_series = time_series[time_series.notna() & (time_series != 0)]
 
     # Remove duplicated time steps from the time series.
     time_series = time_series[~time_series.index.duplicated()]

@@ -218,7 +218,7 @@ def build_temperature_database(
 
     # Get the annual average temperature.
     annual_average_temperature = pandas.Series(
-        temperature_time_series_top_1.resample("YE").mean().values[0],
+        temperature_time_series_top_1.resample("YE").mean().to_numpy()[0],
         index=temperature_time_series_top_1.index,
     )
 
@@ -246,25 +246,25 @@ def build_temperature_database(
 
     # Add the temperature statistics to the temperature time series.
     temperature_database["Temperature - Top 1 (K)"] = (
-        temperature_time_series_top_1.values
+        temperature_time_series_top_1.to_numpy()
     )
     temperature_database["Temperature - Top 3 (K)"] = (
-        temperature_time_series_top_3.values
+        temperature_time_series_top_3.to_numpy()
     )
     temperature_database["Monthly average temperature - Top 1 (K)"] = (
-        monthly_average_temperature.values
+        monthly_average_temperature.to_numpy()
     )
     temperature_database["Monthly average temperature rank - Top 1"] = (
-        monthly_average_temperature_rank.values
+        monthly_average_temperature_rank.to_numpy()
     )
     temperature_database["Annual average temperature - Top 1 (K)"] = (
-        annual_average_temperature.values
+        annual_average_temperature.to_numpy()
     )
     temperature_database["5 percentile temperature - Top 1 (K)"] = (
-        temperature_5_percentile.values
+        temperature_5_percentile.to_numpy()
     )
     temperature_database["95 percentile temperature - Top 1 (K)"] = (
-        temperature_95_percentile.values
+        temperature_95_percentile.to_numpy()
     )
     temperature_database.index.name = "Time (UTC)"
 

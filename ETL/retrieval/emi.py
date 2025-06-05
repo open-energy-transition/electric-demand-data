@@ -146,7 +146,7 @@ def download_and_extract_data_for_request(
     else:
         # Extract the electricity demand time series. Convert GWh to MW considering a 0.5-hour time step.
         electricity_demand_time_series = pandas.Series(
-            dataset["Demand (GWh)"].values * 1000 / 0.5,
+            dataset["Demand (GWh)"].to_numpy() * 1000 / 0.5,
             index=pandas.to_datetime(dataset["Period end"], format="%d/%m/%Y %H:%M:%S"),
         )
 

@@ -155,7 +155,7 @@ def extract_ember_electricity_data(
 
     # Convert to a Series with years as index, convert MWh to kWh, and return it.
     return pandas.Series(
-        ember_series["Value"].values * 1000,
+        ember_series["Value"].to_numpy() * 1000,
         index=ember_series["Year"].astype(str),
     )
 

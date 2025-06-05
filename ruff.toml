@@ -6,6 +6,7 @@ extend-select = [
     "I", # sort imports
     "TID", # tidy imports
     "D", # tidy docstrings
+    "PD", # lint pandas
 ]
 # Define the convention for docstrings.
 pydocstyle.convention = "numpy"

@@ -151,7 +151,7 @@ def download_and_extract_data_for_request(
 
             # Extract the values for each hour of the day.
             hourly_values = [
-                (values_dict["Values"].values[0])[f"Hour{hour:02d}"]
+                (values_dict["Values"].to_numpy()[0])[f"Hour{hour:02d}"]
                 for hour in range(1, 25)
             ]
 

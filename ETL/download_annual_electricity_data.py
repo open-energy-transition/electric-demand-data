@@ -152,12 +152,12 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
             # Map the electricity demand and demand per capita data to the new index.
             country_electricity_data["Annual electricity demand (TWh)"] = (
-                country_electricity_data.index.year.map(electricity_demand).values
+                country_electricity_data.index.year.map(electricity_demand).to_numpy()
             )
             country_electricity_data["Annual electricity demand per capita (MWh)"] = (
                 country_electricity_data.index.year.map(
                     electricity_demand_per_capita
-                ).values
+                ).to_numpy()
             )
 
             # Convert the index to UTC and remove the time zone information.
