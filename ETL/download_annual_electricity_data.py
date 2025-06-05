@@ -85,7 +85,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     os.makedirs(result_directory, exist_ok=True)
 
     # Get the list of codes of the countries and subdivisions of interest.
-    codes = util.entities.check_and_get_codes(args)
+    codes = util.entities.check_and_get_codes(code=args.code, file_path=args.file)
 
     logging.info("Downloading annual electricity data.")
 

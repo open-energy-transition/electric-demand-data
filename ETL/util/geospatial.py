@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+
+    This module provides functions to handle geospatial data.
+"""
+
 import atlite.gis
 import geopandas
 import numpy
@@ -15,12 +24,12 @@ def harmonize_coords(
     Parameters
     ----------
     ds : xarray.Dataset or xarray.DataArray
-        Dataset or DataArray to be renamed
+        Dataset or DataArray to be renamed.
 
     Returns
     -------
     ds : xarray.Dataset or xarray.DataArray
-        Dataset or DataArray with renamed coordinates and reset longitudes
+        Dataset or DataArray with renamed coordinates and reset longitudes.
     """
     # Rename longitude and latitude coordinates to x and y coordinates.
     if "longitude" in ds.coords and "latitude" in ds.coords:
@@ -45,14 +54,14 @@ def clean_raster(xarray_data: xarray.DataArray, variable_name: str) -> xarray.Da
     Parameters
     ----------
     xarray_data : xarray.DataArray
-        The xarray data to clean
+        The xarray data to clean.
     variable_name : str
-        The name of the variable to rename
+        The name of the variable to rename.
 
     Returns
     -------
     xarray.DataArray
-        The cleaned xarray data
+        The cleaned xarray data.
     """
     # Drop unnecessary variables.
     xarray_data = xarray_data.squeeze("band")
@@ -74,16 +83,16 @@ def get_fraction_of_grid_cells_in_shape(
     Parameters
     ----------
     entity_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the country or subdivision of interest
+        GeoDataFrame containing the country or subdivision of interest.
     resolution : float
-        The resolution of the grid cells in degrees
+        The resolution of the grid cells in degrees.
     make_plot : bool
-        Whether to make a plot of the fraction of each grid cell that is in the given country or subdivision
+        Whether to make a plot of the fraction of each grid cell that is in the given country or subdivision.
 
     Returns
     -------
     fraction_of_grid_cells_in_shape : xarray.DataArray
-        Fraction of each grid cell that is in the given shape
+        Fraction of each grid cell that is in the given shape.
     """
     # Calculate the lateral bounds for the cutout based on the lateral bounds of the country or subdivision of interest.
     cutout_bounds = util.shapes.get_entity_bounds(entity_shape)
@@ -147,16 +156,16 @@ def get_largest_values_in_shape(
     Parameters
     ----------
     entity_shape : geopandas.GeoDataFrame
-        The shape of the country or subdivision of interest
+        The shape of the country or subdivision of interest.
     xarray_data : xarray.DataArray
-        The xarray data to extract the largest values from
+        The xarray data to extract the largest values from.
     number_of_grid_cells : int
-        The number of grid cells to consider
+        The number of grid cells to consider.
 
     Returns
     -------
     xarray.DataArray
-        The grid cells with the largest values in the given shape
+        The grid cells with the largest values in the given shape.
     """
     # Calculate the fraction of each grid cell that is in the given shapes.
     fraction_of_grid_cells_in_shape = get_fraction_of_grid_cells_in_shape(
@@ -187,16 +196,16 @@ def coarsen(
     Parameters
     ----------
     original_xarray : xarray.DataArray
-        The xarray data to coarsen
+        The xarray data to coarsen.
     bounds : list of float
-        The lateral bounds (West, South, East, North) used to clip the data
+        The lateral bounds (West, South, East, North) used to clip the data.
     target_resolution : float
-        The target resolution of the coarsened data
+        The target resolution of the coarsened data.
 
     Returns
     -------
     coarsened_xarray : xarray.DataArray
-        The coarsened xarray data
+        The coarsened xarray data.
     """
     # Get the original resolution of the xarray data.
     original_x_resolution = abs(original_xarray.x[1] - original_xarray.x[0]).item()

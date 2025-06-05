@@ -129,7 +129,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
                 # Download the ERA5 data from the Copernicus Climate Data Store (CDS).
                 retrieval.copernicus.download_data(
-                    year, args.variable, file_path, entity_bounds=entity_bounds
+                    year, args.variable, file_path, bounds=entity_bounds
                 )
 
             else:

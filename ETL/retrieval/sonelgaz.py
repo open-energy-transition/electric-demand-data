@@ -51,33 +51,37 @@ def download_and_extract_data() -> pandas.Series:
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(url, "excel")
 
-    # The column names have the time information. Rearrange the columns to have the time information on another column.
-    dataset = dataset.melt(
-        id_vars=dataset.columns[0], var_name="Hour", value_name="Value"
-    )
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # The column names have the time information. Rearrange the columns to have the time information on another column.
+        dataset = dataset.melt(
+            id_vars=dataset.columns[0], var_name="Hour", value_name="Value"
+        )
 
-    # Define the new index.
-    index = pandas.to_datetime(
-        dataset.iloc[:, 0].astype(str)
-        + " "
-        + (dataset.iloc[:, 1].astype(str).str.replace("h", "").astype(int) - 1).astype(
-            str
-        ),
-        format="%Y-%m-%d %H",
-    ) + pandas.Timedelta(hours=1)
+        # Define the new index.
+        index = pandas.to_datetime(
+            dataset.iloc[:, 0].astype(str)
+            + " "
+            + (
+                dataset.iloc[:, 1].astype(str).str.replace("h", "").astype(int) - 1
+            ).astype(str),
+            format="%Y-%m-%d %H",
+        ) + pandas.Timedelta(hours=1)
 
-    # Define the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["Value"].values,
-        index=index,
-    )
+        # Define the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["Value"].values,
+            index=index,
+        )
 
-    # Sort the index.
-    electricity_demand_time_series = electricity_demand_time_series.sort_index()
+        # Sort the index.
+        electricity_demand_time_series = electricity_demand_time_series.sort_index()
 
-    # Add the timezone information.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize("Africa/Algiers")
-    )
+        # Add the timezone information.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize("Africa/Algiers")
+        )
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

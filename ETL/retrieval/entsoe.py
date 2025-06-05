@@ -23,25 +23,24 @@ from dotenv import load_dotenv
 
 
 def _check_input_parameters(
+    code: str,
     start_date: pandas.Timestamp | None = None,
     end_date: pandas.Timestamp | None = None,
-    code: str | None = None,
 ) -> None:
     """
     Check if the input parameters are valid.
 
     Parameters
     ----------
+    code : str
+        The code of the subdivision of interest
     start_date : pandas.Timestamp
         The start date of the data retrieval
     end_date : pandas.Timestamp
         The end date of the data retrieval
-    code : str
-        The code of the subdivision of interest
     """
-    if code is not None:
-        # Check if the code is valid.
-        util.entities.check_code(code, "entsoe")
+    # Check if the code is valid.
+    util.entities.check_code(code, "entsoe")
 
     if start_date is not None and end_date is not None:
         # Check if the retrieval period is less than 1 year.
@@ -69,7 +68,7 @@ def get_available_requests(
 
     Parameters
     ----------
-    code : str, optional
+    code : str
         The code of the country
 
     Returns
@@ -78,7 +77,7 @@ def get_available_requests(
         The list of available requests
     """
     # Check if input parameters are valid.
-    _check_input_parameters(code=code)
+    _check_input_parameters(code)
 
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="entsoe")[code]
@@ -118,7 +117,7 @@ def get_url(
         The URL of the electricity demand data
     """
     # Check if input parameters are valid.
-    _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
+    _check_input_parameters(code, start_date=start_date, end_date=end_date)
 
     # Convert the start and end dates and times to the required format.
     start = start_date.strftime("%Y%m%d%H00")
@@ -167,7 +166,7 @@ def download_and_extract_data_for_request(
         The electricity demand time series in MW
     """
     # Check if input parameters are valid.
-    _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
+    _check_input_parameters(code, start_date=start_date, end_date=end_date)
 
     logging.info(
         f"Retrieving electricity demand data from {start_date.date()} to {end_date.date()}."
@@ -186,25 +185,30 @@ def download_and_extract_data_for_request(
     start_date = start_date.tz_localize("UTC")
     end_date = end_date.tz_localize("UTC")
 
-    # Download the electricity demand time series from the ENTSO-E API.
-    electricity_demand_time_series = util.fetcher.fetch_entsoe_demand(
-        api_key, code, start_date, end_date
-    )
-
-    if not electricity_demand_time_series.empty:
-        # The time values are provided at the beginning of the time step. Set them at the end of the time step for consistency.
-        if len(electricity_demand_time_series) > 1:
-            # Calculate the time difference between the time values.
-            time_difference = (
-                electricity_demand_time_series.index.to_series().diff().min()
-            )
-        else:
-            # Assume a one-hour time difference if there is only one time value.
-            time_difference = pandas.Timedelta("1h")
-
-        # Add the time difference to the time values.
-        electricity_demand_time_series.index = (
-            electricity_demand_time_series.index + time_difference
+    if api_key is None:
+        raise ValueError(
+            "The ENTSO-E API key is not set. Please set the ENTSO_API_KEY environment variable."
+        )
+    else:
+        # Download the electricity demand time series from the ENTSO-E API.
+        electricity_demand_time_series = util.fetcher.fetch_entsoe_demand(
+            api_key, code, start_date, end_date
         )
 
-    return electricity_demand_time_series
+        if not electricity_demand_time_series.empty:
+            # The time values are provided at the beginning of the time step. Set them at the end of the time step for consistency.
+            if len(electricity_demand_time_series) > 1:
+                # Calculate the time difference between the time values.
+                time_difference = (
+                    electricity_demand_time_series.index.to_series().diff().min()
+                )
+            else:
+                # Assume a one-hour time difference if there is only one time value.
+                time_difference = pandas.Timedelta("1h")
+
+            # Add the time difference to the time values.
+            electricity_demand_time_series.index = (
+                electricity_demand_time_series.index + time_difference
+            )
+
+        return electricity_demand_time_series

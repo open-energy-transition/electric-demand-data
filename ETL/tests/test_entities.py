@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+
+    This file contains unit tests for the entities module in the ETL utility package.
+"""
+
 import datetime
 from unittest.mock import mock_open, patch
 
@@ -8,7 +17,14 @@ import util.entities
 
 @pytest.fixture
 def sample_yaml():
-    # Define a sample yaml file that contains countries and subdivisions.
+    """
+    Fixture to provide a sample yaml file content for testing. This yaml file contains a list of entities, including countries and subdivisions, with their respective codes, start dates, end dates, and time zones.
+
+    Returns
+    -------
+    str
+        A string representation of a yaml file containing entities information.
+    """
     return """
     entities:
       - country_name: France
@@ -26,6 +42,14 @@ def sample_yaml():
 
 
 def test_read_entities_info(sample_yaml):
+    """
+    Test if the entities information is read correctly from the sample yaml file.
+
+    Parameters
+    ----------
+    sample_yaml : str
+        A string representation of a yaml file containing entities information.
+    """
     # Read the entities info from the sample yaml file.
     with patch("builtins.open", mock_open(read_data=sample_yaml)):
         entities = util.entities._read_entities_info(file_path="dummy.yaml")
@@ -53,6 +77,14 @@ def test_read_entities_info(sample_yaml):
 
 
 def test_read_codes(sample_yaml):
+    """
+    Test if the codes are read correctly from the sample yaml file.
+
+    Parameters
+    ----------
+    sample_yaml : str
+        A string representation of a yaml file containing entities information.
+    """
     # Read the codes from the sample yaml file.
     with patch("builtins.open", mock_open(read_data=sample_yaml)):
         codes = util.entities.read_codes(file_path="dummy.yaml")
@@ -65,6 +97,7 @@ def test_read_codes(sample_yaml):
 
 
 def test_check_code():
+    """Test if the function correctly identifies valid and invalid codes."""
     # Check if the function correctly identifies valid and invalid codes.
     util.entities.check_code("FR", data_source="ENTSOE")
     util.entities.check_code("US_TEX", data_source="EIA")
@@ -75,6 +108,7 @@ def test_check_code():
 
 
 def test_get_time_zone():
+    """Test if the function correctly retrieves the time zone for a country or subdivision."""
     # Check the time zone of a country.
     assert util.entities.get_time_zone("FR") == pytz.timezone("Europe/Paris")
 
@@ -87,6 +121,14 @@ def test_get_time_zone():
 
 
 def test_read_date_ranges(sample_yaml):
+    """
+    Test if the date ranges are read correctly from the sample yaml file.
+
+    Parameters
+    ----------
+    sample_yaml : str
+        A string representation of a yaml file containing entities information.
+    """
     # Read the date ranges from the sample yaml file.
     with patch("builtins.open", mock_open(read_data=sample_yaml)):
         date_ranges = util.entities.read_date_ranges(file_path="dummy.yaml")

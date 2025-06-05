@@ -114,16 +114,20 @@ def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"sep": ";"})
 
-    # Filter the dataset for the subdivision of interest.
-    dataset = dataset[dataset["id_subsistema"] == subdivision_code]
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Filter the dataset for the subdivision of interest.
+        dataset = dataset[dataset["id_subsistema"] == subdivision_code]
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["val_cargaenergiahomwmed"].values,
-        index=pandas.to_datetime(dataset["din_instante"]),
-    ).tz_localize("America/Sao_Paulo", ambiguous="NaT", nonexistent="NaT")
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["val_cargaenergiahomwmed"].values,
+            index=pandas.to_datetime(dataset["din_instante"]),
+        ).tz_localize("America/Sao_Paulo", ambiguous="NaT", nonexistent="NaT")
 
-    # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
-    electricity_demand_time_series.index += pandas.Timedelta(hours=1)
+        # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
+        electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+
+    This module provides a function to fetch data from various online content sources, including CSV, Excel, HTML, and JSON formats.
+
+    It also includes a function to fetch hourly electricity demand time series from the ENTSO-E API.
+"""
+
 import logging
 import re
 import time
@@ -13,8 +24,8 @@ from entsoe.exceptions import NoMatchingDataError
 
 
 def _read_aspx_params(
-    response: requests.Response, post_data_params: dict[str, str]
-) -> dict[str, str]:
+    response: requests.Response, post_data_params: dict[str, str | int]
+) -> dict[str, str | int]:
     """
     Read the ASPX parameters from the response and add them to the POST data parameters.
 
@@ -22,12 +33,12 @@ def _read_aspx_params(
     ----------
     response : requests.Response
         The response object from the GET request.
-    post_data_params : dict[str, str]
+    post_data_params : dict[str, str | int]
         The original POST data parameters.
 
     Returns
     -------
-    dict[str, str]
+    dict[str, str | int]
         The updated POST data parameters with the ASPX parameters added.
     """
     # Read the content of the response.
@@ -59,11 +70,11 @@ def fetch_data(
     retry_delay: int = 5,
     read_with: str = "requests.get",
     read_as: str = "tabular",
-    csv_kwargs: dict[str, str] = {},
-    excel_kwargs: dict[str, str] = {},
+    csv_kwargs: dict[str, str | int] = {},
+    excel_kwargs: dict[str, str | int | list[str] | list[str | int] | None] = {},
     verify_ssl: bool = True,
     request_params: dict[str, str] = {},
-    post_data_params: dict[str, str] = {},
+    post_data_params: dict[str, str | int] = {},
     header_params: dict[str, str] = {},
     json_keys: list[str] = [],
     query_aspx_webpage: bool = False,
@@ -78,29 +89,29 @@ def fetch_data(
     content_type : str
         The type of the content to be fetched.
     retries : int, optional
-        The number of retries in case of connection errors, by default 3
+        The number of retries in case of connection errors, by default 3.
     delay : int, optional
-        The delay between retries in seconds, by default 5
+        The delay between retries in seconds, by default 5.
     read_with : str, optional
-        The library to use for reading the html content, by default "requests.get"
+        The library to use for reading the html content, by default "requests.get".
     read_as : str, optional
-        The format to read the content as, by default "tabular"
+        The format to read the content as, by default "tabular".
     csv_kwargs : dict[str, str], optional
-        The keyword arguments for reading CSV files, by default {}
+        The keyword arguments for reading CSV files, by default {}.
     excel_kwargs : dict[str, str], optional
-        The keyword arguments for reading Excel files, by default {}
+        The keyword arguments for reading Excel files, by default {}.
     verify_ssl : bool, optional
-        Verify the SSL certificate, by default True
+        Verify the SSL certificate, by default True.
     header_params : dict[str, str], optional
-        The headers for the request, by default {}
+        The headers for the request, by default {}.
     request_params : dict[str, str], optional
-        The parameters for the request, by default {}
+        The parameters for the request, by default {}.
     post_data_params : dict[str, str], optional
-        The data for the POST request, by default {}
+        The data for the POST request, by default {}.
     json_keys : list[str], optional
-        The keys to extract from the JSON response, by default []
+        The keys to extract from the JSON response, by default [].
     query_aspx_webpage : bool, optional
-        Whether to query the ASPX webpage, by default False
+        Whether to query the ASPX webpage, by default False.
 
     Returns
     -------
@@ -233,27 +244,27 @@ def fetch_entsoe_demand(
     retry_delay: int = 5,
 ) -> pandas.Series:
     """
-    Fetches the hourly electricity demand time series from ENTSO-E with retry logic.
+    Fetch the hourly electricity demand time series from ENTSO-E with retry logic.
 
     Parameters
     ----------
     api_key : str
-        The API key for the ENTSO-E API
+        The API key for the ENTSO-E API.
     iso_alpha_2_code : str
-        The ISO Alpha-2 code of the country
+        The ISO Alpha-2 code of the country.
     start_date_and_time : pandas.Timestamp
-        The start date and time of the data retrieval
+        The start date and time of the data retrieval.
     end_date_and_time : pandas.Timestamp
-        The end date and time of the data retrieval
+        The end date and time of the data retrieval.
     max_attempts : int, optional
-        The maximum number of retry attempts (default is 3)
+        The maximum number of retry attempts (default is 3).
     retry_delay : int, optional
-        The delay between retry attempts in seconds (default is 5)
+        The delay between retry attempts in seconds (default is 5).
 
     Returns
     -------
     pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
     """
     # Define the ENTSO-E API client.
     client = EntsoePandasClient(api_key=api_key)

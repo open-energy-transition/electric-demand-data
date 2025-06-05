@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+
+    This module provides functions to harmonize time series data by adding missing time steps, resampling the time resolution, and interpolating missing values. It also includes functions to check data quality, clean data, and upload files to Google Cloud Storage (GCS).
+"""
+
 import logging
 
 import pandas
@@ -15,14 +24,14 @@ def add_missing_time_steps(
     Parameters
     ----------
     time_series : pandas.Series
-        Original time series
+        Original time series.
     local_time_zone : pytz.timezone
-        Local time zone of the time series
+        Local time zone of the time series.
 
     Returns
     -------
     time_series : pandas.Series
-        Time series of interest with the missing time steps added
+        Time series of interest with the missing time steps added.
     """
     # Get the time resolution of the time series.
     time_resolution = time_series.index.to_series().diff().min()
@@ -61,14 +70,14 @@ def resample_time_resolution(
     Parameters
     ----------
     time_series : pandas.Series
-        Original time series
+        Original time series.
     target_time_resolution : str, optional
-        Target time resolution of the time series
+        Target time resolution of the time series.
 
     Returns
     -------
     time_series : pandas.Series
-        Resampled time series
+        Resampled time series.
     """
     # Get the time resolution of the time series.
     time_resolution = time_series.index.to_series().diff().min()
@@ -93,12 +102,12 @@ def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
     Parameters
     ----------
     time_series : pandas.Series
-        Original time series
+        Original time series.
 
     Returns
     -------
     time_series : pandas.Series
-        Time series of interest with the missing values interpolated
+        Time series of interest with the missing values interpolated.
     """
     # Get the number of original non-null values.
     original_non_null_values = time_series.notnull().sum()
@@ -125,7 +134,7 @@ def check_time_series_data_quality(time_series: pandas.Series) -> None:
     Parameters
     ----------
     time_series : pandas.Series
-        Original time series
+        Original time series.
     """
     # Check if there are any missing values in the time series.
     if time_series.isnull().sum() > 0:
@@ -170,20 +179,20 @@ def harmonize_time_series(
     Parameters
     ----------
     time_series : pandas.Series
-        The original time series
+        The original time series.
     local_time_zone : pytz.timezone
-        Local time zone of the time series
+        Local time zone of the time series.
     resample : bool, optional
-        If True, resample the time series to the target time resolution
+        If True, resample the time series to the target time resolution.
     target_time_resolution : str, optional
-        Target time resolution of the time series
+        Target time resolution of the time series.
     interpolate_missing_values : bool, optional
-        If True, interpolate isolated missing values in the time series
+        If True, interpolate isolated missing values in the time series.
 
     Returns
     -------
     time_series : pandas.Series
-        The harmonized time series
+        The harmonized time series.
     """
     # Add the missing time steps to the time series.
     time_series = add_missing_time_steps(time_series, local_time_zone)
@@ -208,14 +217,14 @@ def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
     Parameters
     ----------
     time_series : pandas.Series
-        Original time series
+        Original time series.
     variable_name : str
-        The name of the variable in the time series
+        The name of the variable in the time series.
 
     Returns
     -------
     time_series : pandas.Series
-        Time series of interest without NaN, zero values, and duplicated time steps
+        Time series of interest without NaN, zero values, and duplicated time steps.
     """
     # Check if the time series is timezone-aware.
     if time_series.index.tz is None:
@@ -254,11 +263,11 @@ def upload_to_gcs(
     Parameters
     ----------
     file_path : str
-        The path to the file to be uploaded
+        The path to the file to be uploaded.
     bucket_name : str
-        The name of the GCS bucket
+        The name of the GCS bucket.
     destination_blob_name : str
-        The name of the blob in the GCS bucket
+        The name of the blob in the GCS bucket.
     """
     # Create a GCS client.
     storage_client = storage.Client()

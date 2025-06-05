@@ -95,7 +95,7 @@ def get_url(year: int) -> str:
 
 def _get_excel_information(
     year: int,
-) -> tuple[int, int | None, list[str] | list[int], list[str] | list[int]]:
+) -> tuple[int, int | None, list[str | int], list[str | int]]:
     """
     Get the Excel information of the electricity demand data on the BC Hydro website.
 
@@ -137,7 +137,7 @@ def _get_excel_information(
         raise ValueError(f"The year {year} is not implemented yet.")
 
     # Define the index columns of the Excel file.
-    index_columns: list[str] | list[int]
+    index_columns: list[str | int]
     if (
         (year >= 2001 and year <= 2006)
         or (year >= 2008 and year <= 2011)
@@ -156,7 +156,7 @@ def _get_excel_information(
         raise ValueError(f"The year {year} is not implemented yet.")
 
     # Define the column of the electricity demand data.
-    load_column: list[str] | list[int]
+    load_column: list[str | int]
     if (year >= 2001 and year <= 2006) or (year >= 2015 and year <= 2020):
         load_column = ["Balancing Authority Load"]
     elif year == 2007:
@@ -207,37 +207,41 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         },
     )
 
-    # Extract the first and last time steps of the electricity demand time series.
-    first_time_step = pandas.to_datetime(
-        str(dataset[index_columns[0]].iloc[0])
-        + " "
-        + str(int(dataset[index_columns[1]].iloc[0]) - 1)
-        + ":00"
-    ) + pandas.Timedelta("1h")
-    last_time_step = pandas.to_datetime(
-        str(dataset[index_columns[0]].iloc[-1])
-        + " "
-        + str(int(dataset[index_columns[1]].iloc[-1]) - 1)
-        + ":00"
-    ) + pandas.Timedelta("1h")
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the first and last time steps of the electricity demand time series.
+        first_time_step = pandas.to_datetime(
+            str(dataset[index_columns[0]].iloc[0])
+            + " "
+            + str(int(dataset[index_columns[1]].iloc[0]) - 1)
+            + ":00"
+        ) + pandas.Timedelta("1h")
+        last_time_step = pandas.to_datetime(
+            str(dataset[index_columns[0]].iloc[-1])
+            + " "
+            + str(int(dataset[index_columns[1]].iloc[-1]) - 1)
+            + ":00"
+        ) + pandas.Timedelta("1h")
 
-    # Remove NaN and zero values where daylight saving time switch occurs. The other data points are typically nice and clean.
-    available_data = dataset[load_column[0]][
-        (
-            numpy.logical_and(
-                dataset[load_column[0]] != 0, dataset[load_column[0]].notna()
+        # Remove NaN and zero values where daylight saving time switch occurs. The other data points are typically nice and clean.
+        available_data = dataset[load_column[0]][
+            (
+                numpy.logical_and(
+                    dataset[load_column[0]] != 0, dataset[load_column[0]].notna()
+                )
             )
+        ]
+
+        # Construct the index of the electricity demand time series.
+        timestamps = pandas.date_range(
+            start=first_time_step, end=last_time_step, freq="h", tz="America/Vancouver"
         )
-    ]
 
-    # Construct the index of the electricity demand time series.
-    timestamps = pandas.date_range(
-        start=first_time_step, end=last_time_step, freq="h", tz="America/Vancouver"
-    )
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            available_data.values, index=timestamps
+        )
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        available_data.values, index=timestamps
-    )
-
-    return electricity_demand_time_series
+        return electricity_demand_time_series

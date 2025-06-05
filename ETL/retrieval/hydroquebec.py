@@ -50,17 +50,21 @@ def download_and_extract_data() -> pandas.Series:
     # Fetch the electricity demand data.
     electricity_demand_time_series = util.fetcher.fetch_data(url, "csv")
 
-    # Set the date as the index.
-    electricity_demand_time_series = electricity_demand_time_series.set_index(
-        "date", drop=True
-    ).squeeze()
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(electricity_demand_time_series, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Set the date as the index.
+        electricity_demand_time_series = electricity_demand_time_series.set_index(
+            "date", drop=True
+        ).squeeze()
 
-    # Convert the index to a datetime object.
-    electricity_demand_time_series.index = pandas.to_datetime(
-        electricity_demand_time_series.index, format="%Y-%m-%dT%H:%M:%S%z", utc=True
-    )
+        # Convert the index to a datetime object.
+        electricity_demand_time_series.index = pandas.to_datetime(
+            electricity_demand_time_series.index, format="%Y-%m-%dT%H:%M:%S%z", utc=True
+        )
 
-    # Sort the index.
-    electricity_demand_time_series = electricity_demand_time_series.sort_index()
+        # Sort the index.
+        electricity_demand_time_series = electricity_demand_time_series.sort_index()
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

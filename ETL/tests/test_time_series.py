@@ -1,8 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+
+    This file contains unit tests for the time_series module in the ETL utility package.
+"""
+
 import numpy
 import pandas
 import pytest
 import pytz
-from time_series import (
+from util.time_series import (
     add_missing_time_steps,
     harmonize_time_series,
     linearly_interpolate,
@@ -14,6 +23,14 @@ local_time_zone = pytz.timezone("America/New_York")
 
 @pytest.fixture
 def sample_time_series():
+    """
+    Fixture to provide a sample time series for testing. The time series is one year long with 30-minute resolution and contains some missing data points.
+
+    Returns
+    -------
+    pandas.Series
+        A pandas Series representing a time series with a datetime index and some missing values.
+    """
     # Define a one-year-long time series with 30-minute resolution.
     dates = pandas.date_range("2023", "2024", freq="30min", tz=local_time_zone)[:-1]
 
@@ -29,6 +46,14 @@ def sample_time_series():
 
 
 def test_add_missing_time_steps(sample_time_series):
+    """
+    Test if the function adds missing time steps to the time series.
+
+    Parameters
+    ----------
+    sample_time_series : pandas.Series
+        A pandas Series representing a time series with a datetime index and some missing values.
+    """
     # Store the original length of the time series.
     original_length = len(sample_time_series)
 
@@ -49,6 +74,14 @@ def test_add_missing_time_steps(sample_time_series):
 
 
 def test_resample_time_resolution(sample_time_series):
+    """
+    Test if the function resamples the time series to a different time resolution.
+
+    Parameters
+    ----------
+    sample_time_series : pandas.Series
+        A pandas Series representing a time series with a datetime index and some missing values.
+    """
     # Resample to hourly resolution.
     resampled_time_series = resample_time_resolution(sample_time_series, "1h")
 
@@ -57,6 +90,14 @@ def test_resample_time_resolution(sample_time_series):
 
 
 def test_linearly_interpolate(sample_time_series):
+    """
+    Test if the function linearly interpolates missing values in the time series.
+
+    Parameters
+    ----------
+    sample_time_series : pandas.Series
+        A pandas Series representing a time series with a datetime index and some missing values.
+    """
     # Check the data point expected to be interpolated.
     assert numpy.isnan(sample_time_series.iloc[10])
 
@@ -76,6 +117,14 @@ def test_linearly_interpolate(sample_time_series):
 
 
 def test_harmonize_time_series(sample_time_series):
+    """
+    Test if the function harmonizes the time series by adding missing time steps, resampling the time resolution, and interpolating missing values.
+
+    Parameters
+    ----------
+    sample_time_series : pandas.Series
+        A pandas Series representing a time series with a datetime index and some missing values.
+    """
     # Harmonize the time series by adding missing time steps, resampling the time resolution, and interpolating missing values.
     harmonized_time_series = harmonize_time_series(sample_time_series, local_time_zone)
 

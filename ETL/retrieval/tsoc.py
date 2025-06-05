@@ -186,15 +186,24 @@ def download_and_extract_data_for_request(
         header_params={"User-Agent": "Mozilla/5.0"},
     )
 
-    # Extract time and generation data.
-    dates, hours, minutes, generation = _read_timestamp_and_generation(page)
+    # Make sure the page content is a string.
+    if not isinstance(page, str):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract time and generation data.
+        dates, hours, minutes, generation = _read_timestamp_and_generation(page)
 
-    # Construct datetime index with time zone.
-    date_time = pandas.to_datetime(
-        [f"{date} {hour}:{minute}" for date, hour, minute in zip(dates, hours, minutes)]
-    ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
+        # Construct datetime index with time zone.
+        date_time = pandas.to_datetime(
+            [
+                f"{date} {hour}:{minute}"
+                for date, hour, minute in zip(dates, hours, minutes)
+            ]
+        ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
 
-    # Create a Pandas Series for the electricity generation data.
-    electricity_generation_time_series = pandas.Series(data=generation, index=date_time)
+        # Create a Pandas Series for the electricity generation data.
+        electricity_generation_time_series = pandas.Series(
+            data=generation, index=date_time
+        )
 
-    return electricity_generation_time_series
+        return electricity_generation_time_series

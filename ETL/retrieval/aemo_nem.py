@@ -20,25 +20,26 @@ import util.fetcher
 
 
 def _check_input_parameters(
-    year: int | None = None, month: int | None = None, code: str | None = None
+    code: str,
+    year: int | None = None,
+    month: int | None = None,
 ) -> None:
     """
     Check if the year and month are valid.
 
     Parameters
     ----------
+    code : str
+        The code of the subdivision
     year : int
         The year of the data to retrieve
     month : int
         The month of the data to retrieve
-    code : str
-        The code of the subdivision
     """
-    if code is not None:
-        # Check if the code is valid.
-        util.entities.check_code(code, "aemo_nem")
+    # Check if the code is valid.
+    util.entities.check_code(code, "aemo_nem")
 
-    if year is not None and month is not None and code is not None:
+    if year is not None and month is not None:
         # Check if the year and month are valid.
         assert (year, month) in get_available_requests(code), (
             f"Year {year} and month {month} are not supported."
@@ -60,7 +61,7 @@ def get_available_requests(code: str) -> list[tuple[int, int]]:
         The list of available requests
     """
     # Check if input parameters are valid.
-    _check_input_parameters(code=code)
+    _check_input_parameters(code)
 
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="aemo_nem")[code]
@@ -96,7 +97,7 @@ def get_url(year: int, month: int, code: str) -> str:
         The URL of the electricity demand data
     """
     # Check if the input parameters are valid.
-    _check_input_parameters(year=year, month=month, code=code)
+    _check_input_parameters(code, year=year, month=month)
 
     # Extract the subdivision code.
     subdivision_code = code.split("_")[1]
@@ -128,7 +129,7 @@ def download_and_extract_data_for_request(
         The electricity generation time series in MW
     """
     # Check if the input parameters are valid.
-    _check_input_parameters(year=year, month=month, code=code)
+    _check_input_parameters(code, year=year, month=month)
 
     logging.info(
         f"Retrieving electricity demand data for the year {year} and month {month}."
@@ -146,17 +147,21 @@ def download_and_extract_data_for_request(
         read_as="tabular",
     )
 
-    # Extract the electricity demand data from the dataset.
-    electricity_demand_time_series = pandas.Series(
-        dataset["TOTALDEMAND"].values,
-        index=pandas.to_datetime(dataset["SETTLEMENTDATE"]),
-    )
-
-    # Add the time zone information to the index.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize(
-            "Australia/Sydney", ambiguous="NaT", nonexistent="NaT"
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the electricity demand data from the dataset.
+        electricity_demand_time_series = pandas.Series(
+            dataset["TOTALDEMAND"].values,
+            index=pandas.to_datetime(dataset["SETTLEMENTDATE"]),
         )
-    )
 
-    return electricity_demand_time_series
+        # Add the time zone information to the index.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize(
+                "Australia/Sydney", ambiguous="NaT", nonexistent="NaT"
+            )
+        )
+
+        return electricity_demand_time_series

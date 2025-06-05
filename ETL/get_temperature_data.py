@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+    This script extracts temperature data downloaded from the Copernicus Climate Data Store (CDS) for the largest population density areas in a given country or subdivision.
+
+    It calculates the average temperature for the largest population density areas and saves the results in a parquet file.
+
+    The country and subdivision code can be specified or a list can be provided as a yaml file. If no file or code is provided, the script will use all available codes.
+
+    The year of the weather data can be specified as a command line argument. If no year is provided, the script will use all the years of available electricity demand data.
+"""
+
 import argparse
 import logging
 import os

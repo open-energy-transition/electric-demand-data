@@ -22,25 +22,24 @@ from dotenv import load_dotenv
 
 
 def _check_input_parameters(
+    code: str,
     start_date: pandas.Timestamp | None = None,
     end_date: pandas.Timestamp | None = None,
-    code: str | None = None,
 ) -> None:
     """
     Check if the input parameters are valid.
 
     Parameters
     ----------
+    code : str
+        The code of the subdivision of interest
     start_date : pandas.Timestamp
         The start date of the data retrieval
     end_date : pandas.Timestamp
         The end date of the data retrieval
-    code : str
-        The code of the subdivision of interest
     """
-    if code is not None:
-        # Check if the code is valid.
-        util.entities.check_code(code, "eia")
+    # Check if the code is valid.
+    util.entities.check_code(code, "eia")
 
     if start_date is not None and end_date is not None:
         # Check that the number of time points is less than 5000.
@@ -76,7 +75,7 @@ def get_available_requests(
         The list of available requests
     """
     # Check if the input parameters are valid.
-    _check_input_parameters(code=code)
+    _check_input_parameters(code)
 
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="eia")[code]
@@ -116,7 +115,7 @@ def get_url(
         The URL of the electricity demand data
     """
     # Check if the input parameters are valid.
-    _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
+    _check_input_parameters(code, start_date=start_date, end_date=end_date)
 
     # Get the root directory of the project.
     root_directory = util.directories.read_folders_structure()["root_folder"]
@@ -126,6 +125,12 @@ def get_url(
 
     # Get the API key.
     api_key = os.getenv("EIA_API_KEY")
+
+    # Check if the API key is set.
+    if api_key is None:
+        raise ValueError(
+            "The EIA API key is not set. Please set the EIA_API_KEY environment variable."
+        )
 
     # Convert the start and end dates and times to the required format.
     start = start_date.strftime("%Y-%m-%dT%H")
@@ -161,7 +166,7 @@ def download_and_extract_data_for_request(
         The electricity demand time series in MW
     """
     # Check if the input parameters are valid.
-    _check_input_parameters(start_date=start_date, end_date=end_date, code=code)
+    _check_input_parameters(code, start_date=start_date, end_date=end_date)
 
     logging.info(
         f"Retrieving electricity demand data from {start_date.date()} to {end_date.date()}."
@@ -179,9 +184,13 @@ def download_and_extract_data_for_request(
         json_keys=["response", "data"],
     )
 
-    # Create the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["value"].values, index=pandas.to_datetime(dataset["period"])
-    ).tz_localize("UTC")
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Create the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["value"].values, index=pandas.to_datetime(dataset["period"])
+        ).tz_localize("UTC")
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

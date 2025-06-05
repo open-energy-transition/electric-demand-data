@@ -103,17 +103,21 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         csv_kwargs={"skiprows": 2},
     )
 
-    # Define the index of the time series.
-    index = pandas.to_datetime(
-        [date + " " + time for date, time in zip(dataset["DATE"], dataset["TIME"])]
-    ).tz_localize("Asia/Tokyo")
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Define the index of the time series.
+        index = pandas.to_datetime(
+            [date + " " + time for date, time in zip(dataset["DATE"], dataset["TIME"])]
+        ).tz_localize("Asia/Tokyo")
 
-    # Extract the electricity demand time series. Multiply by 10 to convert from 10,000 kW (Japanese way of expressing unit of power) to MW.
-    electricity_demand_time_series = (
-        pandas.Series(dataset["ÀÑ(kW)"].values, index=index) * 10
-    )
+        # Extract the electricity demand time series. Multiply by 10 to convert from 10,000 kW (Japanese way of expressing unit of power) to MW.
+        electricity_demand_time_series = (
+            pandas.Series(dataset["ÀÑ(kW)"].values, index=index) * 10
+        )
 
-    # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
-    electricity_demand_time_series.index += pandas.Timedelta(hours=1)
+        # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
+        electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

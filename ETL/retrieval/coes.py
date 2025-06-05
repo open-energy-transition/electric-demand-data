@@ -97,17 +97,21 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         json_keys=["Chart", "Series"],
     )
 
-    # Extract the electricity demand data from the dataset.
-    dataset = pandas.DataFrame(dataset[dataset["Name"] == "Ejecutado"]["Data"][0])
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the electricity demand data from the dataset.
+        dataset = pandas.DataFrame(dataset[dataset["Name"] == "Ejecutado"]["Data"][0])
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["Valor"].values, index=pandas.to_datetime(dataset["Nombre"])
-    )
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["Valor"].values, index=pandas.to_datetime(dataset["Nombre"])
+        )
 
-    # Add timezone information to the index.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize("America/Lima")
-    )
+        # Add timezone information to the index.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize("America/Lima")
+        )
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

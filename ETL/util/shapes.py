@@ -29,14 +29,14 @@ def _remove_islands(
     Parameters
     ----------
     entity_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the country or subdivision of interest
+        GeoDataFrame containing the country or subdivision of interest.
     code : str
-        The code of the country or subdivision
+        The code of the country or subdivision.
 
     Returns
     -------
     entity_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the country or subdivision of interest without small remote islands
+        GeoDataFrame containing the country or subdivision of interest without small remote islands.
     """
     new_bounds = None
 
@@ -90,14 +90,14 @@ def _get_standard_shape(
     Parameters
     ----------
     code : str
-        The code of the entity (ISO Alpha-2 code or a combination of ISO Alpha-2 code and subdivision code)
+        The code of the entity (ISO Alpha-2 code or a combination of ISO Alpha-2 code and subdivision code).
     remove_remote_islands : bool
-        Whether to remove small remote islands from the shape of some countries
+        Whether to remove small remote islands from the shape of some countries.
 
     Returns
     -------
     entity_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the shape of the country or subdivision
+        GeoDataFrame containing the shape of the country or subdivision.
     """
     # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country, and the entity is therefore the country.
     # If there is an underscore in the code, it is a combination of ISO Alpha-2 code and subdivision code, and the entity is a subdivision of the country.
@@ -164,8 +164,8 @@ def _read_non_standard_shape_codes() -> dict[str, list[str]]:
 
     Returns
     -------
-    non_standard_shape_codes : dict
-        Dictionary containing the non-standard shapes and their respective codes
+    non_standard_shape_codes : dict[str, list[str]]
+        Dictionary containing the non-standard shapes and their respective codes.
     """
     # Get the path to the shapes directory.
     shapes_directory = util.directories.read_folders_structure()["shapes_folder"]
@@ -199,14 +199,14 @@ def _get_non_standard_shape(code: str, data_source: str) -> geopandas.GeoDataFra
     Parameters
     ----------
     code : str
-        The combination of ISO Alpha-2 code and subdivision code
+        The combination of ISO Alpha-2 code and subdivision code.
     data_source : str
-        The data source of the subdivision shape
+        The data source of the subdivision shape.
 
     Returns
     -------
     entity_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the shape of the subdivision
+        GeoDataFrame containing the shape of the subdivision.
     """
     # Get the path to the shapes directory.
     shapes_directory = util.directories.read_folders_structure()["shapes_folder"]
@@ -233,16 +233,16 @@ def get_entity_shape(
     Parameters
     ----------
     code : str
-        The code of the entity (ISO Alpha-2 code or a combination of ISO Alpha-2 code and subdivision code)
+        The code of the entity (ISO Alpha-2 code or a combination of ISO Alpha-2 code and subdivision code).
     make_plot : bool
-        Whether to make a plot of the entity of interest
+        Whether to make a plot of the entity of interest.
     remove_remote_islands : bool
-        Whether to remove small remote islands from the shape of some countries
+        Whether to remove small remote islands from the shape of some countries.
 
     Returns
     -------
     entity_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the country or subdivision of interest
+        GeoDataFrame containing the country or subdivision of interest.
     """
     # If there isn't an underscore in the code, it is the ISO Alpha-2 code of the country.
     # If there is an underscore in the code, it is a combination of ISO Alpha-2 code and subdivision code.
@@ -288,12 +288,12 @@ def get_entity_bounds(entity_shape: geopandas.GeoDataFrame) -> list[float]:
     Parameters
     ----------
     entity_shape : geopandas.GeoDataFrame
-        GeoDataFrame containing the country or subdivision of interest
+        GeoDataFrame containing the country or subdivision of interest.
 
     Returns
     -------
-    entity_bounds : list of float
-        List containing the lateral bounds of the country or subdivision of interest
+    entity_bounds : list[float]
+        List containing the lateral bounds of the country or subdivision of interest.
     """
     # Get the lateral bounds of the country or subdivision of interest including a buffer layer of one degree.
     entity_bounds = (

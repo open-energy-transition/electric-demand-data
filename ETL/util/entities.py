@@ -28,7 +28,7 @@ def _read_data_sources() -> list[str]:
     Returns
     -------
     data_sources : list of str
-        The names of the data sources
+        The names of the data sources.
     """
     # Get the paths to the yaml files of the data sources.
     file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
@@ -46,14 +46,14 @@ def _read_entities_info(file_path: str = "", data_source: str = "") -> list[dict
     Parameters
     ----------
     file_path : str
-        The path to the file containing the information of the countries and subdivisions
+        The path to the file containing the information of the countries and subdivisions.
     data_source : str
-        The name of the data source
+        The name of the data source.
 
     Returns
     -------
     list[dict[str, str | datetime.date]]
-        The list of dictionaries containing the information for each country and subdivision
+        The list of dictionaries containing the information for each country and subdivision.
     """
     if data_source != "":
         # Make sure the data source is in uppercase.
@@ -93,14 +93,14 @@ def read_codes(file_path: str = "", data_source: str = "") -> list[str]:
     Parameters
     ----------
     file_path : str
-        The path to the file containing the information of the countries and subdivisions
+        The path to the file containing the information of the countries and subdivisions.
     data_source : str
-        The name of the data source
+        The name of the data source.
 
     Returns
     -------
     codes : list of str
-        The ISO Alpha-2 codes of the countries or the combination of the ISO Alpha-2 codes and the subdivision codes
+        The ISO Alpha-2 codes of the countries or the combination of the ISO Alpha-2 codes and the subdivision codes.
     """
     # Extract the information of the countries and subdivisions.
     entities = _read_entities_info(file_path=file_path, data_source=data_source)
@@ -123,7 +123,7 @@ def read_all_codes() -> list[str]:
     Returns
     -------
     codes : list of str
-        The ISO Alpha-2 codes of the countries or the combination of the ISO Alpha-2 codes and the subdivision codes
+        The ISO Alpha-2 codes of the countries or the combination of the ISO Alpha-2 codes and the subdivision codes.
     """
     # Get the path of all yaml files in the retrieval scripts folder.
     yaml_file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
@@ -151,7 +151,7 @@ def check_code(code: str, data_source: str) -> None:
     Parameters
     ----------
     code : str
-        The code of the subdivision
+        The code of the subdivision.
     """
     # Check if the code is valid.
     assert code in read_codes(data_source=data_source), (
@@ -170,16 +170,16 @@ def check_and_get_codes(
     Parameters
     ----------
     data_source : str
-        The name of the data source
+        The name of the data source.
     code : str
-        The code of the country or subdivision
+        The code of the country or subdivision.
     file_path : str
-        The path to the file containing the information of the countries and subdivisions
+        The path to the file containing the information of the countries and subdivisions.
 
     Returns
     -------
     codes : list[str]
-        The list of codes of the countries and subdivisions of interest
+        The list of codes of the countries and subdivisions of interest.
     """
     # Get the list of available countries and subdivisions according to the arguments.
     if data_source is not None:
@@ -225,12 +225,12 @@ def get_iso_alpha_3_code(code: str) -> str:
     Parameters
     ----------
     code : str
-        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 codes and the subdivision codes
+        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 codes and the subdivision codes.
 
     Returns
     -------
     iso_alpha_3_code : str
-        The ISO Alpha-3 code of the country
+        The ISO Alpha-3 code of the country.
     """
     # Define countries that are not fully recognized.
     pycountry.countries.add_entry(
@@ -266,12 +266,12 @@ def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
     Parameters
     ----------
     iso_alpha_2_code : str
-        The ISO Alpha-2 code of the country
+        The ISO Alpha-2 code of the country.
 
     Returns
     -------
     time_zone : pytz.timezone
-        The time zone of the country
+        The time zone of the country.
     """
     # Define the time zones of countries that are not fully recognized.
     not_fully_recognized_countries = {
@@ -319,14 +319,14 @@ def _get_time_zones(
     Parameters
     ----------
     file_path : str
-        The path to the file containing the information of the countries and subdivisions
+        The path to the file containing the information of the countries and subdivisions.
     data_source : str
-        The name of the data source
+        The name of the data source.
 
     Returns
     -------
     time_zones : dict[str, pytz.timezone]
-        The dictionary containing the time zones of the countries and subdivisions
+        The dictionary containing the time zones of the countries and subdivisions.
     """
     # Extract the information of the countries and subdivisions.
     entities = _read_entities_info(file_path=file_path, data_source=data_source)
@@ -374,7 +374,7 @@ def get_all_time_zones() -> dict[str, pytz.timezone]:
     Returns
     -------
     time_zones : dict[str, pytz.timezone]
-        The dictionary containing the time zones of the countries and subdivisions
+        The dictionary containing the time zones of the countries and subdivisions.
     """
     # Get the path to all yaml files in the retrieval scripts folder.
     yaml_file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
@@ -409,12 +409,12 @@ def get_time_zone(code: str) -> pytz.timezone:
     Parameters
     ----------
     code : str
-        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 codes and the subdivision codes
+        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 codes and the subdivision codes.
 
     Returns
     -------
     time_zone : pytz.timezone
-        The time zone of the country or subdivision
+        The time zone of the country or subdivision.
     """
     # Get the time zones of all countries and subdivisions.
     time_zones = get_all_time_zones()
@@ -439,16 +439,14 @@ def read_date_ranges(
     Parameters
     ----------
     file_path : str
-        The path to the file containing the information of the countries and subdivisions
+        The path to the file containing the information of the countries and subdivisions.
     data_source : str
-        The name of the data source
+        The name of the data source.
 
     Returns
     -------
-    start_date : datetime.date
-        The start date of the available data
-    end_date : datetime.date
-        The end date of the available data
+    start_and_end_dates : dict[str, tuple[datetime.date, datetime.date]]
+        The dictionary containing the start and end dates of the available data for the countries and subdivisions.
     """
     # Extract the information of the countries and subdivisions.
     entities = _read_entities_info(file_path=file_path, data_source=data_source)
@@ -492,7 +490,7 @@ def read_all_date_ranges() -> dict[str, tuple[datetime.date, datetime.date]]:
     Returns
     -------
     start_and_end_dates : dict[str, tuple[datetime.date, datetime.date]]
-        The dictionary containing the start and end dates of the available data for the countries and subdivisions
+        The dictionary containing the start and end dates of the available data for the countries and subdivisions.
     """
     # Get the path to all yaml files in the retrieval scripts folder.
     yaml_file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
@@ -531,12 +529,12 @@ def get_available_years(code: str) -> list[int]:
     Parameters
     ----------
     code : str
-        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 and the subdivision code
+        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 and the subdivision code.
 
     Returns
     -------
     years : list[int]
-        The years of the available data for the country or subdivision
+        The years of the available data for the country or subdivision.
     """
     # Read the start and end dates of the available data for the country or subdivision of interest.
     start_date, end_date = read_all_date_ranges()[code]
@@ -563,12 +561,12 @@ def get_continent_code(code: str) -> str:
     Parameters
     ----------
     code : str
-        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 and the subdivision code
+        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 and the subdivision code.
 
     Returns
     -------
     continent : str
-        The continent code of the country or subdivision
+        The continent code of the country or subdivision.
     """
     # Check if the code specifies a subdivision.
     if "_" in code:

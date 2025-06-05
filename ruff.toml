@@ -1,12 +1,13 @@
 target-version = "py312"
 
-[lint]
-# See ruff documentation for more rules (https://docs.astral.sh/ruff/rules/)
+[lint] # See ruff documentation for more rules (https://docs.astral.sh/ruff/rules/).
+# Add additional rules on top of the default `select` (`E4`, E7`, `E9`, and `F`).
 extend-select = [
-    "I", # isort
+    "I", # sort imports
     "TID", # tidy imports
+    "D", # tidy docstrings
 ]
-select = ["D"]
+# Define the convention for docstrings.
 pydocstyle.convention = "numpy"
 
 # Add specific rule codes/groups here to ignore them, or add a '#noqa' comment to the line of code to skip all checks.

@@ -19,7 +19,7 @@ def read_folders_structure() -> dict[str, str]:
     Returns
     -------
     folders_structure : dict of str
-        The folders structure
+        The folders structure.
     """
     # Get the absolute path to the root folder.
     root_folder = os.path.normpath(
@@ -56,12 +56,12 @@ def list_yaml_files(folder: str) -> list[str]:
     Parameters
     ----------
     folder : str
-        The folder to search for yaml files
+        The folder to search for yaml files.
 
     Returns
     -------
     yaml_files : list[str]
-        The list of paths to the yaml files
+        The list of paths to the yaml files.
     """
     # Get the path to specified folder.
     target_directory = read_folders_structure()[folder]

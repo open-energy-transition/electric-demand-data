@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+
+    This module contains functions to plot data and save the figures.
+"""
+
 import os
 
 import geopandas
@@ -15,9 +24,9 @@ def simple_plot(
     Parameters
     ----------
     data_to_plot : geopandas.GeoDataFrame or xarray.DataArray
-        The data to plot
+        The data to plot.
     figure_name : str
-        The name of the figure
+        The name of the figure.
     """
     # Create a directory to store the figures.
     figure_directory = util.directories.read_folders_structure()["figures_folder"]

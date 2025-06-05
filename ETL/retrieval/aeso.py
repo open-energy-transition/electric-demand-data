@@ -154,6 +154,7 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
 def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     """
     Download and extract the electricity demand data from the AESO website.
+
     There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
 
     Parameters
@@ -192,35 +193,42 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
         },
     )
 
-    if file_number == 1 or file_number == 2:
-        # Define starting time index.
-        first_local_time_index = (
-            dataset["DATE"][0] + pandas.Timedelta(hours=int(dataset["HOUR ENDING"][0]))
-        ).tz_localize("America/Edmonton")
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        if file_number == 1 or file_number == 2:
+            # Define starting time index.
+            first_local_time_index = (
+                dataset["DATE"][0]
+                + pandas.Timedelta(hours=int(dataset["HOUR ENDING"][0]))
+            ).tz_localize("America/Edmonton")
 
-    elif file_number == 3 or file_number == 4:
-        # Define starting time index.
-        first_local_time_index = (
-            dataset["DT_MST"].iloc[0].tz_localize("America/Edmonton")
+        elif file_number == 3 or file_number == 4:
+            # Define starting time index.
+            first_local_time_index = (
+                dataset["DT_MST"].iloc[0].tz_localize("America/Edmonton")
+            )
+
+            # The Excel files seem to report all times in standard time, so we need to add the daylight saving time to the first time index, if necessary.
+            first_local_time_index = (
+                first_local_time_index + first_local_time_index.dst()
+            )
+
+            # The Excel files seem to report the beginning of the hour, so we need to add 1 hour.
+            first_local_time_index = first_local_time_index + pandas.Timedelta(hours=1)
+
+        # Define the local time index.
+        local_time_index = pandas.date_range(
+            start=first_local_time_index,
+            periods=len(dataset),
+            freq="1h",
+            tz="America/Edmonton",
         )
 
-        # The Excel files seem to report all times in standard time, so we need to add the daylight saving time to the first time index, if necessary.
-        first_local_time_index = first_local_time_index + first_local_time_index.dst()
+        # Extract the electricity demand time series in the local time zone.
+        electricity_demand_time_series = pandas.Series(
+            data=dataset[load_columns].sum(axis=1).values, index=local_time_index
+        )
 
-        # The Excel files seem to report the beginning of the hour, so we need to add 1 hour.
-        first_local_time_index = first_local_time_index + pandas.Timedelta(hours=1)
-
-    # Define the local time index.
-    local_time_index = pandas.date_range(
-        start=first_local_time_index,
-        periods=len(dataset),
-        freq="1h",
-        tz="America/Edmonton",
-    )
-
-    # Extract the electricity demand time series in the local time zone.
-    electricity_demand_time_series = pandas.Series(
-        data=dataset[load_columns].sum(axis=1).values, index=local_time_index
-    )
-
-    return electricity_demand_time_series
+        return electricity_demand_time_series

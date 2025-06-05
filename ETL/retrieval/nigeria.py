@@ -53,25 +53,29 @@ def download_and_extract_data() -> pandas.Series:
         url, "excel", excel_kwargs={"sheet_name": "Demand Timeseries", "skiprows": 3}
     )
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["National Unsuppressed Demand"].values,
-        index=pandas.to_datetime(dataset["date time"]),
-    )
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["National Unsuppressed Demand"].values,
+            index=pandas.to_datetime(dataset["date time"]),
+        )
 
-    # Round the index to the nearest second.
-    electricity_demand_time_series.index = electricity_demand_time_series.index.round(
-        "s"
-    )
+        # Round the index to the nearest second.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.round("s")
+        )
 
-    # Add one hour to the index because the electricity demand seems to be provided at the beginning of the hour.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index + pandas.Timedelta(hours=1)
-    )
+        # Add one hour to the index because the electricity demand seems to be provided at the beginning of the hour.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index + pandas.Timedelta(hours=1)
+        )
 
-    # Add the timezone information to the index.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize("Africa/Lagos")
-    )
+        # Add the timezone information to the index.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize("Africa/Lagos")
+        )
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

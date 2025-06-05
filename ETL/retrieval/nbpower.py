@@ -113,18 +113,22 @@ def download_and_extract_data_for_request(year: int, month: int) -> pandas.Serie
         query_aspx_webpage=True,
     )
 
-    # Extract the electricity demand time series.
-    # It is unclear whether the time values represent the start or end of the hour. Most likely, they represent the start of the hour but this is not confirmed.
-    electricity_demand_time_series = pandas.Series(
-        dataset["NB_LOAD"].values,
-        index=pandas.to_datetime(dataset["HOUR"].values, format="%Y-%m-%d %H:%M"),
-    )
-
-    # Convert the time zone of the electricity demand time series to UTC.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize(
-            "America/Moncton", ambiguous="infer"
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the electricity demand time series.
+        # It is unclear whether the time values represent the start or end of the hour. Most likely, they represent the start of the hour but this is not confirmed.
+        electricity_demand_time_series = pandas.Series(
+            dataset["NB_LOAD"].values,
+            index=pandas.to_datetime(dataset["HOUR"].values, format="%Y-%m-%d %H:%M"),
         )
-    )
 
-    return electricity_demand_time_series
+        # Convert the time zone of the electricity demand time series to UTC.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize(
+                "America/Moncton", ambiguous="infer"
+            )
+        )
+
+        return electricity_demand_time_series
