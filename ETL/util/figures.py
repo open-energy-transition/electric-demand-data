@@ -11,8 +11,9 @@ import os
 
 import geopandas
 import matplotlib.pyplot
-import util.directories
 import xarray
+
+import util.directories
 
 
 def simple_plot(

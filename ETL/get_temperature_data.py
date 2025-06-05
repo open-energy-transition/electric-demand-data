@@ -3,6 +3,7 @@
 License: AGPL-3.0.
 
 Description:
+
     This script extracts temperature data downloaded from the Copernicus Climate Data Store (CDS) for the largest population density areas in a given country or subdivision.
 
     It calculates the average temperature for the largest population density areas and saves the results in a parquet file.

@@ -10,9 +10,10 @@ Description:
 import atlite.gis
 import geopandas
 import numpy
+import xarray
+
 import util.figures
 import util.shapes
-import xarray
 
 
 def harmonize_coords(
