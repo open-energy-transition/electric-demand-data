@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Operador Nacional do Sistema Elétrico (ONS) in Brazil.
+    This module provides functions to retrieve the electricity demand data from the website of the Operador Nacional do Sistema Elétrico (ONS) in Brazil.
 
     The data is retrieved for the years from 2000 to the current year. The data is retrieved from the available CSV files on the ONS website.
 

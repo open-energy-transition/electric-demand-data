@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script povides utility functions to read country and subdivision codes, time zones, and date ranges from yaml files.
+    This module povides utility functions to read country and subdivision codes, time zones, and date ranges from yaml files.
 """
 
 import datetime
@@ -15,10 +15,11 @@ import pandas
 import pycountry
 import pycountry_convert
 import pytz
-import util.directories
 import yaml
 from countryinfo import CountryInfo
 from timezonefinder import TimezoneFinder
+
+import util.directories
 
 
 def _read_data_sources() -> list[str]:

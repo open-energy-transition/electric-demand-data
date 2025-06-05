@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Centro Nacional de Control de Energía (CENACE) in Mexico.
+    This module provides functions to retrieve the electricity demand data from the website of the Centro Nacional de Control de Energía (CENACE) in Mexico.
 
     The data is retrieved for the period from 2016 to today. The data is retrieved in one-year intervals.
 

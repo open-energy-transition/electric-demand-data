@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the New Brunswick Power Corporation (NB Power) in Canada.
+    This module provides functions to retrieve the electricity demand data from the website of the New Brunswick Power Corporation (NB Power) in Canada.
 
     The data is retrieved for the years from 2018 to current year. The data is retrieved in one-month intervals.
 

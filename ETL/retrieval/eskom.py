@@ -4,11 +4,9 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data the website of Eskom in South Africa.
+    This module provides functions to retrieve the electricity demand data from the website of Eskom in South Africa.
 
-    The data is retrieved by submitting a request to the Eskom website.
-
-    The user then receives a link on the provided email address to download the data.
+    The data is retrieved by submitting a request to the Eskom website. The user then receives a link on the provided email address to download the data.
 
     Source: https://www.eskom.co.za/dataportal/data-request-form/
 """

@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from a publicly available repository with data provided by the Société Nationale de l'Electricité et du Gaz (Sonelgaz) in Algeria.
+    This module provides functions to retrieve the electricity demand data from a publicly available repository with data provided by the Société Nationale de l'Electricité et du Gaz (Sonelgaz) in Algeria.
 
     The data is retrieved for the years from 2008-01-01 to 2020-02-01. The data is retrieved all at once.
 

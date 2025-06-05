@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves standard shapes of countries and subdivisions from the Natural Earth shapefile database.
+    This module retrieves standard shapes of countries and subdivisions from the Natural Earth shapefile database.
 
     It also retrieves non-standard subdivision shapes from the shapes directory.
 """
@@ -15,9 +15,10 @@ import cartopy.io.shapereader
 import geopandas
 import pandas
 import pycountry
+from shapely.geometry import Polygon
+
 import util.directories
 import util.figures
-from shapely.geometry import Polygon
 
 
 def _remove_islands(

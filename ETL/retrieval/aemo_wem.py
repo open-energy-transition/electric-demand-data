@@ -4,7 +4,8 @@
 License: AGPL-3.0.
 
 Description:
-    This script retrieves the electricity load data from the website of the Australian Energy Market Operator (AEMO) for the Wholesale Electricity Market (WEM) in Western Australia.
+
+    This module provides functions to retrieve the electricity demand data from the website of the Australian Energy Market Operator (AEMO) for the Wholesale Electricity Market (WEM) in Western Australia.
 
     The data is retrieved from 2006 to 2023 in one-year intervals in CSV format, and from October 1, 2023, to today in daily intervals in JSON format.
 

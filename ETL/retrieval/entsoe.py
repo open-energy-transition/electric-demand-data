@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the European Network of Transmission System Operators for Electricity (ENTSO-E).
+    This module provides functions to retrieve the electricity demand data from the website of the European Network of Transmission System Operators for Electricity (ENTSO-E).
 
     The data is retrieved for the years from 2014 (end of year) to the current year. The data is retrieved in one-year intervals.
 

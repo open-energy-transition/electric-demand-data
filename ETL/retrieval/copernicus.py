@@ -3,7 +3,8 @@
 License: AGPL-3.0.
 
 Description:
-    This script sets up the connection to the Copernicus Climate Data Store (CDS) and retrieves weather data from the ERA5 dataset.
+
+    This module provides functions to set up the connection to the Copernicus Climate Data Store (CDS) and retrieve weather data from the ERA5 dataset.
 
     Source: https://cds.climate.copernicus.eu/how-to-api
 """

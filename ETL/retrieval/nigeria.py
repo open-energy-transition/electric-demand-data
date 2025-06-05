@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data for Nigeria from a publicly available repository developed for research purposes only.
+    This module provides functions to retrieve the electricity demand data for Nigeria from a publicly available repository developed for research purposes only.
 
     The data represents the electricity demand that would have occurred if there were no outage events.
 

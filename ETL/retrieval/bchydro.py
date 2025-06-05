@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the British Columbia Hydro and Power Authority (BC Hydro) in Canada.
+    This module provides functions to retrieve the electricity demand data from the website of the British Columbia Hydro and Power Authority (BC Hydro) in Canada.
 
     The data is retrieved for the years from 2001 to current year. The data is retrieved from the available Excel files on the BC Hydro website.
 

@@ -15,4 +15,3 @@ ignore = []
 
 [format]
 docstring-code-format = true
-docstring-code-line-length = 72

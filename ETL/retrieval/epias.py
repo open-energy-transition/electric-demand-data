@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of Enerji Piyasaları İşletme A.Ş. (EPIAS) in Turkey.
+    This module provides functions to retrieve the electricity demand data from the website of Enerji Piyasaları İşletme A.Ş. (EPIAS) in Turkey.
 
     The data is retrieved by registering on the website and downloading the data manually. The user needs to create an account on the EPIAS website, which is free of charge. After registration, the user can log in to the website and download the data.
 

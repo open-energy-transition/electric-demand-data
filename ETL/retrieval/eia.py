@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the US Energy Information Administration (EIA).
+    This module provides functions to retrieve the electricity demand data from the website of the US Energy Information Administration (EIA).
 
     The data is retrieved for the years from 2020 to the current year. The data is retrieved in six-month intervals.
 

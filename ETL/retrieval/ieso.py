@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of Ontario's Independent Electricity System Operator (IESO) in Canada.
+    This module provides functions to retrieve the electricity demand data from the website of Ontario's Independent Electricity System Operator (IESO) in Canada.
 
     The data is retrieved for the years from 1994 to current year. The data is retrieved from the available CSV files on the IESO website.
 

@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Canadian Centre for Energy Information (CCEI).
+    This module provides functions to retrieve the electricity demand data from the website of the Canadian Centre for Energy Information (CCEI).
 
     The data is retrieved from different starting dates depending on the subdivision until the current date. The data has various time resolutions.
 

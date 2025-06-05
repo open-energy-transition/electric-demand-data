@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Tokyo Electric Power Company (TEPCO) in Japan.
+    This module provides functions to retrieve the electricity demand data from the website of the Tokyo Electric Power Company (TEPCO) in Japan.
 
     The data is retrieved for the years from 2016 to the current year. The data is retrieved from the available CSV files on the TEPCO website.
 

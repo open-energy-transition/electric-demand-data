@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of Hydro-Québec in Canada.
+    This module provides functions to retrieve the electricity demand data from the website of Hydro-Québec in Canada.
 
     The data is retrieved for the years from 2019 to 2023. The data is retrieved all at once.
 

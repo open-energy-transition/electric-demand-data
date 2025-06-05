@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Comité de Operación Económica (COES) of Peru.
+    This module provides functions to retrieve the electricity demand data from the website of the Comité de Operación Económica (COES) of Peru.
 
     The data is retrieved from 1997 to current date. The data is retrieved in one-year intervals.
 

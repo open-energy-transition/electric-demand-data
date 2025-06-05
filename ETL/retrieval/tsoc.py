@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Transmission System Operator of Cyprus (TSOC).
+    This module provides functions to retrieve the electricity demand data from the website of the Transmission System Operator of Cyprus (TSOC).
 
     The data seems to represent the total electricity generation in MW, which can be considered a proxy for the electricity demand.
 

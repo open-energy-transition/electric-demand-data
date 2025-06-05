@@ -4,7 +4,7 @@ License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the XM Adminstradores del mercado electrico in Colombia.
+    This module provides functions to retrieve the electricity demand data from the website of the XM Adminstradores del mercado electrico in Colombia.
 
     The data is actually made available through the website of "Energia de Colombia" (https://www.energiadecolombia.com).
 
