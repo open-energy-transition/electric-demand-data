@@ -4,7 +4,8 @@ License: AGPL-3.0.
 
 Description:
 
-    This script generates the shape of Great Britain, which is served by NESO.
+    This script generates the shape of Great Britain, which is served by
+    NESO.
 """
 
 import os
@@ -14,7 +15,8 @@ import geopandas
 import pandas
 from shapely.geometry import Polygon
 
-# Load the shapefile containing the shapes of the countries from the Natural Earth database.
+# Load the shapefile containing the shapes of the countries from the
+# Natural Earth database.
 all_shapes = cartopy.io.shapereader.natural_earth(
     resolution="50m", category="cultural", name="admin_0_countries"
 )
@@ -24,13 +26,16 @@ reader = cartopy.io.shapereader.Reader(all_shapes)
 
 # Read the shapefile of the United Kingdom.
 uk_shape = [
-    shape for shape in list(reader.records()) if shape.attributes["ISO_A2"] == "GB"
+    shape
+    for shape in list(reader.records())
+    if shape.attributes["ISO_A2"] == "GB"
 ][0]
 uk_shape = pandas.Series({"geometry": uk_shape.geometry})
 uk_shape = geopandas.GeoSeries(uk_shape)
 uk_shape = geopandas.GeoDataFrame.from_features(uk_shape, crs=4326)
 
-# Define a polygon to exclude the Northern Ireland and remote islands from the UK shape.
+# Define a polygon to exclude the Northern Ireland and remote islands
+# from the UK shape.
 new_bounds = geopandas.GeoSeries(
     Polygon(
         [
