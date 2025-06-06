@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
@@ -32,7 +32,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
         description="Download and process annual electricity demand data from Ember."
@@ -79,7 +78,6 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Get the directory to store the population density data.
     result_directory = util.directories.read_folders_structure()[
         "annual_electricity_demand_folder"
@@ -87,7 +85,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     os.makedirs(result_directory, exist_ok=True)
 
     # Get the list of codes of the countries and subdivisions of interest.
-    codes = util.entities.check_and_get_codes(args)
+    codes = util.entities.check_and_get_codes(code=args.code, file_path=args.file)
 
     logging.info("Downloading annual electricity data.")
 
@@ -154,12 +152,12 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
             # Map the electricity demand and demand per capita data to the new index.
             country_electricity_data["Annual electricity demand (TWh)"] = (
-                country_electricity_data.index.year.map(electricity_demand).values
+                country_electricity_data.index.year.map(electricity_demand).to_numpy()
             )
             country_electricity_data["Annual electricity demand per capita (MWh)"] = (
                 country_electricity_data.index.year.map(
                     electricity_demand_per_capita
-                ).values
+                ).to_numpy()
             )
 
             # Convert the index to UTC and remove the time zone information.

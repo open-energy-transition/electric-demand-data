@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of Enerji Piyasaları İşletme A.Ş. (EPIAS) in Turkey.
+    This module provides functions to retrieve the electricity demand data from the website of Enerji Piyasaları İşletme A.Ş. (EPIAS) in Turkey.
 
     The data is retrieved by registering on the website and downloading the data manually. The user needs to create an account on the EPIAS website, which is free of charge. After registration, the user can log in to the website and download the data.
 
@@ -19,10 +19,7 @@ import util.directories
 
 
 def get_available_requests() -> None:
-    """
-    Get the list of available requests to retrieve the electricity demand data from the EPIAS website.
-    """
-
+    """Get the list of available requests to retrieve the electricity demand data from the EPIAS website."""
     logging.debug("The data is retrieved manually.")
 
 
@@ -35,7 +32,6 @@ def get_url() -> str:
     str
         The URL of the electricity demand data
     """
-
     # Return the URL of the electricity demand data.
     return "https://seffaflik.epias.com.tr/"
 
@@ -51,7 +47,6 @@ def download_and_extract_data() -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Get the data folder.
     data_directory = util.directories.read_folders_structure()[
         "manually_downloaded_data_folder"

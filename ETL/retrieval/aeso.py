@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Alberta Electric System Operator (AESO) in Canada.
+    This module provides functions to retrieve the electricity demand data from the website of the Alberta Electric System Operator (AESO) in Canada.
 
     The data is retrieved for the years from 2011 to 2024. The data is retrieved from the available Excel files on the AESO website.
 
@@ -26,7 +26,6 @@ def _check_input_parameters(file_number: int) -> None:
     file_number : int
         The number of the file to read
     """
-
     # Check if the file number is supported.
     assert file_number in get_available_requests(), (
         f"File number {file_number} is not supported."
@@ -42,7 +41,6 @@ def get_available_requests() -> list[int]:
     list[int]
         The list of available requests
     """
-
     # Return the available requests, which are the numbers of the Excel files available on the AESO website.
     return [1, 2, 3, 4]
 
@@ -61,7 +59,6 @@ def get_url(file_number: int) -> str:
     url : str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 
@@ -98,7 +95,6 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
     load_columns : list[str]
         The names of the load columns in the Excel file
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 
@@ -158,6 +154,7 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
 def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     """
     Download and extract the electricity demand data from the AESO website.
+
     There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
 
     Parameters
@@ -170,7 +167,6 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 
@@ -197,35 +193,42 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
         },
     )
 
-    if file_number == 1 or file_number == 2:
-        # Define starting time index.
-        first_local_time_index = (
-            dataset["DATE"][0] + pandas.Timedelta(hours=int(dataset["HOUR ENDING"][0]))
-        ).tz_localize("America/Edmonton")
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        if file_number == 1 or file_number == 2:
+            # Define starting time index.
+            first_local_time_index = (
+                dataset["DATE"][0]
+                + pandas.Timedelta(hours=int(dataset["HOUR ENDING"][0]))
+            ).tz_localize("America/Edmonton")
 
-    elif file_number == 3 or file_number == 4:
-        # Define starting time index.
-        first_local_time_index = (
-            dataset["DT_MST"].iloc[0].tz_localize("America/Edmonton")
+        elif file_number == 3 or file_number == 4:
+            # Define starting time index.
+            first_local_time_index = (
+                dataset["DT_MST"].iloc[0].tz_localize("America/Edmonton")
+            )
+
+            # The Excel files seem to report all times in standard time, so we need to add the daylight saving time to the first time index, if necessary.
+            first_local_time_index = (
+                first_local_time_index + first_local_time_index.dst()
+            )
+
+            # The Excel files seem to report the beginning of the hour, so we need to add 1 hour.
+            first_local_time_index = first_local_time_index + pandas.Timedelta(hours=1)
+
+        # Define the local time index.
+        local_time_index = pandas.date_range(
+            start=first_local_time_index,
+            periods=len(dataset),
+            freq="1h",
+            tz="America/Edmonton",
         )
 
-        # The Excel files seem to report all times in standard time, so we need to add the daylight saving time to the first time index, if necessary.
-        first_local_time_index = first_local_time_index + first_local_time_index.dst()
+        # Extract the electricity demand time series in the local time zone.
+        electricity_demand_time_series = pandas.Series(
+            data=dataset[load_columns].sum(axis=1).values, index=local_time_index
+        )
 
-        # The Excel files seem to report the beginning of the hour, so we need to add 1 hour.
-        first_local_time_index = first_local_time_index + pandas.Timedelta(hours=1)
-
-    # Define the local time index.
-    local_time_index = pandas.date_range(
-        start=first_local_time_index,
-        periods=len(dataset),
-        freq="1h",
-        tz="America/Edmonton",
-    )
-
-    # Extract the electricity demand time series in the local time zone.
-    electricity_demand_time_series = pandas.Series(
-        data=dataset[load_columns].sum(axis=1).values, index=local_time_index
-    )
-
-    return electricity_demand_time_series
+        return electricity_demand_time_series

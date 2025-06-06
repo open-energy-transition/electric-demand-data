@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Transmission System Operator of Cyprus (TSOC).
+    This module provides functions to retrieve the electricity demand data from the website of the Transmission System Operator of Cyprus (TSOC).
 
     The data seems to represent the total electricity generation in MW, which can be considered a proxy for the electricity demand.
 
@@ -30,7 +30,6 @@ def _check_input_parameters(start_date: pandas.Timestamp) -> None:
     start_date : pandas.Timestamp
         The start date of the data retrieval
     """
-
     # Read the start date of the available data.
     start_date_of_data_availability = pandas.to_datetime(
         util.entities.read_date_ranges(data_source="tsoc")["CY"][0]
@@ -51,7 +50,6 @@ def get_available_requests() -> list[pandas.Timestamp]:
     list[pandas.Timestamp]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="tsoc")["CY"]
 
@@ -73,7 +71,6 @@ def get_url(start_date: pandas.Timestamp) -> str:
     str
         The URL of the electricity generation data
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(start_date)
 
@@ -98,7 +95,6 @@ def _read_generation(generation_step):
     float | None
         The total generation in MW, or None if data is unavailable
     """
-
     # Extract the wind, solar, total, and conventional generation values from the tuple.
     wind, solar, total, conventional = generation_step
 
@@ -142,7 +138,6 @@ def _read_timestamp_and_generation(
     total_generation : list of float | None
         The total power generation in MW. If data is unavailable, None is returned
     """
-
     # Extract the dates, hours, minutes, and generation data from the HTML content using regex patterns.
     dates = re.findall(r'var dateStr = "(\d{4}-\d{2}-\d{2})";', page)
     hours = re.findall(r'var hourStr = "(\d{2})";', page)
@@ -173,7 +168,6 @@ def download_and_extract_data_for_request(
     electricity_generation_time_series : pandas.Series
         The electricity generation time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date)
 
@@ -192,15 +186,24 @@ def download_and_extract_data_for_request(
         header_params={"User-Agent": "Mozilla/5.0"},
     )
 
-    # Extract time and generation data.
-    dates, hours, minutes, generation = _read_timestamp_and_generation(page)
+    # Make sure the page content is a string.
+    if not isinstance(page, str):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract time and generation data.
+        dates, hours, minutes, generation = _read_timestamp_and_generation(page)
 
-    # Construct datetime index with time zone.
-    date_time = pandas.to_datetime(
-        [f"{date} {hour}:{minute}" for date, hour, minute in zip(dates, hours, minutes)]
-    ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
+        # Construct datetime index with time zone.
+        date_time = pandas.to_datetime(
+            [
+                f"{date} {hour}:{minute}"
+                for date, hour, minute in zip(dates, hours, minutes)
+            ]
+        ).tz_localize("Asia/Nicosia", nonexistent="NaT", ambiguous="NaT")
 
-    # Create a Pandas Series for the electricity generation data.
-    electricity_generation_time_series = pandas.Series(data=generation, index=date_time)
+        # Create a Pandas Series for the electricity generation data.
+        electricity_generation_time_series = pandas.Series(
+            data=generation, index=date_time
+        )
 
-    return electricity_generation_time_series
+        return electricity_generation_time_series

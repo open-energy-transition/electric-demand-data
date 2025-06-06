@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
-    This script sets up the connection to the Copernicus Climate Data Store (CDS) and retrieves weather data from the ERA5 dataset.
+
+    This module provides functions to set up the connection to the Copernicus Climate Data Store (CDS) and retrieve weather data from the ERA5 dataset.
 
     Source: https://cds.climate.copernicus.eu/how-to-api
 """
@@ -35,7 +36,6 @@ def get_request(
     request : dict[str, str | list[str] | list[float]]
         The request for the ERA5 data
     """
-
     # Initialize the request with the common parameters.
     request: dict[str, str | list[str] | list[float]] = {
         "product_type": ["reanalysis"],
@@ -80,7 +80,6 @@ def download_data(
     bounds : list of float, optional
         The lateral bounds of the area of interest (West, South, East, North)
     """
-
     # Get the root directory of the project.
     root_directory = util.directories.read_folders_structure()["root_folder"]
 

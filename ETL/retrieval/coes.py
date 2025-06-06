@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Comité de Operación Económica (COES) of Peru.
+    This module provides functions to retrieve the electricity demand data from the website of the Comité de Operación Económica (COES) of Peru.
 
     The data is retrieved from 1997 to current date. The data is retrieved in one-year intervals.
 
@@ -27,7 +27,6 @@ def _check_input_parameters(year: int) -> None:
     year : int
         The year of the data to retrieve
     """
-
     # Check if the year is supported.
     assert year in get_available_requests(), (
         f"The year {year} is not in the supported range."
@@ -43,7 +42,6 @@ def get_available_requests() -> list[int]:
     list[int]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="coes")["PE"]
 
@@ -60,7 +58,6 @@ def get_url() -> str:
     str
         The URL of the electricity demand data
     """
-
     # Return the URL of the electricity demand data.
     return "https://www.coes.org.pe/Portal/portalinformacion/demanda"
 
@@ -79,7 +76,6 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year)
 
@@ -101,17 +97,21 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         json_keys=["Chart", "Series"],
     )
 
-    # Extract the electricity demand data from the dataset.
-    dataset = pandas.DataFrame(dataset[dataset["Name"] == "Ejecutado"]["Data"][0])
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the electricity demand data from the dataset.
+        dataset = pandas.DataFrame(dataset[dataset["Name"] == "Ejecutado"]["Data"][0])
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["Valor"].values, index=pandas.to_datetime(dataset["Nombre"])
-    )
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["Valor"].values, index=pandas.to_datetime(dataset["Nombre"])
+        )
 
-    # Add timezone information to the index.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize("America/Lima")
-    )
+        # Add timezone information to the index.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize("America/Lima")
+        )
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

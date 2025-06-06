@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Tokyo Electric Power Company (TEPCO) in Japan.
+    This module provides functions to retrieve the electricity demand data from the website of the Tokyo Electric Power Company (TEPCO) in Japan.
 
     The data is retrieved for the years from 2016 to the current year. The data is retrieved from the available CSV files on the TEPCO website.
 
@@ -27,7 +27,6 @@ def _check_input_parameters(year: int) -> None:
     year : int
         The year of the electricity demand data
     """
-
     # Check if the year is supported.
     assert year in get_available_requests(), (
         f"The year {year} is not in the supported range."
@@ -43,7 +42,6 @@ def get_available_requests() -> list[int]:
     list[int]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="tepco")[
         "JP_Kantō"
@@ -67,7 +65,6 @@ def get_url(year: int) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(year)
 
@@ -89,7 +86,6 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year)
 
@@ -107,17 +103,21 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         csv_kwargs={"skiprows": 2},
     )
 
-    # Define the index of the time series.
-    index = pandas.to_datetime(
-        [date + " " + time for date, time in zip(dataset["DATE"], dataset["TIME"])]
-    ).tz_localize("Asia/Tokyo")
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Define the index of the time series.
+        index = pandas.to_datetime(
+            [date + " " + time for date, time in zip(dataset["DATE"], dataset["TIME"])]
+        ).tz_localize("Asia/Tokyo")
 
-    # Extract the electricity demand time series. Multiply by 10 to convert from 10,000 kW (Japanese way of expressing unit of power) to MW.
-    electricity_demand_time_series = (
-        pandas.Series(dataset["ÀÑ(kW)"].values, index=index) * 10
-    )
+        # Extract the electricity demand time series. Multiply by 10 to convert from 10,000 kW (Japanese way of expressing unit of power) to MW.
+        electricity_demand_time_series = (
+            pandas.Series(dataset["ÀÑ(kW)"].values, index=index) * 10
+        )
 
-    # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
-    electricity_demand_time_series.index += pandas.Timedelta(hours=1)
+        # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
+        electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

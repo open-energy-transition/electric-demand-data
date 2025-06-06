@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
-    This script retrieves electricity demand data from the website of the Electricity Market Information (EMI) in New Zealand.
+
+    This module provides functions to retrieve the electricity demand data from the website of the Electricity Market Information (EMI) in New Zealand.
 
     The data is downloaded from Jan 1, 2005 up to the current date. The data is retrieved all at once.
 
@@ -33,7 +34,6 @@ def _check_input_parameters(
     end_date : pandas.Timestamp
         The end date of the data retrieval
     """
-
     # Check if the retrieval period is less than 1 year.
     assert (end_date - start_date) <= pandas.Timedelta("366days"), (
         "The retrieval period must be less than or equal to 1 year. start_date: "
@@ -65,7 +65,6 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="emi")["NZ"]
 
@@ -97,7 +96,6 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
@@ -127,7 +125,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
@@ -143,17 +140,21 @@ def download_and_extract_data_for_request(
         csv_kwargs={"skiprows": 11},
     )
 
-    # Extract the electricity demand time series. Convert GWh to MW considering a 0.5-hour time step.
-    electricity_demand_time_series = pandas.Series(
-        dataset["Demand (GWh)"].values * 1000 / 0.5,
-        index=pandas.to_datetime(dataset["Period end"], format="%d/%m/%Y %H:%M:%S"),
-    )
-
-    # Add the time zone information to the time series.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize(
-            "Pacific/Auckland", ambiguous="NaT", nonexistent="NaT"
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the electricity demand time series. Convert GWh to MW considering a 0.5-hour time step.
+        electricity_demand_time_series = pandas.Series(
+            dataset["Demand (GWh)"].to_numpy() * 1000 / 0.5,
+            index=pandas.to_datetime(dataset["Period end"], format="%d/%m/%Y %H:%M:%S"),
         )
-    )
 
-    return electricity_demand_time_series
+        # Add the time zone information to the time series.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize(
+                "Pacific/Auckland", ambiguous="NaT", nonexistent="NaT"
+            )
+        )
+
+        return electricity_demand_time_series

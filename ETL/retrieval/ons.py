@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Operador Nacional do Sistema Elétrico (ONS) in Brazil.
+    This module provides functions to retrieve the electricity demand data from the website of the Operador Nacional do Sistema Elétrico (ONS) in Brazil.
 
     The data is retrieved for the years from 2000 to the current year. The data is retrieved from the available CSV files on the ONS website.
 
@@ -29,7 +29,6 @@ def _check_input_parameters(year: int | None = None, code: str = "BR_N") -> None
     code : str
         The code of the subdivision of interest
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ons")
 
@@ -54,7 +53,6 @@ def get_available_requests(code: str) -> list[int]:
     list[int]
         The list of available requests
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(code=code)
 
@@ -79,7 +77,6 @@ def get_url(year: int) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(year=year)
 
@@ -103,7 +100,6 @@ def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(year=year, code=code)
 
@@ -118,16 +114,20 @@ def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"sep": ";"})
 
-    # Filter the dataset for the subdivision of interest.
-    dataset = dataset[dataset["id_subsistema"] == subdivision_code]
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Filter the dataset for the subdivision of interest.
+        dataset = dataset[dataset["id_subsistema"] == subdivision_code]
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["val_cargaenergiahomwmed"].values,
-        index=pandas.to_datetime(dataset["din_instante"]),
-    ).tz_localize("America/Sao_Paulo", ambiguous="NaT", nonexistent="NaT")
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["val_cargaenergiahomwmed"].values,
+            index=pandas.to_datetime(dataset["din_instante"]),
+        ).tz_localize("America/Sao_Paulo", ambiguous="NaT", nonexistent="NaT")
 
-    # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
-    electricity_demand_time_series.index += pandas.Timedelta(hours=1)
+        # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
+        electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

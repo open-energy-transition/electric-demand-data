@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Compañía Administradora del Mercado Mayorista Eléctrico S.A. (CAMMESA) in Argentina.
+    This module provides functions to retrieve the electricity demand data from the website of the Compañía Administradora del Mercado Mayorista Eléctrico S.A. (CAMMESA) in Argentina.
 
     The data is retrieved from 2024-08-01 to current date. The data is retrieved in one-day intervals.
 
@@ -41,7 +41,6 @@ def _check_input_parameters(date: str) -> None:
     date : str
         The date of the electricity demand data in the format YYYY-MM-DD
     """
-
     # Check if the date is supported.
     assert date in get_available_requests(), (
         f"The date {date} is not in the supported range."
@@ -57,7 +56,6 @@ def get_available_requests() -> list[str]:
     list[str]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="cammesa")["AR"]
 
@@ -83,7 +81,6 @@ def get_url(date: str) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(date)
 
@@ -105,7 +102,6 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(date)
 
@@ -119,15 +115,19 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
         url, "html", read_with="requests.get", read_as="json"
     )
 
-    # Remove rows with NaN values for demand.
-    dataset = dataset.dropna(subset=["dem"])
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Remove rows with NaN values for demand.
+        dataset = dataset.dropna(subset=["dem"])
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["dem"].values, index=pandas.to_datetime(dataset["fecha"])
-    )
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["dem"].values, index=pandas.to_datetime(dataset["fecha"])
+        )
 
-    # Drop the last value of the time series because it belongs to the following day.
-    electricity_demand_time_series = electricity_demand_time_series[:-1]
+        # Drop the last value of the time series because it belongs to the following day.
+        electricity_demand_time_series = electricity_demand_time_series[:-1]
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

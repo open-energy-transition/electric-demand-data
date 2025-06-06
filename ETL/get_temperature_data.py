@@ -1,3 +1,18 @@
+# -*- coding: utf-8 -*-
+"""
+License: AGPL-3.0.
+
+Description:
+
+    This script extracts temperature data downloaded from the Copernicus Climate Data Store (CDS) for the largest population density areas in a given country or subdivision.
+
+    It calculates the average temperature for the largest population density areas and saves the results in a parquet file.
+
+    The country and subdivision code can be specified or a list can be provided as a yaml file. If no file or code is provided, the script will use all available codes.
+
+    The year of the weather data can be specified as a command line argument. If no year is provided, the script will use all the years of available electricity demand data.
+"""
+
 import argparse
 import logging
 import os
@@ -22,7 +37,6 @@ def read_command_line_arguments() -> argparse.Namespace:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(description="")
 
@@ -78,7 +92,6 @@ def get_temperature_in_largest_population_density_areas(
     temperature_time_series : pandas.Series
         Temperature data for the largest population density areas in the given country or subdivision
     """
-
     # Read the temperature data downloaded from the Copernicus Climate Data Store (CDS).
     temperature_data_directory = util.directories.read_folders_structure()[
         "weather_folder"
@@ -173,7 +186,6 @@ def build_temperature_database(
     temperature_time_series : pandas.DataFrame
         Temperature time series with added statistics
     """
-
     # Create an empty DataFrame to store the temperature data.
     temperature_database = pandas.DataFrame(index=temperature_time_series_top_1.index)
 
@@ -206,7 +218,7 @@ def build_temperature_database(
 
     # Get the annual average temperature.
     annual_average_temperature = pandas.Series(
-        temperature_time_series_top_1.resample("YE").mean().values[0],
+        temperature_time_series_top_1.resample("YE").mean().to_numpy()[0],
         index=temperature_time_series_top_1.index,
     )
 
@@ -234,25 +246,25 @@ def build_temperature_database(
 
     # Add the temperature statistics to the temperature time series.
     temperature_database["Temperature - Top 1 (K)"] = (
-        temperature_time_series_top_1.values
+        temperature_time_series_top_1.to_numpy()
     )
     temperature_database["Temperature - Top 3 (K)"] = (
-        temperature_time_series_top_3.values
+        temperature_time_series_top_3.to_numpy()
     )
     temperature_database["Monthly average temperature - Top 1 (K)"] = (
-        monthly_average_temperature.values
+        monthly_average_temperature.to_numpy()
     )
     temperature_database["Monthly average temperature rank - Top 1"] = (
-        monthly_average_temperature_rank.values
+        monthly_average_temperature_rank.to_numpy()
     )
     temperature_database["Annual average temperature - Top 1 (K)"] = (
-        annual_average_temperature.values
+        annual_average_temperature.to_numpy()
     )
     temperature_database["5 percentile temperature - Top 1 (K)"] = (
-        temperature_5_percentile.values
+        temperature_5_percentile.to_numpy()
     )
     temperature_database["95 percentile temperature - Top 1 (K)"] = (
-        temperature_95_percentile.values
+        temperature_95_percentile.to_numpy()
     )
     temperature_database.index.name = "Time (UTC)"
 
@@ -268,7 +280,6 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         The command line arguments
     """
-
     # Create a directory to store the weather data.
     result_directory = util.directories.read_folders_structure()["temperature_folder"]
     os.makedirs(result_directory, exist_ok=True)

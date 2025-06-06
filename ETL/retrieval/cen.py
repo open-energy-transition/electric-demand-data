@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Coordinador Eléctrico Nacional (CEN) in Chile.
+    This module provides functions to retrieve the electricity demand data from the website of the Coordinador Eléctrico Nacional (CEN) in Chile.
 
     The data is retrieved for the years from 1999 to the current year. The data is retrieved in one-year intervals.
 
@@ -31,7 +31,6 @@ def _check_input_parameters(
     end_date : pandas.Timestamp
         The end date of the data retrieval
     """
-
     # Check that the retrieval period is less than one year.
     assert (end_date - start_date) <= pandas.Timedelta("366days"), (
         "The retrieval period is greater than 1 year. Please reduce the period to 1 year."
@@ -57,7 +56,6 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="cen")["CL"]
 
@@ -89,7 +87,6 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
@@ -119,7 +116,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
@@ -146,28 +142,33 @@ def download_and_extract_data_for_request(
         json_keys=["data"],
     )
 
-    # Merge the date and time columns into a single column. Consider that the time is given at the end of the hour. In some years where there is the switch to or from daylight saving time, there is a 25th hour.
-    dataset["date and time"] = [
-        date + f" {(min(time, 24) - 1):02d}:00"
-        for date, time in zip(dataset["fecha"], dataset["hora"])
-    ]
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Merge the date and time columns into a single column. Consider that the time is given at the end of the hour. In some years where there is the switch to or from daylight saving time, there is a 25th hour.
+        dataset["date and time"] = [
+            date + f" {(min(time, 24) - 1):02d}:00"
+            for date, time in zip(dataset["fecha"], dataset["hora"])
+        ]
 
-    # Sort the dataset by date and time.
-    dataset = dataset.sort_values(by="date and time", ascending=True)
+        # Sort the dataset by date and time.
+        dataset = dataset.sort_values(by="date and time", ascending=True)
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["demanda"].values, index=pandas.to_datetime(dataset["date and time"])
-    )
-
-    # Add the timezone to the index.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize(
-            "America/Santiago", ambiguous="NaT", nonexistent="NaT"
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["demanda"].values,
+            index=pandas.to_datetime(dataset["date and time"]),
         )
-    )
 
-    # Add 1 hour to the index to match the original dataset.
-    electricity_demand_time_series.index += pandas.Timedelta(hours=1)
+        # Add the timezone to the index.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize(
+                "America/Santiago", ambiguous="NaT", nonexistent="NaT"
+            )
+        )
 
-    return electricity_demand_time_series
+        # Add 1 hour to the index to match the original dataset.
+        electricity_demand_time_series.index += pandas.Timedelta(hours=1)
+
+        return electricity_demand_time_series

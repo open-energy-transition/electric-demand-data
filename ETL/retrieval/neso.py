@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the National Energy System Operator (NESO) in the UK.
+    This module provides functions to retrieve the electricity demand data from the website of the National Energy System Operator (NESO) in the UK.
 
     The data is retrieved for the years from 2009 to 2025. The data is retrieved in one-year intervals.
 
@@ -27,7 +27,6 @@ def _check_input_parameters(year: int) -> None:
     year : int
         The year of the data to retrieve
     """
-
     # Check if the year is supported.
     assert year in get_available_requests(), (
         f"The year {year} is not in the supported range."
@@ -43,7 +42,6 @@ def get_available_requests() -> list[int]:
     list[int]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="neso")["GB_GB"]
 
@@ -65,7 +63,6 @@ def get_url(year: int) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(year)
 
@@ -111,7 +108,6 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if input parameters are valid.
     _check_input_parameters(year)
 
@@ -129,15 +125,19 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
         json_keys=["result", "records"],
     )
 
-    # Extract the electricity demand time series.
-    electricity_demand_time_series = pandas.Series(
-        dataset["ND"].values,
-        index=pandas.date_range(
-            start=f"{year}-01-01 00:30",
-            periods=len(dataset),
-            freq="30min",
-            tz="Europe/London",
-        ),
-    )
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Extract the electricity demand time series.
+        electricity_demand_time_series = pandas.Series(
+            dataset["ND"].values,
+            index=pandas.date_range(
+                start=f"{year}-01-01 00:30",
+                periods=len(dataset),
+                freq="30min",
+                tz="Europe/London",
+            ),
+        )
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series

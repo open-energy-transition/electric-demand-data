@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
-    This script retrieves the electricity load data from the website of the Australian Energy Market Operator (AEMO) for the Wholesale Electricity Market (WEM) in Western Australia.
+
+    This module provides functions to retrieve the electricity demand data from the website of the Australian Energy Market Operator (AEMO) for the Wholesale Electricity Market (WEM) in Western Australia.
 
     The data is retrieved from 2006 to 2023 in one-year intervals in CSV format, and from October 1, 2023, to today in daily intervals in JSON format.
 
@@ -37,7 +38,6 @@ def _check_input_parameters(
     day : int
         The day of the data to retrieve
     """
-
     # Check if the input parameters are valid.
     assert (pre_reform, year, month, day) in get_available_requests(), (
         "The request is not supported."
@@ -53,7 +53,6 @@ def get_available_requests() -> list[tuple[bool, int, int | None, int | None]]:
     list[tuple[bool, int, int | None, int | None]]
         List of tuples in the format (year, month, day)
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="aemo_wem")[
         "AU_WA"
@@ -106,7 +105,6 @@ def get_url(pre_reform: bool, year: int, month: int | None, day: int | None) -> 
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(pre_reform, year, month, day)
 
@@ -141,7 +139,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity generation time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(pre_reform, year, month, day)
 
@@ -154,25 +151,29 @@ def download_and_extract_data_for_request(
         # Fetch the data from the URL.
         dataset = util.fetcher.fetch_data(url, "csv")
 
-        # Extract the electricity demand data from the dataset.
-        electricity_demand_time_series = pandas.Series(
-            dataset["Operational Demand (MW)"].values,
-            index=pandas.to_datetime(dataset["Trading Interval"]),
-        )
+        # Make sure the dataset is a pandas DataFrame.
+        if not isinstance(dataset, pandas.DataFrame):
+            raise ValueError("Data not retrieved properly.")
+        else:
+            # Extract the electricity demand data from the dataset.
+            electricity_demand_time_series = pandas.Series(
+                dataset["Operational Demand (MW)"].values,
+                index=pandas.to_datetime(dataset["Trading Interval"]),
+            )
 
-        # Add the timezone information to the index.
-        electricity_demand_time_series.index = (
-            electricity_demand_time_series.index.tz_localize(
-                "Australia/Perth",
-                ambiguous="NaT",
-                nonexistent="NaT",
-            ).tz_convert("UTC")
-        )
+            # Add the timezone information to the index.
+            electricity_demand_time_series.index = (
+                electricity_demand_time_series.index.tz_localize(
+                    "Australia/Perth",
+                    ambiguous="NaT",
+                    nonexistent="NaT",
+                ).tz_convert("UTC")
+            )
 
-        # Add 30 minutes to the index because the demand data seems to be reported at the beginning of the trading interval.
-        electricity_demand_time_series.index = (
-            electricity_demand_time_series.index + pandas.Timedelta(minutes=30)
-        )
+            # Add 30 minutes to the index because the demand data seems to be reported at the beginning of the trading interval.
+            electricity_demand_time_series.index = (
+                electricity_demand_time_series.index + pandas.Timedelta(minutes=30)
+            )
 
     else:
         logging.info(
@@ -191,10 +192,14 @@ def download_and_extract_data_for_request(
             json_keys=["data", "data"],
         )
 
-        # Extract the electricity demand data from the dataset.
-        electricity_demand_time_series = pandas.Series(
-            dataset["operationalDemand"].values,
-            index=pandas.to_datetime(dataset["asAtTimeStamp"], utc=True),
-        )
+        # Make sure the dataset is a pandas DataFrame.
+        if not isinstance(dataset, pandas.DataFrame):
+            raise ValueError("Data not retrieved properly.")
+        else:
+            # Extract the electricity demand data from the dataset.
+            electricity_demand_time_series = pandas.Series(
+                dataset["operationalDemand"].values,
+                index=pandas.to_datetime(dataset["asAtTimeStamp"], utc=True),
+            )
 
     return electricity_demand_time_series

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the XM Adminstradores del mercado electrico in Colombia.
+    This module provides functions to retrieve the electricity demand data from the website of the XM Adminstradores del mercado electrico in Colombia.
 
     The data is actually made available through the website of "Energia de Colombia" (https://www.energiadecolombia.com).
 
@@ -34,7 +34,6 @@ def _check_input_parameters(
     end_date : pandas.Timestamp
         The end date of the data retrieval
     """
-
     # Check that the retrieval period is less than one month.
     assert (end_date - start_date) <= pandas.Timedelta("31days"), (
         "The retrieval period is greater than 1 month. Please reduce the period to 1 month."
@@ -60,7 +59,6 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
         The list of available requests
     """
-
     # Read the start and end date of the available data.
     start_date, end_date = util.entities.read_date_ranges(data_source="xm")["CO"]
 
@@ -92,7 +90,6 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
@@ -122,7 +119,6 @@ def download_and_extract_data_for_request(
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
@@ -141,43 +137,47 @@ def download_and_extract_data_for_request(
         read_as="json",
     )
 
-    # Initialize the list to store the daily values.
-    dayly_values_list = []
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        # Initialize the list to store the daily values.
+        dayly_values_list = []
 
-    # Iterate over the dates in the dataset.
-    for date in dataset["Date"]:
-        # Extract the row corresponding to the date.
-        values_dict = dataset[dataset["Date"] == date]
+        # Iterate over the dates in the dataset.
+        for date in dataset["Date"]:
+            # Extract the row corresponding to the date.
+            values_dict = dataset[dataset["Date"] == date]
 
-        # Extract the values for each hour of the day.
-        hourly_values = [
-            (values_dict["Values"].values[0])[f"Hour{hour:02d}"]
-            for hour in range(1, 25)
-        ]
+            # Extract the values for each hour of the day.
+            hourly_values = [
+                (values_dict["Values"].to_numpy()[0])[f"Hour{hour:02d}"]
+                for hour in range(1, 25)
+            ]
 
-        # Define the date and time for each hour of the day.
-        date_and_time = [date + f" {hour:02d}:00" for hour in range(24)]
+            # Define the date and time for each hour of the day.
+            date_and_time = [date + f" {hour:02d}:00" for hour in range(24)]
 
-        # Create and append a pandas Series for the day.
-        dayly_values_list.append(
-            pandas.Series(
-                hourly_values,
-                index=pandas.to_datetime(date_and_time),
+            # Create and append a pandas Series for the day.
+            dayly_values_list.append(
+                pandas.Series(
+                    hourly_values,
+                    index=pandas.to_datetime(date_and_time),
+                )
             )
+
+        # Concatenate the daily values into a single pandas Series.
+        electricity_demand_time_series = pandas.concat(dayly_values_list)
+
+        # Values are in kWh with a frequency of 1 hour. Convert to MW.
+        electricity_demand_time_series = electricity_demand_time_series / 1000
+
+        # Add the timezone to the index.
+        electricity_demand_time_series.index = (
+            electricity_demand_time_series.index.tz_localize("America/Bogota")
         )
 
-    # Concatenate the daily values into a single pandas Series.
-    electricity_demand_time_series = pandas.concat(dayly_values_list)
+        # Add 1 hour to the index to account for the fact that the time is given at the beginning of the hour.
+        electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
-    # Values are in kWh with a frequency of 1 hour. Convert to MW.
-    electricity_demand_time_series = electricity_demand_time_series / 1000
-
-    # Add the timezone to the index.
-    electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize("America/Bogota")
-    )
-
-    # Add 1 hour to the index to account for the fact that the time is given at the beginning of the hour.
-    electricity_demand_time_series.index += pandas.Timedelta(hours=1)
-
-    return electricity_demand_time_series
+        return electricity_demand_time_series

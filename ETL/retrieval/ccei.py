@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script retrieves the electricity demand data from the website of the Canadian Centre for Energy Information (CCEI).
+    This module provides functions to retrieve the electricity demand data from the website of the Canadian Centre for Energy Information (CCEI).
 
     The data is retrieved from different starting dates depending on the subdivision until the current date. The data has various time resolutions.
 
@@ -27,7 +27,6 @@ def get_available_requests(code: str) -> None:
     code : str
         The code of the subdivision
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ccei")
 
@@ -48,7 +47,6 @@ def get_url(code: str) -> str:
     str
         The URL of the electricity demand data
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ccei")
 
@@ -91,7 +89,6 @@ def download_and_extract_data(code: str) -> pandas.Series:
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW
     """
-
     # Check if the code is valid.
     util.entities.check_code(code, "ccei")
 
@@ -101,17 +98,21 @@ def download_and_extract_data(code: str) -> pandas.Series:
     # Fetch HTML content from the URL.
     dataset = util.fetcher.fetch_data(url, "csv")
 
-    if code == "CA_NB":
-        # Remove unknown code from the time step values.
-        dataset["TIME_PERIOD"] = dataset["TIME_PERIOD"].str.replace(".000Z", "")
-    if code == "CA_ON":
-        # Remove dummy time steps where the time is equal to 06:59:59 right before the daylight saving time change.
-        dataset = dataset[~dataset["TIME_PERIOD"].str.contains("06:59:59")]
+    # Make sure the dataset is a pandas DataFrame.
+    if not isinstance(dataset, pandas.DataFrame):
+        raise ValueError("Data not retrieved properly.")
+    else:
+        if code == "CA_NB":
+            # Remove unknown code from the time step values.
+            dataset["TIME_PERIOD"] = dataset["TIME_PERIOD"].str.replace(".000Z", "")
+        if code == "CA_ON":
+            # Remove dummy time steps where the time is equal to 06:59:59 right before the daylight saving time change.
+            dataset = dataset[~dataset["TIME_PERIOD"].str.contains("06:59:59")]
 
-    # Extract the electricity demand time series with UTC time zone.
-    electricity_demand_time_series = pandas.Series(
-        data=dataset["OBS_VALUE"].values,
-        index=pandas.to_datetime(dataset["TIME_PERIOD"]),
-    ).tz_localize("UTC")
+        # Extract the electricity demand time series with UTC time zone.
+        electricity_demand_time_series = pandas.Series(
+            data=dataset["OBS_VALUE"].values,
+            index=pandas.to_datetime(dataset["TIME_PERIOD"]),
+        ).tz_localize("UTC")
 
-    return electricity_demand_time_series
+        return electricity_demand_time_series
