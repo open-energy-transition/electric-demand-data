@@ -4,7 +4,11 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to harmonize time series data by adding missing time steps, resampling the time resolution, and interpolating missing values. It also includes functions to check data quality, clean data, and upload files to Google Cloud Storage (GCS).
+    This module provides functions to harmonize time series data by
+    adding missing time steps, resampling the time resolution, and
+    interpolating missing values. It also includes functions to check
+    data quality, clean data, and upload files to Google Cloud Storage
+    (GCS).
 """
 
 import logging
@@ -20,6 +24,11 @@ def add_missing_time_steps(
 ) -> pandas.Series:
     """
     Add the missing time steps to a time series.
+
+    This function checks if the time series has the expected number of
+    time steps for a given year and adds the missing time steps if
+    necessary. It assumes that the time series has a constant time
+    resolution and that the time series is in the local time zone.
 
     Parameters
     ----------
@@ -41,18 +50,25 @@ def add_missing_time_steps(
 
     # Calculate the expected number of time steps in the time series.
     expected_number_of_time_steps = int(
-        (8760 if year % 4 != 0 else 8784) * pandas.Timedelta("1h") / time_resolution
+        (8760 if year % 4 != 0 else 8784)
+        * pandas.Timedelta("1h")
+        / time_resolution
     )
 
     # Check if there are less time steps than expected.
     if len(time_series) < expected_number_of_time_steps:
         logging.warning(
-            f"Added {expected_number_of_time_steps - len(time_series)} missing time steps out of {expected_number_of_time_steps}."
+            f"Added {expected_number_of_time_steps - len(time_series)} "
+            f"missing time steps out of {expected_number_of_time_steps}."
         )
 
-        # Define the full time index for the time series in the local time zone.
+        # Define the full time index for the time series in the local
+        # time zone.
         full_local_time_index = pandas.date_range(
-            start=str(year), end=str(year + 1), freq=time_resolution, tz=local_time_zone
+            start=str(year),
+            end=str(year + 1),
+            freq=time_resolution,
+            tz=local_time_zone,
         )[:-1]
 
         # Reindex the time series to include the missing time steps.
@@ -65,7 +81,12 @@ def resample_time_resolution(
     time_series: pandas.Series, target_time_resolution: str = "1h"
 ) -> pandas.Series:
     """
-    Resample the time resolution of a time series to a given time resolution.
+    Resample the time resolution of a time series.
+
+    This function checks if the time resolution of the time series is
+    less than the target time resolution and resamples the time series
+    to the target time resolution if necessary. It assumes that the
+    time series has a constant time resolution.
 
     Parameters
     ----------
@@ -82,14 +103,17 @@ def resample_time_resolution(
     # Get the time resolution of the time series.
     time_resolution = time_series.index.to_series().diff().min()
 
-    # Check if the time resolution of the time series is less than the target time resolution.
+    # Check if the time resolution of the time series is less than the
+    # target time resolution.
     if time_resolution < pandas.Timedelta(target_time_resolution):
         # Resample the time series to the target time resolution.
         time_series = time_series.resample(target_time_resolution).mean()
 
         # Write the resampling information to the log file.
         logging.warning(
-            f"Resampled the time series from {time_resolution.total_seconds() / 3600}h to {target_time_resolution}."
+            "Resampled the time series from "
+            f"{time_resolution.total_seconds() / 3600}h to "
+            f"{target_time_resolution}."
         )
 
     return time_series
@@ -97,7 +121,13 @@ def resample_time_resolution(
 
 def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
     """
-    Linearly interpolate the missing values in a time series only if they are isolated.
+    Linearly interpolate the missing values in a time series.
+
+    This function replaces isolated NaN values in the time series with
+    the average of the previous and next values. It assumes that the
+    time series has a constant time resolution and that the missing
+    values are isolated (i.e., not part of a larger block of NaN
+    values).
 
     Parameters
     ----------
@@ -112,15 +142,21 @@ def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
     # Get the number of original non-null values.
     original_non_null_values = time_series.notna().sum()
 
-    # Where there is a NaN value, replace it with the average of the previous and next values. This takes care of replacing isolated NaN values.
-    time_series[time_series.isna()] = (time_series.shift(-1) + time_series.shift(1)) / 2
+    # Where there is a NaN value, replace it with the average of the
+    # previous and next values. This takes care of replacing isolated
+    # NaN values.
+    time_series[time_series.isna()] = (
+        time_series.shift(-1) + time_series.shift(1)
+    ) / 2
 
     # Get the number of interpolated values.
     interpolated_values = time_series.notna().sum() - original_non_null_values
 
     if interpolated_values > 0:
         # Write the number of interpolated values to the log file.
-        logging.warning(f"Interpolated {interpolated_values} isolated missing values.")
+        logging.warning(
+            f"Interpolated {interpolated_values} isolated missing values."
+        )
 
     return time_series
 
@@ -128,6 +164,10 @@ def linearly_interpolate(time_series: pandas.Series) -> pandas.Series:
 def check_time_series_data_quality(time_series: pandas.Series) -> None:
     """
     Check the data quality of a time series.
+
+    This function checks for missing values, duplicated time steps,
+    and the frequency of the time series. It logs warnings if any
+    issues are found.
 
     Parameters
     ----------
@@ -137,13 +177,15 @@ def check_time_series_data_quality(time_series: pandas.Series) -> None:
     # Check if there are any missing values in the time series.
     if time_series.isna().sum() > 0:
         logging.warning(
-            f"There are {time_series.isna().sum()} missing values in the time series."
+            f"There are {time_series.isna().sum()} missing values in "
+            "the time series."
         )
 
     # Check if there are any duplicated time steps in the time series.
     if time_series.index.duplicated().sum() > 0:
         logging.warning(
-            f"There are {time_series.index.duplicated().sum()} duplicated time steps in the time series."
+            f"There are {time_series.index.duplicated().sum()} duplicated "
+            "time steps in the time series."
         )
 
     # Chech the frequency of the time series.
@@ -160,7 +202,8 @@ def check_time_series_data_quality(time_series: pandas.Series) -> None:
         )
     else:
         logging.info(
-            f"The time series has a constant frequency of {time_step_difference_values.index[0]}."
+            "The time series has a constant frequency of "
+            f"{time_step_difference_values.index[0]}."
         )
 
 
@@ -172,7 +215,11 @@ def harmonize_time_series(
     interpolate_missing_values: bool = True,
 ) -> pandas.Series:
     """
-    Harmonize a given time series by adding the missing time steps, resampling the time resolution, and interpolating the missing values.
+    Harmonize a given time series.
+
+    This function adds missing time steps to the time series, resamples
+    the time resolution if necessary, and interpolates isolated missing
+    values. It also checks the data quality of the time series.
 
     Parameters
     ----------
@@ -201,16 +248,22 @@ def harmonize_time_series(
             time_series, target_time_resolution=target_time_resolution
         )
 
-    # Linearly interpolate the isolated missing values in the time series.
+    # Linearly interpolate the isolated missing values.
     if interpolate_missing_values:
         time_series = linearly_interpolate(time_series)
 
     return time_series
 
 
-def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
+def clean_data(
+    time_series: pandas.Series, variable_name: str
+) -> pandas.Series:
     """
-    Clean the time series data by setting the time zone to UTC and removing NaN, zero values, and duplicated time steps.
+    Clean the time series.
+
+    This function removes NaN values, zero values, and duplicated time
+    steps from the time series. It also ensures that the time series is
+    converted to UTC and has a name for the index and the series.
 
     Parameters
     ----------
@@ -222,14 +275,23 @@ def clean_data(time_series: pandas.Series, variable_name: str) -> pandas.Series:
     Returns
     -------
     time_series : pandas.Series
-        Time series of interest without NaN, zero values, and duplicated time steps.
+        Time series of interest without NaN, zero values, and duplicated
+        time steps.
+
+    Raises
+    ------
+    ValueError
+        If the time series is not timezone-aware.
     """
     # Check if the time series is timezone-aware.
     if time_series.index.tz is None:
         raise ValueError("The time series must be timezone-aware.")
     else:
-        # Convert the time zone of the electricity demand time series to UTC and remove the time zone information.
-        time_series.index = time_series.index.tz_convert("UTC").tz_localize(None)
+        # Convert the time zone of the electricity demand time series to
+        # UTC and remove the time zone information.
+        time_series.index = time_series.index.tz_convert("UTC").tz_localize(
+            None
+        )
 
     # Set the name of the index and the series.
     time_series.index.name = "Time (UTC)"
@@ -258,6 +320,9 @@ def upload_to_gcs(
     """
     Upload a file to Google Cloud Storage (GCS).
 
+    This function uploads a file to a specified GCS bucket. It uses the
+    Google Cloud Storage client library to handle the upload process.
+
     Parameters
     ----------
     file_path : str
@@ -266,6 +331,13 @@ def upload_to_gcs(
         The name of the GCS bucket.
     destination_blob_name : str
         The name of the blob in the GCS bucket.
+
+    Raises
+    ------
+    OSError
+        If there is an error reading the file.
+    GoogleCloudError
+        If there is an error uploading the file to GCS.
     """
     # Create a GCS client.
     storage_client = storage.Client()
@@ -281,6 +353,7 @@ def upload_to_gcs(
         blob.upload_from_filename(file_path)
     except (OSError, GoogleCloudError) as e:
         logging.error(
-            f"Failed to upload file {file_path} to GCS bucket {bucket_name} as {destination_blob_name}: {e}"
+            f"Failed to upload file {file_path} to GCS bucket {bucket_name} "
+            f"as {destination_blob_name}: {e}"
         )
         raise

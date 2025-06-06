@@ -4,7 +4,9 @@ License: AGPL-3.0.
 
 Description:
 
-    This module contains functions to plot data and save the figures.
+    This module contains functions to generate a simple plot of data
+    from a GeoDataFrame or xarray DataArray and save the figure
+    to a specified directory.
 """
 
 import os
@@ -20,17 +22,22 @@ def simple_plot(
     data_to_plot: geopandas.GeoDataFrame | xarray.DataArray, figure_name: str
 ) -> None:
     """
-    Plot the data and save the figure.
+    Generate a simple plot of the provided data.
+
+    This function takes a GeoDataFrame or xarray DataArray, plots it
+    using matplotlib, and saves the figure to a specified directory.
 
     Parameters
     ----------
-    data_to_plot : geopandas.GeoDataFrame or xarray.DataArray
+    data_to_plot : geopandas.GeoDataFrame | xarray.DataArray
         The data to plot.
     figure_name : str
         The name of the figure.
     """
     # Create a directory to store the figures.
-    figure_directory = util.directories.read_folders_structure()["figures_folder"]
+    figure_directory = util.directories.read_folders_structure()[
+        "figures_folder"
+    ]
     os.makedirs(figure_directory, exist_ok=True)
 
     # Plot the data.

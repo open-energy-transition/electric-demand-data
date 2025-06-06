@@ -4,7 +4,8 @@ License: AGPL-3.0.
 
 Description:
 
-    This module povides utility functions to read the folders structure and list yaml files in a specified folder.
+    This module povides utility functions to read the folders structure
+    and list yaml files in a specified folder.
 """
 
 import os
@@ -14,12 +15,19 @@ import yaml
 
 def read_folders_structure() -> dict[str, str]:
     """
-    Read the folders structure from the yaml file.
+    Read the folders structure.
+
+    This function reads the folders structure from a yaml file located
+    in the 'util' directory. The yaml file should contain a dictionary
+    where keys are folder names and values are their paths relative to
+    the root folder. The root folder is determined as the parent
+    directory of the current file's directory.
 
     Returns
     -------
-    folders_structure : dict of str
-        The folders structure.
+    folders_structure : dict[str, str]
+        A dictionary containing the folders structure, where keys are
+        folder names and values are their paths.
     """
     # Get the absolute path to the root folder.
     root_folder = os.path.normpath(
@@ -27,7 +35,9 @@ def read_folders_structure() -> dict[str, str]:
     )
 
     # Define the default path to the yaml file.
-    folders_structure_file_path = os.path.join(root_folder, "util", "directories.yaml")
+    folders_structure_file_path = os.path.join(
+        root_folder, "util", "directories.yaml"
+    )
 
     # Read the folders structure from the file.
     with open(folders_structure_file_path, "r") as file:
@@ -36,7 +46,8 @@ def read_folders_structure() -> dict[str, str]:
     # Add the root folder to the folders structure.
     folders_structure["root_folder"] = root_folder
 
-    # Iterate over the folders structure, concatenate the paths if multiple folders are defined, and normalize the paths.
+    # Iterate over the folders structure, concatenate the paths if
+    # multiple folders are defined, and normalize the paths.
     for key, value in folders_structure.items():
         # Add the root folder to the path but skip the root folder key.
         if key != "root_folder":
@@ -51,17 +62,17 @@ def read_folders_structure() -> dict[str, str]:
 
 def list_yaml_files(folder: str) -> list[str]:
     """
-    Get all the paths of the yaml files in the specified folder.
+    Get the paths of all yaml files in a specified folder.
 
     Parameters
     ----------
     folder : str
-        The folder to search for yaml files.
+        The name of the folder from which to list the yaml files.
 
     Returns
     -------
     yaml_files : list[str]
-        The list of paths to the yaml files.
+        A list of paths to the yaml files in the specified folder.
     """
     # Get the path to specified folder.
     target_directory = read_folders_structure()[folder]

@@ -20,17 +20,23 @@ def harmonize_coords(
     ds: xarray.DataArray | xarray.Dataset,
 ) -> xarray.DataArray | xarray.Dataset:
     """
-    Rename coordinates to "x" and "y" and reset longitudes from the range [0, 360] to [-180, 180].
+    Rename coordinates and reset longitudes.
+
+    This function renames the longitude and latitude coordinates to "x"
+    and "y", respectively, and resets the longitudes from the range
+    [0, 360] to [-180, 180]. It also sorts the dataset by the "y"
+    coordinate to ensure a consistent order.
 
     Parameters
     ----------
     ds : xarray.Dataset or xarray.DataArray
-        Dataset or DataArray to be renamed.
+        The xarray dataset or data array to harmonize.
 
     Returns
     -------
-    ds : xarray.Dataset or xarray.DataArray
-        Dataset or DataArray with renamed coordinates and reset longitudes.
+    xarray.Dataset or xarray.DataArray
+        The harmonized xarray dataset or data array with renamed
+        coordinates and reset longitudes.
     """
     # Rename longitude and latitude coordinates to x and y coordinates.
     if "longitude" in ds.coords and "latitude" in ds.coords:
@@ -40,17 +46,25 @@ def harmonize_coords(
 
     # Reset longitudes from the range [0, 360] to [-180, 180].
     if ds["x"].min() == 0:
-        ds = ds.assign_coords(x=(ds["x"] + 179.99999) % 360 - 179.99999).sortby("x")
+        ds = ds.assign_coords(
+            x=(ds["x"] + 179.99999) % 360 - 179.99999
+        ).sortby("x")
 
-    # Sort the dataset by the y coordinate.
-    ds = ds.sortby("y")
-
-    return ds
+    # Sort the dataset by the y coordinate and return it.
+    return ds.sortby("y")
 
 
-def clean_raster(xarray_data: xarray.DataArray, variable_name: str) -> xarray.DataArray:
+def clean_raster(
+    xarray_data: xarray.DataArray, variable_name: str
+) -> xarray.DataArray:
     """
-    Clean the xarray data by dropping unnecessary variables and renaming the variable.
+    Clean the xarray data imported from a raster file.
+
+    This function cleans the xarray data imported from a raster file
+    by dropping unnecessary variables, renaming the variable to the
+    specified variable name, and removing the "band" and "spatial_ref"
+    dimensions and attributes. It also squeezes the "band" dimension if
+    it exists.
 
     Parameters
     ----------
@@ -64,13 +78,12 @@ def clean_raster(xarray_data: xarray.DataArray, variable_name: str) -> xarray.Da
     xarray.DataArray
         The cleaned xarray data.
     """
-    # Drop unnecessary variables.
+    # Drop unnecessary variables, rename the variable, and remove
+    # unnecessary dimensions and attributes.
     xarray_data = xarray_data.squeeze("band")
     xarray_data = xarray_data.drop_vars(["band", "spatial_ref"])
     xarray_data = xarray_data.drop_attrs()
-    xarray_data = xarray_data.rename(variable_name)
-
-    return xarray_data
+    return xarray_data.rename(variable_name)
 
 
 def get_fraction_of_grid_cells_in_shape(
@@ -81,24 +94,34 @@ def get_fraction_of_grid_cells_in_shape(
     """
     Calculate the fraction of each grid cell that is in the given shape.
 
+    This function calculates the fraction of each grid cell that is
+    contained within the specified country or subdivision shape. It
+    creates a temporary cutout of the grid cells based on the bounds of
+    the entity shape and computes the fraction of each grid cell that
+    intersects with the shape. The resulting fraction is normalized to
+    ensure that the values are between 0 and 1.
+
     Parameters
     ----------
     entity_shape : geopandas.GeoDataFrame
         GeoDataFrame containing the country or subdivision of interest.
-    resolution : float
+    resolution : float, optional
         The resolution of the grid cells in degrees.
-    make_plot : bool
-        Whether to make a plot of the fraction of each grid cell that is in the given country or subdivision.
+    make_plot : bool, optional
+        Whether to make a plot of the fraction of the grid cells that
+        are in the given country or subdivision.
 
     Returns
     -------
     fraction_of_grid_cells_in_shape : xarray.DataArray
         Fraction of each grid cell that is in the given shape.
     """
-    # Calculate the lateral bounds for the cutout based on the lateral bounds of the country or subdivision of interest.
+    # Calculate the lateral bounds for the cutout based on the lateral
+    # bounds of the country or subdivision of interest.
     cutout_bounds = util.shapes.get_entity_bounds(entity_shape)
 
-    # Create a temporary cutout to have the grid cell of the country or subdivision of interest.
+    # Create a temporary cutout to have the grid cell of the country or
+    # subdivision of interest.
     cutout = atlite.Cutout(
         "temporary_cutout",
         module="era5",
@@ -108,7 +131,7 @@ def get_fraction_of_grid_cells_in_shape(
         time=slice("2013-01-01", "2013-01-02"),
     )
 
-    # Calculate the fraction of each grid cell that is in the given shape.
+    # Calculate the fraction of each grid cell that is in the shape.
     fraction_of_grid_cells_in_shape_np = atlite.gis.compute_indicatormatrix(
         cutout.grid, entity_shape, orig_crs=4326, dest_crs=4326
     ).toarray()
@@ -152,7 +175,14 @@ def get_largest_values_in_shape(
     number_of_grid_cells: int,
 ) -> xarray.DataArray:
     """
-    Get the grid cells with the largest values in the given shape.
+    Get the grid cells with the largest values.
+
+    This function extracts the grid cells with the largest values from
+    the given xarray data within the specified country or subdivision
+    shape. It first calculates the fraction of each grid cell that is
+    contained within the shape, then stacks the xarray data to drop
+    NaN values, and finally returns the grid cells with the largest
+    values based on the specified number of grid cells.
 
     Parameters
     ----------
@@ -168,7 +198,7 @@ def get_largest_values_in_shape(
     xarray.DataArray
         The grid cells with the largest values in the given shape.
     """
-    # Calculate the fraction of each grid cell that is in the given shapes.
+    # Calculate the fraction of each grid cell that is in the shapes.
     fraction_of_grid_cells_in_shape = get_fraction_of_grid_cells_in_shape(
         entity_shape, make_plot=False
     )
@@ -194,26 +224,36 @@ def coarsen(
     """
     Coarsen the xarray data to the target resolution.
 
+    This function coarsens the xarray data to the specified target
+    resolution by aggregating the data into bins of the target
+    resolution.
+
     Parameters
     ----------
     original_xarray : xarray.DataArray
         The xarray data to coarsen.
-    bounds : list of float
-        The lateral bounds (West, South, East, North) used to clip the data.
-    target_resolution : float
+    bounds : list[float]
+        The lateral bounds (West, South, East, North) used to clip the
+        data.
+    target_resolution : float, optional
         The target resolution of the coarsened data.
 
     Returns
     -------
-    coarsened_xarray : xarray.DataArray
+    xarray.DataArray
         The coarsened xarray data.
     """
     # Get the original resolution of the xarray data.
-    original_x_resolution = abs(original_xarray.x[1] - original_xarray.x[0]).item()
-    original_y_resolution = abs(original_xarray.y[1] - original_xarray.y[0]).item()
+    original_x_resolution = abs(
+        original_xarray.x[1] - original_xarray.x[0]
+    ).item()
+    original_y_resolution = abs(
+        original_xarray.y[1] - original_xarray.y[0]
+    ).item()
     original_resolution = max(original_x_resolution, original_y_resolution)
 
-    # Check if the target resolution is greater than the original resolution.
+    # Check if the target resolution is greater than the original
+    # resolution.
     assert target_resolution > original_resolution, (
         "Target resolution must be greater than the original resolution."
     )
@@ -228,36 +268,46 @@ def coarsen(
     y_list = numpy.linspace(-90, 90, int(180 / target_resolution) + 1)
 
     # Define the bins where to aggregate the original data.
-    # The next(...) function in this case calculates the first value that satisfies the specified condition.
-    # The resulting bins are the first and last values of the x_list and y_list that are within the bounds.
+    # The next(...) function in this case calculates the first value
+    # that satisfies the specified condition. The resulting bins are the
+    # first and last values of the x_list and y_list that are within the
+    # bounds.
     x_bins = numpy.arange(
-        x_list[next(x for x, val in enumerate(x_list) if val >= bounds[0])] - 0.25 / 2,
+        x_list[next(x for x, val in enumerate(x_list) if val >= bounds[0])]
+        - 0.25 / 2,
         x_list[next(x for x, val in enumerate(x_list) if val >= bounds[2]) + 1]
         + 0.25 / 2,
         0.25,
     )
     y_bins = numpy.arange(
-        y_list[next(x for x, val in enumerate(y_list) if val >= bounds[1])] - 0.25 / 2,
+        y_list[next(x for x, val in enumerate(y_list) if val >= bounds[1])]
+        - 0.25 / 2,
         y_list[next(x for x, val in enumerate(y_list) if val >= bounds[3]) + 1]
         + 0.25 / 2,
         0.25,
     )
 
-    # Aggregate the original data to the new coarser resolution, first in the x direction and then in the y direction.
+    # Aggregate the original data to the new coarser resolution, first
+    # in the x direction and then in the y direction.
     coarsened_xarray = original_xarray.groupby_bins("x", x_bins).sum()
     coarsened_xarray = coarsened_xarray.groupby_bins("y", y_bins).sum()
 
-    # For each coordinate, substitute the bin range with the middle of the bin.
+    # For each coordinate, substitute the bin range with the middle of
+    # the bin.
     coarsened_xarray["x_bins"] = numpy.arange(
         x_list[next(x for x, val in enumerate(x_list) if val >= bounds[0])],
-        x_list[next(x for x, val in enumerate(x_list) if val >= bounds[2]) + 1],
+        x_list[
+            next(x for x, val in enumerate(x_list) if val >= bounds[2]) + 1
+        ],
         0.25,
     )
     coarsened_xarray["y_bins"] = numpy.arange(
         y_list[next(x for x, val in enumerate(y_list) if val >= bounds[1])],
-        y_list[next(x for x, val in enumerate(y_list) if val >= bounds[3]) + 1],
+        y_list[
+            next(x for x, val in enumerate(y_list) if val >= bounds[3]) + 1
+        ],
         0.25,
     )
 
-    # Rename the bins to "x" and "y" and return the coarsened xarray data.
+    # Rename the bins to "x" and "y" and return the coarsened xarray.
     return coarsened_xarray.rename({"x_bins": "x", "y_bins": "y"})

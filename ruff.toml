@@ -1,18 +1,29 @@
 target-version = "py312"
 
-[lint] # See ruff documentation for more rules (https://docs.astral.sh/ruff/rules/).
+# Set the maximum line length for code according to PEP 8.
+line-length = 79
+
+# Linting rules. See documentation for more rules (https://docs.astral.sh/ruff/rules/).
+[lint]
 # Add additional rules on top of the default `select` (`E4`, E7`, `E9`, and `F`).
 extend-select = [
     "I", # sort imports
     "TID", # tidy imports
-    "D", # tidy docstrings
+    "D", # tidy docstrings with pydocstyle
+    "DOC", # tidy docstrings with pydoclint
     "PD", # lint pandas
+    "W", # raise warnings
 ]
-# Define the convention for docstrings.
+# Define the convention for pydocstyle.
 pydocstyle.convention = "numpy"
+# Define the maximum length of docstrings and comments. Raises a warming if exceeded.
+pycodestyle.max-doc-length = 72
+# Enable potentially unstable new lint rules. This enables pydoclint.
+preview = true
 
 # Add specific rule codes/groups here to ignore them, or add a '#noqa' comment to the line of code to skip all checks.
 ignore = []
 
+# Formatting rules. See documentation for more rules (https://docs.astral.sh/ruff/rules/).
 [format]
 docstring-code-format = true
