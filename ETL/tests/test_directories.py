@@ -4,7 +4,8 @@ License: AGPL-3.0.
 
 Description:
 
-    This file contains unit tests for the directories module in the ETL utility package.
+    This file contains unit tests for the directories module in the ETL
+    utility package.
 """
 
 import os
@@ -14,7 +15,12 @@ import util.directories
 
 
 def test_load_paths():
-    """Test if the folders structure is read correctly from the sample yaml file."""
+    """
+    Test if the folders structure is read correctly.
+
+    This test checks if the keys and values in the yaml file are read
+    correctly and if the absolute paths are constructed as expected.
+    """
     # Read the folders structure from the sample yaml file.
     structure = util.directories.read_folders_structure()
 
@@ -34,7 +40,13 @@ def test_load_paths():
 @patch("util.directories.os.listdir")
 def test_list_yaml_files(mock_listdir, mock_read_folders_structure):
     """
-    Test if the list_yaml_files function returns the correct list of yaml files in the specified folder.
+    Test if the yaml files in a specified folder are listed correctly.
+
+    This test checks if the function correctly lists all yaml files in a
+    specified folder, ignoring non-yaml files. It uses mocks to simulate
+    the behavior of the `os.listdir` function and the
+    `read_folders_structure` function, allowing the test to run without
+    needing actual files or directories.
 
     Parameters
     ----------
@@ -47,7 +59,8 @@ def test_list_yaml_files(mock_listdir, mock_read_folders_structure):
     folder_name = "config"
     target_path = "/mocked/path/config"
 
-    # Mock the return values of the read_folders_structure and os.listdir functions.
+    # Mock the return values of the read_folders_structure and
+    # os.listdir functions.
     mock_read_folders_structure.return_value = {folder_name: target_path}
     mock_listdir.return_value = ["file1.yaml", "file2.yaml", "ignore.txt"]
 
