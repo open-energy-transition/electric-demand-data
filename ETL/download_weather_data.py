@@ -21,7 +21,7 @@ import logging
 import os
 
 import pandas
-import retrieval.copernicus
+import retrievals.copernicus
 import utils.directories
 import utils.entities
 import utils.shapes
@@ -152,7 +152,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
                 # Download the ERA5 data from the Copernicus Climate
                 # Data Store (CDS).
-                retrieval.copernicus.download_data(
+                retrievals.copernicus.download_data(
                     year, args.variable, file_path, bounds=entity_bounds
                 )
 

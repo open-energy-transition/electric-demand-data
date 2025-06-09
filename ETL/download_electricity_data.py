@@ -18,59 +18,59 @@ import logging
 import os
 
 import pandas
-import retrieval.aemo_nem
-import retrieval.aemo_wem
-import retrieval.aeso
-import retrieval.bchydro
-import retrieval.cammesa
-import retrieval.ccei
-import retrieval.cen
-import retrieval.cenace
-import retrieval.coes
-import retrieval.eia
-import retrieval.emi
-import retrieval.entsoe
-import retrieval.epias
-import retrieval.eskom
-import retrieval.hydroquebec
-import retrieval.ieso
-import retrieval.nbpower
-import retrieval.neso
-import retrieval.nigeria
-import retrieval.ons
-import retrieval.sonelgaz
-import retrieval.tepco
-import retrieval.tsoc
-import retrieval.xm
+import retrievals.aemo_nem
+import retrievals.aemo_wem
+import retrievals.aeso
+import retrievals.bchydro
+import retrievals.cammesa
+import retrievals.ccei
+import retrievals.cen
+import retrievals.cenace
+import retrievals.coes
+import retrievals.eia
+import retrievals.emi
+import retrievals.entsoe
+import retrievals.epias
+import retrievals.eskom
+import retrievals.hydroquebec
+import retrievals.ieso
+import retrievals.nbpower
+import retrievals.neso
+import retrievals.nigeria
+import retrievals.ons
+import retrievals.sonelgaz
+import retrievals.tepco
+import retrievals.tsoc
+import retrievals.xm
 import utils.directories
 import utils.entities
 import utils.time_series
 
 retrieval_module = {
-    "AEMO_NEM": retrieval.aemo_nem,
-    "AEMO_WEM": retrieval.aemo_wem,
-    "AESO": retrieval.aeso,
-    "BCHYDRO": retrieval.bchydro,
-    "CAMMESA": retrieval.cammesa,
-    "CCEI": retrieval.ccei,
-    "CEN": retrieval.cen,
-    "CENACE": retrieval.cenace,
-    "COES": retrieval.coes,
-    "EIA": retrieval.eia,
-    "EMI": retrieval.emi,
-    "ENTSOE": retrieval.entsoe,
-    "EPIAS": retrieval.epias,
-    "ESKOM": retrieval.eskom,
-    "HYDROQUEBEC": retrieval.hydroquebec,
-    "IESO": retrieval.ieso,
-    "NBPOWER": retrieval.nbpower,
-    "NESO": retrieval.neso,
-    "NIGERIA": retrieval.nigeria,
-    "ONS": retrieval.ons,
-    "SONELGAZ": retrieval.sonelgaz,
-    "TEPCO": retrieval.tepco,
-    "TSOC": retrieval.tsoc,
-    "XM": retrieval.xm,
+    "AEMO_NEM": retrievals.aemo_nem,
+    "AEMO_WEM": retrievals.aemo_wem,
+    "AESO": retrievals.aeso,
+    "BCHYDRO": retrievals.bchydro,
+    "CAMMESA": retrievals.cammesa,
+    "CCEI": retrievals.ccei,
+    "CEN": retrievals.cen,
+    "CENACE": retrievals.cenace,
+    "COES": retrievals.coes,
+    "EIA": retrievals.eia,
+    "EMI": retrievals.emi,
+    "ENTSOE": retrievals.entsoe,
+    "EPIAS": retrievals.epias,
+    "ESKOM": retrievals.eskom,
+    "HYDROQUEBEC": retrievals.hydroquebec,
+    "IESO": retrievals.ieso,
+    "NBPOWER": retrievals.nbpower,
+    "NESO": retrievals.neso,
+    "NIGERIA": retrievals.nigeria,
+    "ONS": retrievals.ons,
+    "SONELGAZ": retrievals.sonelgaz,
+    "TEPCO": retrievals.tepco,
+    "TSOC": retrievals.tsoc,
+    "XM": retrievals.xm,
 }
 
 
