@@ -1,6 +1,6 @@
 log_files_folder: logs
 settings_folder: settings
-retrieval_scripts_folder: retrieval
+retrieval_scripts_folder: retrievals
 figures_folder: figures
 shapes_folder: shapes
 data_folder: &data_folder data

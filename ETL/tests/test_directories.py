@@ -36,8 +36,8 @@ def test_load_paths():
     )
 
 
-@patch("util.directories.read_folders_structure")
-@patch("util.directories.os.listdir")
+@patch("utils.directories.read_folders_structure")
+@patch("utils.directories.os.listdir")
 def test_list_yaml_files(mock_listdir, mock_read_folders_structure):
     """
     Test if the yaml files in a specified folder are listed correctly.

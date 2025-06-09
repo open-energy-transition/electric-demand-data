@@ -18,7 +18,7 @@ def read_folders_structure() -> dict[str, str]:
     Read the folders structure.
 
     This function reads the folders structure from a yaml file located
-    in the 'util' directory. The yaml file should contain a dictionary
+    in the 'utils' directory. The yaml file should contain a dictionary
     where keys are folder names and values are their paths relative to
     the root folder. The root folder is determined as the parent
     directory of the current file's directory.
@@ -36,7 +36,7 @@ def read_folders_structure() -> dict[str, str]:
 
     # Define the default path to the yaml file.
     folders_structure_file_path = os.path.join(
-        root_folder, "util", "directories.yaml"
+        root_folder, "utils", "directories.yaml"
     )
 
     # Read the folders structure from the file.
