@@ -84,6 +84,27 @@ def setupFastAPI(args: argparse.Namespace):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
+    @app.get("/country/")
+    def placeholder_country():
+        """
+        Return a list of all the available country codes.
+        """
+        raise HTTPException(status_code=501, detail="Not implemented")
+
+    @app.get("/country/{code}/{year}")
+    def placeholder_country_year(code: str, year: int):
+        """
+        Return predicted electricity demand for a given country and year.
+        """
+        raise HTTPException(status_code=501, detail="Not implemented")
+
+    @app.get("/year/{year}")
+    def placeholder_year():
+        """
+        Return predicted electricity demand for a given year.
+        """
+        raise HTTPException(status_code=501, detail="Not implemented")
+
     return app
 
 
