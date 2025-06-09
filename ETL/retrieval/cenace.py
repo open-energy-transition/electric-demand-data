@@ -4,12 +4,13 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the Centro Nacional de Control de Energía (CENACE) in Mexico.
-
-    The data is retrieved for the period from 2016 to today. The data is retrieved in one-year intervals.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the Centro Nacional de Control de Energía
+    (CENACE) in Mexico. The data is retrieved for the period from 2016
+    to today. The data is retrieved in one-year intervals.
 
     Source: https://www.cenace.gob.mx/Paginas/SIM/Reportes/EstimacionDemandaReal.aspx
-"""
+"""  # noqa: W505
 
 import logging
 import zipfile
@@ -32,11 +33,11 @@ def _check_input_parameters(
     Parameters
     ----------
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     """
     # Check if the code is valid.
     util.entities.check_code(code, "cenace")
@@ -44,8 +45,8 @@ def _check_input_parameters(
     if start_date is not None and end_date is not None:
         # Check if the retrieval period is less than 1 year.
         assert (end_date - start_date) <= pandas.Timedelta("366days"), (
-            "The retrieval period must be less than or equal to 1 year. start_date: "
-            f"{start_date}, end_date: {end_date}"
+            "The retrieval period must be less than or equal to 1 year. "
+            f"start_date: {start_date}, end_date: {end_date}"
         )
 
         # Read the start date of the available data.
@@ -53,7 +54,8 @@ def _check_input_parameters(
             util.entities.read_date_ranges(data_source="cenace")[code][0]
         )
 
-        # Check that the start date is greater than or equal to the beginning of the data availability.
+        # Check that the start date is greater than or equal to the
+        # beginning of the data availability.
         assert start_date >= start_date_of_data_availability, (
             f"The beginning of the data availability is {start_date_of_data_availability}."
         )
@@ -63,25 +65,31 @@ def get_available_requests(
     code: str,
 ) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the CENACE website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the CENACE website.
 
     Parameters
     ----------
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
 
     Returns
     -------
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
-        The list of available requests
+        The list of available requests.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="cenace")[code]
+    start_date, end_date = util.entities.read_date_ranges(
+        data_source="cenace"
+    )[code]
 
-    # Mexico has data until 15 days before the current date. Subtract 10 days to the end date on top of the 5 days already considered.
+    # Mexico has data until 15 days before the current date. Subtract
+    # 10 days to the end date on top of the 5 days already considered.
     end_date = pandas.to_datetime(end_date) - pandas.Timedelta("10days")
 
     # Define intervals for the retrieval periods.
@@ -92,7 +100,8 @@ def get_available_requests(
     start_dates_and_times = intervals[:-1]
     end_dates_and_times = intervals[1:]
 
-    # Return the available requests, which are the beginning and end of each one-year period.
+    # Return the available requests, which are the beginning and end of
+    # each one-year period.
     return list(zip(start_dates_and_times, end_dates_and_times))
 
 
@@ -103,10 +112,13 @@ def get_url() -> str:
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Return the URL of the electricity demand data.
-    return "https://www.cenace.gob.mx/Paginas/SIM/Reportes/EstimacionDemandaReal.aspx"
+    return (
+        "https://www.cenace.gob.mx/Paginas/SIM/Reportes/"
+        "EstimacionDemandaReal.aspx"
+    )
 
 
 def download_and_extract_data_for_request(
@@ -115,27 +127,37 @@ def download_and_extract_data_for_request(
     code: str,
 ) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the CENACE website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the CENACE website.
 
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the response is not a requests.Response object or if no data
+        is found for the specified date.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(code, start_date=start_date, end_date=end_date)
 
     logging.info(
-        f"Retrieving electricity demand data from {start_date.date()} to {end_date.date()}."
+        "Retrieving electricity demand data from "
+        f"{start_date.date()} to {end_date.date()}."
     )
 
     # Get the URL of the electricity demand data.
@@ -143,23 +165,28 @@ def download_and_extract_data_for_request(
 
     # Define the parameters for the POST request.
     post_data_params = {
-        "ctl00$ContentPlaceHolder1$RadDatePickerFIVisualizarPorBalance$dateInput": start_date.strftime(
-            "%d/%m/%Y"
+        "ctl00$ContentPlaceHolder1$RadDatePickerFIVisualizarPorBalance"
+        "$dateInput": start_date.strftime("%d/%m/%Y"),
+        "ctl00_ContentPlaceHolder1_RadDatePickerFIVisualizarPorBalance"
+        "_dateInput_ClientState": (
+            '{"valueAsString":"'
+            + start_date.strftime("%Y-%m-%d")
+            + '-00-00-00","lastSetTextBoxValue":"'
+            + start_date.strftime("%d/%m/%Y")
+            + '"}'
         ),
-        "ctl00_ContentPlaceHolder1_RadDatePickerFIVisualizarPorBalance_dateInput_ClientState": '{"valueAsString":"'
-        + start_date.strftime("%Y-%m-%d")
-        + '-00-00-00","lastSetTextBoxValue":"'
-        + start_date.strftime("%d/%m/%Y")
-        + '"}',
-        "ctl00$ContentPlaceHolder1$RadDatePickerFFVisualizarPorBalance$dateInput": end_date.strftime(
-            "%d/%m/%Y"
+        "ctl00$ContentPlaceHolder1$RadDatePickerFFVisualizarPorBalance"
+        "$dateInput": end_date.strftime("%d/%m/%Y"),
+        "ctl00_ContentPlaceHolder1_RadDatePickerFFVisualizarPorBalance"
+        "_dateInput_ClientState": (
+            '{"valueAsString":"'
+            + end_date.strftime("%Y-%m-%d")
+            + '-00-00-00","lastSetTextBoxValue":"'
+            + end_date.strftime("%d/%m/%Y")
+            + '"}'
         ),
-        "ctl00_ContentPlaceHolder1_RadDatePickerFFVisualizarPorBalance_dateInput_ClientState": '{"valueAsString":"'
-        + end_date.strftime("%Y-%m-%d")
-        + '-00-00-00","lastSetTextBoxValue":"'
-        + end_date.strftime("%d/%m/%Y")
-        + '"}',
-        "ctl00$ContentPlaceHolder1$DescargarArchivosCsv_PorBalance": "Descargar+en+archivo+.zip",
+        "ctl00$ContentPlaceHolder1$DescargarArchivosCsv"
+        "_PorBalance": "Descargar+en+archivo+.zip",
     }
 
     # Define the headers for the request.
@@ -178,7 +205,10 @@ def download_and_extract_data_for_request(
 
     # Make sure the response is a requests.Response object.
     if not isinstance(response, requests.Response):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted response is a {type(response)} object, "
+            "expected a requests.Response object."
+        )
     else:
         # Extract the zip file from the HTML content.
         archive = zipfile.ZipFile(BytesIO(response.content), "r")
@@ -204,21 +234,27 @@ def download_and_extract_data_for_request(
 
         # Iterate over the dates and extract the corresponding files.
         for date in dates:
-            # Define the file version to be extracted. Start with the latest version and go backwards.
+            # Define the file version to be extracted. Start with the
+            # latest version and go backwards.
             file_version = -1
 
-            # Define a flag to indicate if the data for the date was found.
+            # Define a flag to indicate if the data for the date was
+            # found.
             found_data = False
 
-            # Loop until the data for the date is found or all file versions are exhausted.
+            # Loop until the data for the date is found or all file
+            # versions are exhausted.
             while not found_data:
                 # Get the file name corresponding to the date.
-                file_name = [name for name in file_names if date in name][file_version]
+                file_name = [name for name in file_names if date in name][
+                    file_version
+                ]
 
                 # Extract the file content from the archive.
                 file_content = archive.open(file_name).read().decode("utf-8")
 
-                # Find the line that contains the header of the CSV file.
+                # Find the line that contains the header of the CSV
+                # file.
                 skip_rows = file_content.split("\n").index(
                     [
                         line
@@ -231,13 +267,16 @@ def download_and_extract_data_for_request(
                 if file_content.split("\n")[skip_rows + 1] != "":
                     found_data = True
                 else:
-                    # If the line after the header is empty, try the previous version of the file.
+                    # If the line after the header is empty, try the
+                    # previous version of the file.
                     file_version -= 1
 
                     if file_version < -len(file_names):
-                        # If there are no more versions of the file, raise an error.
+                        # If there are no more versions of the file,
+                        # raise an error.
                         raise ValueError(
-                            f"No data found for the date {date} in the file {file_name}."
+                            f"No data found for the date {date} "
+                            f"in the file {file_name}."
                         )
 
             # Read the file content into a pandas DataFrame.
@@ -257,12 +296,14 @@ def download_and_extract_data_for_request(
                 " Estimacion de Demanda por Balance (MWh) "
             ].reset_index(drop=True)
 
-            # For the Norte subdivision on 2022-10-30, there seems to be an extra hour in the data.
+            # For the Norte subdivision on 2022-10-30, there seems to be
+            # an extra hour in the data.
             if subdivision_code == "NTE" and date == "2022-10-30":
                 # Remove the third value from the list.
                 daily_values = daily_values.drop(2)
 
-            # Set a new index with the date and time for each hour of the day.
+            # Set a new index with the date and time for each hour of
+            # the day.
             daily_values.index = pandas.date_range(
                 start=date + " 00:00:00",
                 end=date + " 23:59:59",

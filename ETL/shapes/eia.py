@@ -23,7 +23,11 @@ import geopandas
 from shapely.geometry import Polygon
 
 # Define the URL of the shapefile of the balancing authorities.
-url = "https://hub.arcgis.com/api/v3/datasets/09550598922b429ca9f06b9a067257bd_255/downloads/data?format=shp&spatialRefId=3857&where=1%3D1"  # noqa: W505
+url = (
+    "https://hub.arcgis.com/api/v3/datasets/"
+    "09550598922b429ca9f06b9a067257bd_255/downloads/"
+    "data?format=shp&spatialRefId=3857&where=1%3D1"
+)
 
 # Read the shapefile of the balancing authorities as a GeoDataFrame.
 balancing_authorities = geopandas.read_file(url)

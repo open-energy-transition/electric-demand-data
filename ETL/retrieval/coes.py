@@ -4,9 +4,10 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the Comité de Operación Económica (COES) of Peru.
-
-    The data is retrieved from 1997 to current date. The data is retrieved in one-year intervals.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the Comité de Operación Económica (COES)
+    of Peru. The data is retrieved from 1997 to current date. The data
+    is retrieved in one-year intervals.
 
     Source: https://www.coes.org.pe/Portal/portalinformacion/demanda
 """
@@ -25,7 +26,7 @@ def _check_input_parameters(year: int) -> None:
     Parameters
     ----------
     year : int
-        The year of the data to retrieve
+        The year of the data to retrieve.
     """
     # Check if the year is supported.
     assert year in get_available_requests(), (
@@ -35,15 +36,20 @@ def _check_input_parameters(year: int) -> None:
 
 def get_available_requests() -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the COES website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the COES website.
 
     Returns
     -------
     list[int]
-        The list of available requests
+        The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="coes")["PE"]
+    start_date, end_date = util.entities.read_date_ranges(data_source="coes")[
+        "PE"
+    ]
 
     # Return the available requests, which are the years.
     return [year for year in range(start_date.year, end_date.year + 1)]
@@ -56,7 +62,7 @@ def get_url() -> str:
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Return the URL of the electricity demand data.
     return "https://www.coes.org.pe/Portal/portalinformacion/demanda"
@@ -64,17 +70,25 @@ def get_url() -> str:
 
 def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the COES website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the COES website.
 
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(year)
@@ -85,7 +99,10 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     url = get_url()
 
     # Define the request parameters.
-    request_params = {"fechaInicial": f"01/01/{year}", "fechaFinal": f"31/12/{year}"}
+    request_params = {
+        "fechaInicial": f"01/01/{year}",
+        "fechaFinal": f"31/12/{year}",
+    }
 
     # Fetch the data from the URL.
     dataset = util.fetcher.fetch_data(
@@ -99,14 +116,20 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         # Extract the electricity demand data from the dataset.
-        dataset = pandas.DataFrame(dataset[dataset["Name"] == "Ejecutado"]["Data"][0])
+        dataset = pandas.DataFrame(
+            dataset[dataset["Name"] == "Ejecutado"]["Data"][0]
+        )
 
         # Extract the electricity demand time series.
         electricity_demand_time_series = pandas.Series(
-            dataset["Valor"].values, index=pandas.to_datetime(dataset["Nombre"])
+            dataset["Valor"].values,
+            index=pandas.to_datetime(dataset["Nombre"]),
         )
 
         # Add timezone information to the index.

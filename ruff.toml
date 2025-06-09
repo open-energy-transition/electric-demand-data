@@ -3,6 +3,9 @@ target-version = "py312"
 # Set the maximum line length for code according to PEP 8.
 line-length = 79
 
+# Exclude specific files or directories from linting.
+exclude = ["*.yaml"]
+
 # Linting rules. See documentation for more rules (https://docs.astral.sh/ruff/rules/).
 [lint]
 # Add additional rules on top of the default `select` (`E4`, E7`, `E9`, and `F`).

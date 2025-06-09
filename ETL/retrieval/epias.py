@@ -4,9 +4,12 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of Enerji Piyasaları İşletme A.Ş. (EPIAS) in Turkey.
-
-    The data is retrieved by registering on the website and downloading the data manually. The user needs to create an account on the EPIAS website, which is free of charge. After registration, the user can log in to the website and download the data.
+    This module provides functions to retrieve the electricity demand
+    data from the website of Enerji Piyasaları İşletme A.Ş. (EPIAS) in
+    Turkey. The data is retrieved by registering on the website and
+    downloading the data manually. The user needs to create an account
+    on the EPIAS website, which is free of charge. After registration,
+    the user can log in to the website and download the data.
 
     Source: https://seffaflik.epias.com.tr/
 """
@@ -19,7 +22,12 @@ import util.directories
 
 
 def get_available_requests() -> None:
-    """Get the list of available requests to retrieve the electricity demand data from the EPIAS website."""
+    """
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the EPIAS website.
+    """
     logging.debug("The data is retrieved manually.")
 
 
@@ -30,7 +38,7 @@ def get_url() -> str:
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Return the URL of the electricity demand data.
     return "https://seffaflik.epias.com.tr/"
@@ -38,21 +46,23 @@ def get_url() -> str:
 
 def download_and_extract_data() -> pandas.Series:
     """
-    Extract the electricity demand data retrieved from the EPIAS website.
+    Extract electricity demand data.
 
-    This function assumes that the data has been downloaded and is available in the specified folder.
+    This function extracts the electricity demand data from the EPIAS
+    website. This function assumes that the data has been downloaded and
+    is available in the specified folder.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
     """
     # Get the data folder.
     data_directory = util.directories.read_folders_structure()[
         "manually_downloaded_data_folder"
     ]
 
-    # Get the paths of the downloaded files. Each file starts with "EPI".
+    # Get the paths of the downloaded files that start with "EPI".
     downloaded_file_paths = [
         os.path.join(data_directory, file)
         for file in os.listdir(data_directory)
@@ -70,7 +80,8 @@ def download_and_extract_data() -> pandas.Series:
         index=pandas.to_datetime(dataset["Tarih"], format="%d/%m/%Y %H:%M:%S"),
     )
 
-    # Add one hour to the index because the electricity demand seems to be provided at the beginning of the hour.
+    # Add one hour to the index because the electricity demand seems to
+    # be provided at the beginning of the hour.
     electricity_demand_time_series.index = (
         electricity_demand_time_series.index + pandas.Timedelta(hours=1)
     )

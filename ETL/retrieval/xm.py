@@ -4,11 +4,12 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the XM Adminstradores del mercado electrico in Colombia.
-
-    The data is actually made available through the website of "Energia de Colombia" (https://www.energiadecolombia.com).
-
-    The data is retrieved from 2000-01-01 to today. The data is retrieved in one-month intervals.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the XM Adminstradores del mercado electrico
+    in Colombia. The data is actually made available through the website
+    of "Energia de Colombia" (https://www.energiadecolombia.com). The
+    data is retrieved from 2000-01-01 to today. The data is retrieved in
+    one-month intervals.
 
     Source: https://xm.com.co
     Source: https://www.energiadecolombia.com/consulta
@@ -30,13 +31,14 @@ def _check_input_parameters(
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     """
     # Check that the retrieval period is less than one month.
     assert (end_date - start_date) <= pandas.Timedelta("31days"), (
-        "The retrieval period is greater than 1 month. Please reduce the period to 1 month."
+        "The retrieval period is greater than 1 month. Please reduce the "
+        "period to 1 month."
     )
 
     # Read the start date of the available data.
@@ -44,23 +46,32 @@ def _check_input_parameters(
         util.entities.read_date_ranges(data_source="xm")["CO"][0]
     )
 
-    # Check that the start date is greater than or equal to the beginning of the data availability.
+    # Check that the start date is greater than or equal to the
+    # beginning of the data availability.
     assert start_date >= start_date_of_data_availability, (
-        f"The beginning of the data availability is {start_date_of_data_availability}."
+        "The beginning of the data availability is "
+        f"{start_date_of_data_availability}."
     )
 
 
-def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
+def get_available_requests() -> list[
+    tuple[pandas.Timestamp, pandas.Timestamp]
+]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the XM website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the XM website.
 
     Returns
     -------
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
-        The list of available requests
+        The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="xm")["CO"]
+    start_date, end_date = util.entities.read_date_ranges(data_source="xm")[
+        "CO"
+    ]
 
     # Define one-month intervals for the retrieval periods.
     intervals = pandas.date_range(start_date, end_date, freq="MS")
@@ -70,7 +81,8 @@ def get_available_requests() -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     start_dates_and_times = intervals[:-1]
     end_dates_and_times = intervals[1:]
 
-    # Return the available requests, which are the beginning and end of each one-month period.
+    # Return the available requests, which are the beginning and end of
+    # each one-month period.
     return list(zip(start_dates_and_times, end_dates_and_times))
 
 
@@ -81,14 +93,14 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
 
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
@@ -98,32 +110,44 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     end_date = end_date.strftime("%Y-%m-%d")
 
     # Return the URL of the electricity demand data.
-    return f"https://50uclmn31c.execute-api.us-east-1.amazonaws.com/prod/xmproxy?metricId=DemaReal&entity=Sistema&start={start_date}&end={end_date}"
+    return (
+        "https://50uclmn31c.execute-api.us-east-1.amazonaws.com/prod/xmproxy?"
+        f"metricId=DemaReal&entity=Sistema&start={start_date}&end={end_date}"
+    )
 
 
 def download_and_extract_data_for_request(
     start_date: pandas.Timestamp, end_date: pandas.Timestamp
 ) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the XM website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the XM website.
 
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
 
     logging.info(
-        f"Retrieving electricity demand data from {start_date.date()} to {end_date.date()}."
+        "Retrieving electricity demand data from "
+        f"{start_date.date()} to {end_date.date()}."
     )
 
     # Get the URL of the electricity demand data.
@@ -139,7 +163,10 @@ def download_and_extract_data_for_request(
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         # Initialize the list to store the daily values.
         dayly_values_list = []
@@ -177,7 +204,8 @@ def download_and_extract_data_for_request(
             electricity_demand_time_series.index.tz_localize("America/Bogota")
         )
 
-        # Add 1 hour to the index to account for the fact that the time is given at the beginning of the hour.
+        # Add 1 hour to the index to account for the fact that the time
+        # is given at the beginning of the hour.
         electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
         return electricity_demand_time_series

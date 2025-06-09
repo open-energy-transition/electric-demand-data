@@ -1,16 +1,18 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the Australian Energy Market Operator (AEMO) for the National Electricity Market (NEM) in Australia.
-
-    The data is retrieved for the years from December of 1998 to the current month. The data is retrieved from the available CSV files on the AEMO website.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the Australian Energy Market Operator
+    (AEMO) for the National Electricity Market (NEM) in Australia. The
+    data is retrieved for the years from December of 1998 to the current
+    month. The data is retrieved from the available CSV files on the
+    AEMO website.
 
     Source: https://aemo.com.au/energy-systems/electricity/national-electricity-market-nem/data-nem/aggregated-data
-"""
+"""  # noqa: W505
 
 import logging
 
@@ -25,16 +27,16 @@ def _check_input_parameters(
     month: int | None = None,
 ) -> None:
     """
-    Check if the year and month are valid.
+    Check if the input parameters are valid.
 
     Parameters
     ----------
     code : str
-        The code of the subdivision
+        The code of the subdivision.
     year : int
-        The year of the data to retrieve
+        The year of the data to retrieve.
     month : int
-        The month of the data to retrieve
+        The month of the data to retrieve.
     """
     # Check if the code is valid.
     util.entities.check_code(code, "aemo_nem")
@@ -48,25 +50,30 @@ def _check_input_parameters(
 
 def get_available_requests(code: str) -> list[tuple[int, int]]:
     """
-    Get the list of available requests to retrieve the electricity demand data on the AEMO website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the AEMO website.
 
     Parameters
     ----------
-    code : str, optional
-        The code of the subdivision
+    code : str
+        The code of the subdivision.
 
     Returns
     -------
     available_requests : list[tuple[int, int]]
-        The list of available requests
+        The list of available requests.
     """
     # Check if input parameters are valid.
     _check_input_parameters(code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="aemo_nem")[code]
+    start_date, end_date = util.entities.read_date_ranges(
+        data_source="aemo_nem"
+    )[code]
 
-    # Get the list of available requests, which are the years and months.
+    # Get the list of available requests (year, month).
     values_list = (
         pandas.date_range(start=start_date, end=end_date, freq="ME")
         .strftime("%Y-%m")
@@ -74,7 +81,8 @@ def get_available_requests(code: str) -> list[tuple[int, int]]:
         .tolist()
     )
 
-    # Return the available requests, which are tuples in the format (year, month).
+    # Return the available requests, which are tuples in the format
+    # (year, month).
     return [(int(year), int(month)) for year, month in values_list]
 
 
@@ -85,16 +93,16 @@ def get_url(year: int, month: int, code: str) -> str:
     Parameters
     ----------
     month : int
-        The month of the data to retrieve
+        The month of the data to retrieve.
     year : int
-        The year of the data to retrieve
+        The year of the data to retrieve.
     code : str
-        The code of the subdivision
+        The code of the subdivision.
 
     Returns
     -------
     url : str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(code, year=year, month=month)
@@ -103,7 +111,10 @@ def get_url(year: int, month: int, code: str) -> str:
     subdivision_code = code.split("_")[1]
 
     # Define the URL of the electricity demand data.
-    url = f"https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_{year}{month:02d}_{subdivision_code}1.csv"
+    url = (
+        "https://aemo.com.au/aemo/data/nem/priceanddemand/"
+        f"PRICE_AND_DEMAND_{year}{month:02d}_{subdivision_code}1.csv"
+    )
 
     return url
 
@@ -112,27 +123,36 @@ def download_and_extract_data_for_request(
     year: int, month: int, code: str
 ) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the AEMO website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the AEMO website.
 
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
     month : int
-        The month of the electricity demand data
+        The month of the electricity demand data.
     subdivision_code : str
-        The subdivision code of the electricity demand data
+        The subdivision code of the electricity demand data.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity generation time series in MW
+        The electricity generation time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(code, year=year, month=month)
 
     logging.info(
-        f"Retrieving electricity demand data for the year {year} and month {month}."
+        "Retrieving electricity demand data for the "
+        f"year {year} and month {month}."
     )
 
     # Get the URL of the electricity demand data.
@@ -149,7 +169,10 @@ def download_and_extract_data_for_request(
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         # Extract the electricity demand data from the dataset.
         electricity_demand_time_series = pandas.Series(

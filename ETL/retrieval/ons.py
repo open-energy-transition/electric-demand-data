@@ -4,9 +4,11 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the Operador Nacional do Sistema Elétrico (ONS) in Brazil.
-
-    The data is retrieved for the years from 2000 to the current year. The data is retrieved from the available CSV files on the ONS website.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the Operador Nacional do Sistema Elétrico
+    (ONS) in Brazil. The data is retrieved for the years from 2000 to
+    the current year. The data is retrieved from the available CSV files
+    on the ONS website.
 
     Source: https://dados.ons.org.br/dataset/curva-carga
 """
@@ -18,16 +20,18 @@ import util.entities
 import util.fetcher
 
 
-def _check_input_parameters(year: int | None = None, code: str = "BR_N") -> None:
+def _check_input_parameters(
+    year: int | None = None, code: str = "BR_N"
+) -> None:
     """
     Check if the input parameters are valid.
 
     Parameters
     ----------
     year : int
-        The year of the data to retrieve
+        The year of the data to retrieve.
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
     """
     # Check if the code is valid.
     util.entities.check_code(code, "ons")
@@ -41,23 +45,28 @@ def _check_input_parameters(year: int | None = None, code: str = "BR_N") -> None
 
 def get_available_requests(code: str) -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the ONS website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the ONS website.
 
     Parameters
     ----------
-    code : str, optional
-        The code of the subdivision
+    code : str
+        The code of the subdivision.
 
     Returns
     -------
     list[int]
-        The list of available requests
+        The list of available requests.
     """
     # Check if input parameters are valid.
     _check_input_parameters(code=code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="ons")[code]
+    start_date, end_date = util.entities.read_date_ranges(data_source="ons")[
+        code
+    ]
 
     # Return the available requests, which are the years.
     return list(range(start_date.year, end_date.year + 1))
@@ -70,35 +79,48 @@ def get_url(year: int) -> str:
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
 
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Check if input parameters are valid.
     _check_input_parameters(year=year)
 
     # Return the URL of the electricity demand data.
-    return f"https://ons-aws-prod-opendata.s3.amazonaws.com/dataset/curva-carga-ho/CURVA_CARGA_{year}.csv"
+    return (
+        "https://ons-aws-prod-opendata.s3.amazonaws.com/dataset/"
+        f"curva-carga-ho/CURVA_CARGA_{year}.csv"
+    )
 
 
-def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series:
+def download_and_extract_data_for_request(
+    year: int, code: str
+) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the ONS website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the ONS website.
 
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(year=year, code=code)
@@ -116,7 +138,10 @@ def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         # Filter the dataset for the subdivision of interest.
         dataset = dataset[dataset["id_subsistema"] == subdivision_code]
@@ -127,7 +152,8 @@ def download_and_extract_data_for_request(year: int, code: str) -> pandas.Series
             index=pandas.to_datetime(dataset["din_instante"]),
         ).tz_localize("America/Sao_Paulo", ambiguous="NaT", nonexistent="NaT")
 
-        # Add one hour to the time index because the time values appear to be provided at the beginning of the time interval.
+        # Add one hour to the time index because the time values appear
+        # to be provided at the beginning of the time interval.
         electricity_demand_time_series.index += pandas.Timedelta(hours=1)
 
         return electricity_demand_time_series

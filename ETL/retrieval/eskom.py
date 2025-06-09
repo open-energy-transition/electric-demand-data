@@ -4,9 +4,11 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of Eskom in South Africa.
-
-    The data is retrieved by submitting a request to the Eskom website. The user then receives a link on the provided email address to download the data.
+    This module provides functions to retrieve the electricity demand
+    data from the website of Eskom in South Africa. The data is
+    retrieved by submitting a request to the Eskom website. The user
+    then receives a link on the provided email address to download the
+    data.
 
     Source: https://www.eskom.co.za/dataportal/data-request-form/
 """
@@ -19,7 +21,12 @@ import util.directories
 
 
 def get_available_requests() -> None:
-    """Get the list of available requests to retrieve the electricity demand data from the Eskom website."""
+    """
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the Eskom website.
+    """
     logging.debug("The data is retrieved manually.")
 
 
@@ -30,7 +37,7 @@ def get_url() -> str:
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Return the URL of the electricity demand data.
     return "https://www.eskom.co.za/dataportal/cf-api/CF600011bdba174"
@@ -38,21 +45,23 @@ def get_url() -> str:
 
 def download_and_extract_data() -> pandas.Series:
     """
-    Extract the electricity demand data retrieved from the Eskom website.
+    Extract electricity demand data.
 
-    This function assumes that the data has been downloaded and is available in the specified folder.
+    This function xtracts the electricity demand data from the Eskom
+    website. This function assumes that the data has been downloaded and
+    is available in the specified folder.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
     """
     # Get the data folder.
     data_directory = util.directories.read_folders_structure()[
         "manually_downloaded_data_folder"
     ]
 
-    # Get the paths of the downloaded files. Each file starts with "ESK".
+    # Get the paths of the downloaded files that start with "ESK".
     downloaded_file_paths = [
         os.path.join(data_directory, file)
         for file in os.listdir(data_directory)
@@ -72,7 +81,8 @@ def download_and_extract_data() -> pandas.Series:
         ),
     )
 
-    # Add one hour to the index because the electricity demand seems to be provided at the beginning of the hour.
+    # Add one hour to the index because the electricity demand seems to
+    # be provided at the beginning of the hour.
     electricity_demand_time_series.index = (
         electricity_demand_time_series.index + pandas.Timedelta(hours=1)
     )

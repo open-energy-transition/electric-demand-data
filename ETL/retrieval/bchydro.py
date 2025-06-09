@@ -4,12 +4,14 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the British Columbia Hydro and Power Authority (BC Hydro) in Canada.
-
-    The data is retrieved for the years from 2001 to current year. The data is retrieved from the available Excel files on the BC Hydro website.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the British Columbia Hydro and Power
+    Authority (BC Hydro) in Canada. The data is retrieved for the years
+    from 2001 to current year. The data is retrieved from the available
+    Excel files on the BC Hydro website.
 
     Source: https://www.bchydro.com/energy-in-bc/operations/transmission/transmission-system/balancing-authority-load-data/historical-transmission-data.html
-"""
+"""  # noqa: W505
 
 import logging
 
@@ -26,7 +28,7 @@ def _check_input_parameters(year: int) -> None:
     Parameters
     ----------
     year : int
-        The year of the data to retrieve
+        The year of the data to retrieve.
     """
     # Check if the year is supported.
     assert year in get_available_requests(), (
@@ -36,17 +38,20 @@ def _check_input_parameters(year: int) -> None:
 
 def get_available_requests() -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the BC Hydro website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the BC Hydro website.
 
     Returns
     -------
     list[int]
-        The list of available requests
+        The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="bchydro")[
-        "CA_BC"
-    ]
+    start_date, end_date = util.entities.read_date_ranges(
+        data_source="bchydro"
+    )["CA_BC"]
 
     # Return the available requests, which are the years.
     return list(range(start_date.year, end_date.year + 1))
@@ -59,18 +64,27 @@ def get_url(year: int) -> str:
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
 
     Returns
     -------
     url : str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
+
+    Raises
+    ------
+    ValueError
+        If the year is not implemented.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(year)
 
     # Define the URL of the electricity demand data.
-    url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/balancing_authority_load_data/Historical%20Transmission%20Data/"
+    url = (
+        "https://www.bchydro.com/content/dam/BCHydro/customer-portal/"
+        "documents/corporate/suppliers/transmission-system/"
+        "balancing_authority_load_data/Historical%20Transmission%20Data/"
+    )
     if year == 2001:
         url += "BalancingAuthorityLoadApr-Dec2001.xls"
     elif (
@@ -86,7 +100,12 @@ def get_url(year: int) -> str:
     elif year == 2024:
         url += "BalancingAuthorityLoad%202024.xls"
     elif year == 2025:
-        url = "https://www.bchydro.com/content/dam/BCHydro/customer-portal/documents/corporate/suppliers/transmission-system/actual_flow_data/historical_data/BalancingAuthorityLoad%202025.xls"
+        url = (
+            "https://www.bchydro.com/content/dam/BCHydro/customer-portal/"
+            "documents/corporate/suppliers/transmission-system/"
+            "actual_flow_data/historical_data/"
+            "BalancingAuthorityLoad%202025.xls"
+        )
     else:
         raise ValueError(f"The year {year} is not implemented yet.")
 
@@ -97,23 +116,28 @@ def _get_excel_information(
     year: int,
 ) -> tuple[int, int | None, list[str | int], list[str | int]]:
     """
-    Get the Excel information of the electricity demand data on the BC Hydro website.
+    Get the information to read the Excel files.
+
+    This function returns the information needed to read the
+    Excel files containing the electricity demand data from the BC Hydro
+    website.
 
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
 
     Returns
     -------
-    rows_to_skip : int
-        The number of rows to skip in the Excel file
-    header : int or None
-        The header of the Excel file
-    index_columns : list[str] or list[int]
-        The names of the index columns in the Excel file
-    load_column : list[str] or list[int]
-        The names of the load columns in the Excel file
+    tuple[int, int | None, list[str | int], list[str | int]]
+        The number of rows to skip, the header of the Excel file,
+        the index columns of the Excel file, and the column of the
+        electricity demand data.
+
+    Raises
+    ------
+    ValueError
+        If the year is not implemented.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(year)
@@ -173,17 +197,25 @@ def _get_excel_information(
 
 def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the BC Hydro website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the BC  Hydro website.
 
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(year)
@@ -194,7 +226,9 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     url = get_url(year)
 
     # Get the Excel information of the electricity demand data.
-    rows_to_skip, header, index_columns, load_column = _get_excel_information(year)
+    rows_to_skip, header, index_columns, load_column = _get_excel_information(
+        year
+    )
 
     # Fetch HTML content from the URL.
     dataset = util.fetcher.fetch_data(
@@ -209,9 +243,13 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
-        # Extract the first and last time steps of the electricity demand time series.
+        # Extract the first and last time steps of the electricity
+        # demand time series.
         first_time_step = pandas.to_datetime(
             str(dataset[index_columns[0]].iloc[0])
             + " "
@@ -225,18 +263,23 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
             + ":00"
         ) + pandas.Timedelta("1h")
 
-        # Remove NaN and zero values where daylight saving time switch occurs. The other data points are typically nice and clean.
+        # Remove NaN and zero values where daylight saving time switch
+        # occurs. The other data points are typically nice and clean.
         available_data = dataset[load_column[0]][
             (
                 numpy.logical_and(
-                    dataset[load_column[0]] != 0, dataset[load_column[0]].notna()
+                    dataset[load_column[0]] != 0,
+                    dataset[load_column[0]].notna(),
                 )
             )
         ]
 
         # Construct the index of the electricity demand time series.
         timestamps = pandas.date_range(
-            start=first_time_step, end=last_time_step, freq="h", tz="America/Vancouver"
+            start=first_time_step,
+            end=last_time_step,
+            freq="h",
+            tz="America/Vancouver",
         )
 
         # Extract the electricity demand time series.

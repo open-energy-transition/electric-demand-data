@@ -4,13 +4,15 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the European Network of Transmission System Operators for Electricity (ENTSO-E).
-
-    The data is retrieved for the years from 2014 (end of year) to the current year. The data is retrieved in one-year intervals.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the European Network of Transmission System
+    Operators for Electricity (ENTSO-E). The data is retrieved for the
+    years from 2014 (end of year) to the current year. The data is
+    retrieved in one-year intervals.
 
     Source: https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html
     Source: https://github.com/EnergieID/entsoe-py
-"""
+"""  # noqa: W505
 
 import logging
 import os
@@ -33,11 +35,11 @@ def _check_input_parameters(
     Parameters
     ----------
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     """
     # Check if the code is valid.
     util.entities.check_code(code, "entsoe")
@@ -45,8 +47,8 @@ def _check_input_parameters(
     if start_date is not None and end_date is not None:
         # Check if the retrieval period is less than 1 year.
         assert (end_date - start_date) <= pandas.Timedelta("366days"), (
-            "The retrieval period must be less than or equal to 1 year. start_date: "
-            f"{start_date}, end_date: {end_date}"
+            "The retrieval period must be less than or equal to 1 year. "
+            f"start_date: {start_date}, end_date: {end_date}"
         )
 
         # Read the start date of the available data.
@@ -54,9 +56,11 @@ def _check_input_parameters(
             util.entities.read_date_ranges(data_source="entsoe")[code][0]
         )
 
-        # Check that the start date is greater than or equal to the beginning of the data availability.
+        # Check that the start date is greater than or equal to the
+        # beginning of the data availability.
         assert start_date >= start_date_of_data_availability, (
-            f"The beginning of the data availability is {start_date_of_data_availability}."
+            "The beginning of the data availability is "
+            f"{start_date_of_data_availability}."
         )
 
 
@@ -64,25 +68,31 @@ def get_available_requests(
     code: str,
 ) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the ENTSO-E website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the ENTSO-E website.
 
     Parameters
     ----------
     code : str
-        The code of the country
+        The code of the country.
 
     Returns
     -------
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
-        The list of available requests
+        The list of available requests.
     """
     # Check if input parameters are valid.
     _check_input_parameters(code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="entsoe")[code]
+    start_date, end_date = util.entities.read_date_ranges(
+        data_source="entsoe"
+    )[code]
 
-    # Define intervals for the retrieval periods. A one-year period is the maximum available on the platform.
+    # Define intervals for the retrieval periods. A one-year period is
+    # the maximum available on the platform.
     intervals = pandas.date_range(start_date, end_date, freq="YS")
     intervals = intervals.union(pandas.to_datetime([start_date, end_date]))
 
@@ -90,7 +100,8 @@ def get_available_requests(
     start_dates_and_times = intervals[:-1]
     end_dates_and_times = intervals[1:]
 
-    # Return the available requests, which are the beginning and end of each one-year period.
+    # Return the available requests, which are the beginning and end of
+    # each one-year period.
     return list(zip(start_dates_and_times, end_dates_and_times))
 
 
@@ -100,21 +111,28 @@ def get_url(
     code: str = "",
 ) -> str:
     """
-    Get the URL of the electricity demand data on the ENTSO-E website. Used only to check if the platform is available.
+    Get the URL of the electricity demand data on the ENTSO-E website.
+
+    Used only to check if the platform is available.
 
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     code : str
-        The ISO Alpha-2 code of the country
+        The ISO Alpha-2 code of the country.
 
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
+
+    Raises
+    ------
+    ValueError
+        If the ENTSO-E API key is not set in the environment variables.
     """
     # Check if input parameters are valid.
     _check_input_parameters(code, start_date=start_date, end_date=end_date)
@@ -135,12 +153,23 @@ def get_url(
     # Get the ENTSO-E API client.
     api_key = os.getenv("ENTSOE_API_KEY")
 
+    # Check if the API key is set.
+    if api_key is None:
+        raise ValueError(
+            "The ENTSOE API key is not set. Please set the ENTSOE_API_KEY "
+            "environment variable."
+        )
+
     # Set some parameters for the API request.
     document_type = "A65"  # System total load
     process_type = "A16"  # Realised
 
     # Return the URL of the electricity demand data.
-    return f"https://web-api.tp.entsoe.eu/api?securityToken={api_key}&documentType={document_type}&processType={process_type}&outBiddingZone_Domain={domain}&periodStart={start}&periodEnd={end}"
+    return (
+        f"https://web-api.tp.entsoe.eu/api?securityToken={api_key}&"
+        f"documentType={document_type}&processType={process_type}&"
+        f"outBiddingZone_Domain={domain}&periodStart={start}&periodEnd={end}"
+    )
 
 
 def download_and_extract_data_for_request(
@@ -149,21 +178,29 @@ def download_and_extract_data_for_request(
     code: str,
 ) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the ENTSO-E website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the ENTSO-E website.
 
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval period
+        The start date of the data retrieval period.
     end_date : pandas.Timestamp
-        The end date of the data retrieval period
+        The end date of the data retrieval period.
     code : str
-        The ISO Alpha-2 code of the country
+        The ISO Alpha-2 code of the country.
 
     Returns
     -------
     pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the ENTSO-E API key is not set in the environment variables.
     """
     # Check if input parameters are valid.
     _check_input_parameters(code, start_date=start_date, end_date=end_date)
@@ -187,23 +224,30 @@ def download_and_extract_data_for_request(
 
     if api_key is None:
         raise ValueError(
-            "The ENTSO-E API key is not set. Please set the ENTSO_API_KEY environment variable."
+            "The ENTSO-E API key is not set. Please set the ENTSO_API_KEY "
+            "environment variable."
         )
     else:
-        # Download the electricity demand time series from the ENTSO-E API.
+        # Download the electricity demand time series from the ENTSO-E
+        # API.
         electricity_demand_time_series = util.fetcher.fetch_entsoe_demand(
             api_key, code, start_date, end_date
         )
 
         if not electricity_demand_time_series.empty:
-            # The time values are provided at the beginning of the time step. Set them at the end of the time step for consistency.
+            # The time values are provided at the beginning of the time
+            # step. Set them at the end of the time step for
+            # consistency.
             if len(electricity_demand_time_series) > 1:
                 # Calculate the time difference between the time values.
                 time_difference = (
-                    electricity_demand_time_series.index.to_series().diff().min()
+                    electricity_demand_time_series.index.to_series()
+                    .diff()
+                    .min()
                 )
             else:
-                # Assume a one-hour time difference if there is only one time value.
+                # Assume a one-hour time difference if there is only one
+                # time value.
                 time_difference = pandas.Timedelta("1h")
 
             # Add the time difference to the time values.

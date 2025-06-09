@@ -4,14 +4,16 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the Compañía Administradora del Mercado Mayorista Eléctrico S.A. (CAMMESA) in Argentina.
-
-    The data is retrieved from 2024-08-01 to current date. The data is retrieved in one-day intervals.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the Compañía Administradora del Mercado
+    Mayorista Eléctrico S.A. (CAMMESA) in Argentina. The data is
+    retrieved from 2024-08-01 to current date. The data is retrieved in
+    one-day intervals.
 
     Source: https://api.cammesa.com/demanda-svc/swagger-ui.html#/demanda-ws
     Source: https://api.cammesa.com/demanda-svc/demanda/RegionesDemanda
     Source: https://microfe.cammesa.com/demandaregionchart/assets/data/regionesCammesa.geojson.json
-"""
+"""  # noqa: W505
 
 import logging
 
@@ -39,7 +41,8 @@ def _check_input_parameters(date: str) -> None:
     Parameters
     ----------
     date : str
-        The date of the electricity demand data in the format YYYY-MM-DD
+        The date of the electricity demand data in the format
+        YYYY-MM-DD.
     """
     # Check if the date is supported.
     assert date in get_available_requests(), (
@@ -49,17 +52,23 @@ def _check_input_parameters(date: str) -> None:
 
 def get_available_requests() -> list[str]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the CAMMESA website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the CAMMESA website.
 
     Returns
     -------
     list[str]
-        The list of available requests
+        The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="cammesa")["AR"]
+    start_date, end_date = util.entities.read_date_ranges(
+        data_source="cammesa"
+    )["AR"]
 
-    # Return the available requests, which are the dates in the format YYYY-MM-DD.
+    # Return the available requests, which are the dates in the format
+    # YYYY-MM-DD.
     return (
         pandas.date_range(start=start_date, end=end_date, freq="D")
         .strftime("%Y-%m-%d")
@@ -74,33 +83,48 @@ def get_url(date: str) -> str:
     Parameters
     ----------
     date : str
-        The date of the electricity demand data in the format YYYY-MM-DD
+        The date of the electricity demand data in the format
+        YYYY-MM-DD.
 
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(date)
 
     # Return the URL of the electricity demand data.
-    return f"https://api.cammesa.com/demanda-svc/demanda/ObtieneDemandaYTemperaturaRegionByFecha?id_region=1002&fecha={date}"
+    return (
+        "https://api.cammesa.com/demanda-svc/demanda/"
+        "ObtieneDemandaYTemperaturaRegionByFecha?"
+        f"id_region=1002&fecha={date}"
+    )
 
 
 def download_and_extract_data_for_request(date: str) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the CAMMESA website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the CAMMESA website.
 
     Parameters
     ----------
     date : str
-        The date of the electricity demand data in the format YYYY-MM-DD
+        The date of the electricity demand data in the format
+        YYYY-MM-DD.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
+
     """
     # Check if the input parameters are valid.
     _check_input_parameters(date)
@@ -117,7 +141,10 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         # Remove rows with NaN values for demand.
         dataset = dataset.dropna(subset=["dem"])
@@ -127,7 +154,8 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
             dataset["dem"].values, index=pandas.to_datetime(dataset["fecha"])
         )
 
-        # Drop the last value of the time series because it belongs to the following day.
+        # Drop the last value of the time series because it belongs to
+        # the following day.
         electricity_demand_time_series = electricity_demand_time_series[:-1]
 
         return electricity_demand_time_series

@@ -4,9 +4,10 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the National Energy System Operator (NESO) in the UK.
-
-    The data is retrieved for the years from 2009 to 2025. The data is retrieved in one-year intervals.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the National Energy System Operator (NESO)
+    in the UK. The data is retrieved for the years from 2009 to 2025.
+    The data is retrieved in one-year intervals.
 
     Source: https://www.neso.energy/data-portal/historic-demand-data
 """
@@ -25,7 +26,7 @@ def _check_input_parameters(year: int) -> None:
     Parameters
     ----------
     year : int
-        The year of the data to retrieve
+        The year of the data to retrieve.
     """
     # Check if the year is supported.
     assert year in get_available_requests(), (
@@ -35,15 +36,20 @@ def _check_input_parameters(year: int) -> None:
 
 def get_available_requests() -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the NESO website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the NESO website.
 
     Returns
     -------
     list[int]
-        The list of available requests
+        The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="neso")["GB_GB"]
+    start_date, end_date = util.entities.read_date_ranges(data_source="neso")[
+        "GB_GB"
+    ]
 
     # Return the available requests, which are the years.
     return list(range(start_date.year, end_date.year + 1))
@@ -56,12 +62,12 @@ def get_url(year: int) -> str:
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
 
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Check if input parameters are valid.
     _check_input_parameters(year)
@@ -88,25 +94,39 @@ def get_url(year: int) -> str:
     }
 
     # Check if the year of the dataset is supported.
-    assert year in dataset_name, f"The year {year} is not supported for the dataset."
+    assert year in dataset_name, (
+        f"The year {year} is not supported for the dataset."
+    )
 
     # Return the URL of the electricity demand data.
-    return f"https://api.neso.energy/api/3/action/datastore_search_sql?sql=SELECT%20*%20FROM%20%22{dataset_name[year]}%22%20ORDER%20BY%20%22_id%22%20ASC%20LIMIT%20100000"
+    return (
+        "https://api.neso.energy/api/3/action/datastore_search_sql?"
+        f"sql=SELECT%20*%20FROM%20%22{dataset_name[year]}%22%20"
+        "ORDER%20BY%20%22_id%22%20ASC%20LIMIT%20100000"
+    )
 
 
 def download_and_extract_data_for_request(year: int) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the NESO website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the NESO website.
 
     Parameters
     ----------
     year : int
-        The year of the electricity demand data
+        The year of the electricity demand data.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if input parameters are valid.
     _check_input_parameters(year)
@@ -127,7 +147,10 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         # Extract the electricity demand time series.
         electricity_demand_time_series = pandas.Series(

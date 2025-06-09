@@ -4,12 +4,13 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the US Energy Information Administration (EIA).
-
-    The data is retrieved for the years from 2020 to the current year. The data is retrieved in six-month intervals.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the US Energy Information Administration
+    (EIA). The data is retrieved for the years from 2020 to the current
+    year. The data is retrieved in six-month intervals.
 
     Source: https://www.eia.gov/opendata/browser/electricity/rto/region-data
-"""
+"""  # noqa: W505
 
 import logging
 import os
@@ -32,11 +33,11 @@ def _check_input_parameters(
     Parameters
     ----------
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     """
     # Check if the code is valid.
     util.entities.check_code(code, "eia")
@@ -52,9 +53,11 @@ def _check_input_parameters(
             util.entities.read_date_ranges(data_source="eia")[code][0]
         )
 
-        # Check that the start date is greater than or equal to the beginning of the data availability.
+        # Check that the start date is greater than or equal to the
+        # beginning of the data availability.
         assert start_date >= start_date_of_data_availability, (
-            f"The beginning of the data availability is {start_date_of_data_availability}."
+            "The beginning of the data availability is "
+            f"{start_date_of_data_availability}."
         )
 
 
@@ -62,25 +65,32 @@ def get_available_requests(
     code: str,
 ) -> list[tuple[pandas.Timestamp, pandas.Timestamp]]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the EIA website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the EIA website.
 
     Parameters
     ----------
     code : str
-        The code of the subdivision
+        The code of the subdivision.
 
     Returns
     -------
     list[tuple[pandas.Timestamp, pandas.Timestamp]]
-        The list of available requests
+        The list of available requests.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="eia")[code]
+    start_date, end_date = util.entities.read_date_ranges(data_source="eia")[
+        code
+    ]
 
-    # Define intervals for the retrieval periods. A six-month period avoids the limitation of the API to retrieve a maximum of 5000 data points.
+    # Define intervals for the retrieval periods. A six-month period
+    # avoids the limitation of the API to retrieve a maximum of 5000
+    # data points.
     intervals = pandas.date_range(start_date, end_date, freq="6MS")
     intervals = intervals.union(pandas.to_datetime([start_date, end_date]))
 
@@ -88,7 +98,8 @@ def get_available_requests(
     start_dates_and_times = intervals[:-1]
     end_dates_and_times = intervals[1:]
 
-    # Return the available requests, which are the beginning and end of each six-month period.
+    # Return the available requests, which are the beginning and end of
+    # each six-month period.
     return list(zip(start_dates_and_times, end_dates_and_times))
 
 
@@ -103,16 +114,21 @@ def get_url(
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
 
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
+
+    Raises
+    ------
+    ValueError
+        If the EIA API key is not set.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(code, start_date=start_date, end_date=end_date)
@@ -129,7 +145,8 @@ def get_url(
     # Check if the API key is set.
     if api_key is None:
         raise ValueError(
-            "The EIA API key is not set. Please set the EIA_API_KEY environment variable."
+            "The EIA API key is not set. Please set the EIA_API_KEY "
+            "environment variable."
         )
 
     # Convert the start and end dates and times to the required format.
@@ -140,7 +157,13 @@ def get_url(
     subdivision_code = code.split("_")[1]
 
     # Return the URL of the electricity demand data.
-    return f"https://api.eia.gov/v2/electricity/rto/region-data/data/?api_key={api_key}&facets[type][]=D&facets[respondent][]={subdivision_code}&start={start}&end={end}&frequency=hourly&data[0]=value&sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000"
+    return (
+        "https://api.eia.gov/v2/electricity/rto/region-data/data/?"
+        f"api_key={api_key}&facets[type][]=D&"
+        f"facets[respondent][]={subdivision_code}&"
+        f"start={start}&end={end}&frequency=hourly&data[0]=value&"
+        "sort[0][column]=period&sort[0][direction]=asc&offset=0&length=5000"
+    )
 
 
 def download_and_extract_data_for_request(
@@ -149,27 +172,36 @@ def download_and_extract_data_for_request(
     code: str,
 ) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the EIA website.
+    Download and extract electricity demand data.
+
+    This function downloads and extracts the electricity demand data
+    from the EIA website.
 
     Parameters
     ----------
     start_date : pandas.Timestamp
-        The start date of the data retrieval
+        The start date of the data retrieval.
     end_date : pandas.Timestamp
-        The end date of the data retrieval
+        The end date of the data retrieval.
     code : str
-        The code of the subdivision of interest
+        The code of the subdivision of interest.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(code, start_date=start_date, end_date=end_date)
 
     logging.info(
-        f"Retrieving electricity demand data from {start_date.date()} to {end_date.date()}."
+        "Retrieving electricity demand data from "
+        f"{start_date.date()} to {end_date.date()}."
     )
 
     # Get the URL of the electricity demand data.
@@ -186,11 +218,15 @@ def download_and_extract_data_for_request(
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         # Create the electricity demand time series.
         electricity_demand_time_series = pandas.Series(
-            dataset["value"].values, index=pandas.to_datetime(dataset["period"])
+            dataset["value"].values,
+            index=pandas.to_datetime(dataset["period"]),
         ).tz_localize("UTC")
 
         return electricity_demand_time_series

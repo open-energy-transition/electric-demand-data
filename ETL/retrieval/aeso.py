@@ -4,12 +4,14 @@ License: AGPL-3.0.
 
 Description:
 
-    This module provides functions to retrieve the electricity demand data from the website of the Alberta Electric System Operator (AESO) in Canada.
-
-    The data is retrieved for the years from 2011 to 2024. The data is retrieved from the available Excel files on the AESO website.
+    This module provides functions to retrieve the electricity demand
+    data from the website of the Alberta Electric System Operator (AESO)
+    in Canada. The data is retrieved for the years from 2011 to 2024.
+    The data is retrieved from the available Excel files on the AESO
+    website.
 
     Source: https://www.aeso.ca/market/market-and-system-reporting/data-requests/hourly-load-by-area-and-subdivision
-"""
+"""  # noqa: W505
 
 import logging
 
@@ -24,7 +26,7 @@ def _check_input_parameters(file_number: int) -> None:
     Parameters
     ----------
     file_number : int
-        The number of the file to read
+        The number of the file to read.
     """
     # Check if the file number is supported.
     assert file_number in get_available_requests(), (
@@ -34,14 +36,18 @@ def _check_input_parameters(file_number: int) -> None:
 
 def get_available_requests() -> list[int]:
     """
-    Get the list of available requests to retrieve the electricity demand data from the AESO website.
+    Get the available requests.
+
+    This function retrieves the available requests for the electricity
+    demand data from the AESO website.
 
     Returns
     -------
     list[int]
-        The list of available requests
+        The list of available requests.
     """
-    # Return the available requests, which are the numbers of the Excel files available on the AESO website.
+    # Return the available requests, which are the numbers of the Excel
+    # files available on the AESO website.
     return [1, 2, 3, 4]
 
 
@@ -52,48 +58,61 @@ def get_url(file_number: int) -> str:
     Parameters
     ----------
     file_number : int
-        The number of the file to read
+        The number of the file to read.
 
     Returns
     -------
     url : str
-        The URL of the electricity demand data
+        The URL of the electricity demand data.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 
     # Define the URL of the electricity demand data.
     if file_number == 1:
-        url = "https://www.aeso.ca/assets/Uploads/Hourly-load-by-area-and-region-2011-to-2017-.xlsx"
+        url = (
+            "https://www.aeso.ca/assets/Uploads/"
+            "Hourly-load-by-area-and-region-2011-to-2017-.xlsx"
+        )
     elif file_number == 2:
-        url = "https://www.aeso.ca/assets/Uploads/Hourly-load-by-area-and-region-2017-2020.xlsx"
+        url = (
+            "https://www.aeso.ca/assets/Uploads/"
+            "Hourly-load-by-area-and-region-2017-2020.xlsx"
+        )
     elif file_number == 3:
-        url = "https://www.aeso.ca/assets/Uploads/data-requests/Hourly-load-by-area-and-region-May-2020-to-Oct-2023.xlsx"
+        url = (
+            "https://www.aeso.ca/assets/Uploads/data-requests/"
+            "Hourly-load-by-area-and-region-May-2020-to-Oct-2023.xlsx"
+        )
     elif file_number == 4:
-        url = "https://www.aeso.ca/assets/Uploads/data-requests/Hourly-load-by-area-and-region-Nov-2023-to-Dec-2024.xlsx"
+        url = (
+            "https://www.aeso.ca/assets/Uploads/data-requests/"
+            "Hourly-load-by-area-and-region-Nov-2023-to-Dec-2024.xlsx"
+        )
 
     return url
 
 
-def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[str]]:
+def _get_excel_information(
+    file_number: int,
+) -> tuple[str, int, list[str], list[str]]:
     """
-    Get the Excel information of the electricity demand data on the AESO website.
+    Get the information to read the Excel files.
+
+    This function returns the information needed to read the
+    Excel files containing the electricity demand data from the AESO
+    website.
 
     Parameters
     ----------
     file_number : int
-        The number of the file to read
+        The number of the file to read.
 
     Returns
     -------
-    sheet_name : str
-        The name of the sheet in the Excel file
-    rows_to_skip : int
-        The number of rows to skip in the Excel file
-    index_columns : list[str]
-        The names of the index columns in the Excel file
-    load_columns : list[str]
-        The names of the load columns in the Excel file
+    tuple[str, int, list[str], list[str]]
+        The sheet name, number of rows to skip, index columns, and load
+        columns for the Excel file.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
@@ -153,33 +172,41 @@ def _get_excel_information(file_number: int) -> tuple[str, int, list[str], list[
 
 def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     """
-    Download and extract the electricity demand data from the AESO website.
+    Download and extract electricity demand data.
 
-    There seem to be some inconsistencies in the data between the years before 2020 and the years after 2020.
+    This function downloads and extracts the electricity demand data
+    from the AESO website. There seem to be some inconsistencies in the
+    data between the years before 2020 and the years after 2020.
 
     Parameters
     ----------
     file_number : int
-        The number of the file to read
+        The number of the file to read.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity demand time series in MW.
+
+    Raises
+    ------
+    ValueError
+        If the extracted data is not a pandas DataFrame.
     """
     # Check if the input parameters are valid.
     _check_input_parameters(file_number)
 
     logging.info(
-        f"Retrieving electricity demand data from the file number {file_number}."
+        "Retrieving electricity demand data from the "
+        f"file number {file_number}."
     )
 
     # Get the URL of the electricity demand data.
     url = get_url(file_number)
 
     # Get the Excel information of the electricity demand data.
-    sheet_name, rows_to_skip, index_columns, load_columns = _get_excel_information(
-        file_number
+    sheet_name, rows_to_skip, index_columns, load_columns = (
+        _get_excel_information(file_number)
     )
 
     # Fetch the electricity demand data from the URL.
@@ -195,7 +222,10 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError("Data not retrieved properly.")
+        raise ValueError(
+            f"The extracted data is a {type(dataset)} object, "
+            "expected a pandas DataFrame."
+        )
     else:
         if file_number == 1 or file_number == 2:
             # Define starting time index.
@@ -210,13 +240,18 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
                 dataset["DT_MST"].iloc[0].tz_localize("America/Edmonton")
             )
 
-            # The Excel files seem to report all times in standard time, so we need to add the daylight saving time to the first time index, if necessary.
+            # The Excel files seem to report all times in standard time,
+            # so we need to add the daylight saving time to the first
+            # time index, if necessary.
             first_local_time_index = (
                 first_local_time_index + first_local_time_index.dst()
             )
 
-            # The Excel files seem to report the beginning of the hour, so we need to add 1 hour.
-            first_local_time_index = first_local_time_index + pandas.Timedelta(hours=1)
+            # The Excel files seem to report the beginning of the hour,
+            # so we need to add 1 hour.
+            first_local_time_index = first_local_time_index + pandas.Timedelta(
+                hours=1
+            )
 
         # Define the local time index.
         local_time_index = pandas.date_range(
@@ -226,9 +261,11 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
             tz="America/Edmonton",
         )
 
-        # Extract the electricity demand time series in the local time zone.
+        # Extract the electricity demand time series in the local time
+        # zone.
         electricity_demand_time_series = pandas.Series(
-            data=dataset[load_columns].sum(axis=1).values, index=local_time_index
+            data=dataset[load_columns].sum(axis=1).values,
+            index=local_time_index,
         )
 
         return electricity_demand_time_series
