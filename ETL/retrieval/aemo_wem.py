@@ -36,9 +36,9 @@ def _check_input_parameters(
         period (until 2023).
     year : int
         The year of the data to retrieve.
-    month : int
+    month : int, optional
         The month of the data to retrieve.
-    day : int
+    day : int, optional
         The day of the data to retrieve.
     """
     # Check if the input parameters are valid.
@@ -110,9 +110,9 @@ def get_url(
         period (until 2023).
     year : int
         The year of the data to retrieve.
-    month : int
+    month : int, optional
         The month of the data to retrieve.
-    day : int
+    day : int, optional
         The day of the data to retrieve.
 
     Returns
@@ -157,9 +157,9 @@ def download_and_extract_data_for_request(
         period (until 2023).
     year : int
         The year of the electricity demand data.
-    month : int
+    month : int, optional
         The month of the electricity demand data.
-    day : int
+    day : int, optional
         The day of the electricity demand data.
 
     Returns

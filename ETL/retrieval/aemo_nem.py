@@ -33,9 +33,9 @@ def _check_input_parameters(
     ----------
     code : str
         The code of the subdivision.
-    year : int
+    year : int, optional
         The year of the data to retrieve.
-    month : int
+    month : int, optional
         The month of the data to retrieve.
     """
     # Check if the code is valid.

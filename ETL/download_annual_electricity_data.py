@@ -4,14 +4,14 @@ License: AGPL-3.0.
 
 Description:
 
-    This script downloads annual electricity demand data from Ember.
-
-    It then extracts the electricity data for the countries and subdivisions of interest and saves it into CSV and Parquet files.
-
-    The year of the electricity data can be specified as a command line argument. If no year is provided, the script will use all the years of available electricity demand data.
+    This script downloads annual electricity demand data from Ember. It
+    then extracts the electricity data for the countries and
+    subdivisions of interest and saves it into CSV and Parquet files.
+    The year of the electricity data can be specified as a command line
+    argument. If no year is provided, the script will use all the years
+    of available electricity demand data.
 
     Source: https://ember-energy.org/data/yearly-electricity-data/
-
 """
 
 import argparse
@@ -30,13 +30,16 @@ def read_command_line_arguments() -> argparse.Namespace:
     Returns
     -------
     args : argparse.Namespace
-        The command line arguments
+        The command line arguments.
     """
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
-        description="Download and process annual electricity demand data from Ember."
-        "You can specify the country or subdivision code, provide a file containing the list of codes, "
-        "or use all available codes. The year of the electricity data can also be specified."
+        description=(
+            "Download and process annual electricity demand data from Ember. "
+            "You can specify the country or subdivision code, provide a file "
+            "containing the list of codes, or use all available codes. The "
+            "year of the electricity data can also be specified."
+        )
     )
 
     # Add the command line arguments.
@@ -44,14 +47,20 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-c",
         "--code",
         type=str,
-        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and subdivision code (example: "US_CAL")',
+        help=(
+            'The ISO Alpha-2 code (example: "FR") or a combination of ISO '
+            'Alpha-2 code and subdivision code (example: "US_CAL")'
+        ),
         required=False,
     )
     parser.add_argument(
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest",
+        help=(
+            "The path to the yaml file containing the list of codes of the "
+            "countries and subdivisions of interest"
+        ),
         required=False,
     )
     parser.add_argument(
@@ -71,12 +80,17 @@ def read_command_line_arguments() -> argparse.Namespace:
 
 def run_data_retrieval(args: argparse.Namespace) -> None:
     """
-    Download and extract GDP data from a Zenodo repository for the countries and subdivisions of interest.
+    Download and extract GDP data.
+
+    This function downloads the annual electricity demand data from
+    Ember and extracts the electricity data for the countries and
+    subdivisions of interest. The data is saved into CSV and Parquet
+    files.
 
     Parameters
     ----------
     args : argparse.Namespace
-        The command line arguments
+        The command line arguments.
     """
     # Get the directory to store the population density data.
     result_directory = util.directories.read_folders_structure()[
@@ -84,19 +98,23 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     ]
     os.makedirs(result_directory, exist_ok=True)
 
-    # Get the list of codes of the countries and subdivisions of interest.
-    codes = util.entities.check_and_get_codes(code=args.code, file_path=args.file)
+    # Get the list of codes of the countries and subdivisions.
+    codes = util.entities.check_and_get_codes(
+        code=args.code, file_path=args.file
+    )
 
     logging.info("Downloading annual electricity data.")
 
     # Read the CSV file containing the electricity data
     global_electricity_data = pandas.read_csv(
-        "https://storage.googleapis.com/emb-prod-bkt-publicdata/public-downloads/yearly_full_release_long_format.csv"
+        "https://storage.googleapis.com/emb-prod-bkt-publicdata/"
+        "public-downloads/yearly_full_release_long_format.csv"
     )
 
-    # Loop over the countries and subdivisions of interest.
+    # Loop over the countries and subdivisions.
     for code in codes:
-        # Define the file path of the population density data for the country or subdivision.
+        # Define the file path of the population density data for the
+        # country or subdivision.
         file_path = os.path.join(result_directory, f"{code}.parquet")
 
         if not os.path.exists(file_path):
@@ -106,13 +124,15 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 # If the year is provided, use it.
                 years = [args.year]
             else:
-                # Get the years of available data for the country or subdivision of interest.
+                # Get the years of available data for the country or
+                # subdivision.
                 years = util.entities.get_available_years(code)
 
             # Get the ISO Alpha-3 code of the country.
             iso_alpha_3_code = util.entities.get_iso_alpha_3_code(code)
 
-            # Extract the electricity data for the country and years of interest.
+            # Extract the electricity data for the country and years of
+            # interest.
             country_electricity_data = global_electricity_data[
                 (global_electricity_data["Country code"] == iso_alpha_3_code)
                 & (global_electricity_data["Year"].isin(years))
@@ -139,10 +159,14 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             # Get the time zone of the country.
             time_zone = util.entities.get_time_zone(code)
 
-            # Define a new index with hourly frequency in the local time zone.
+            # Define a new index with hourly frequency in the local time
+            # zone.
             index = pandas.date_range(
                 start=f"{str(country_electricity_data['Year'].min())}-01-01",
-                end=f"{str(country_electricity_data['Year'].max())}-12-31 23:00:00",
+                end=(
+                    f"{str(country_electricity_data['Year'].max())}-12-31 "
+                    "23:00:00"
+                ),
                 freq="h",
                 tz=time_zone,
             )
@@ -150,35 +174,45 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             # Create a DataFrame with the new index.
             country_electricity_data = pandas.DataFrame(index=index)
 
-            # Map the electricity demand and demand per capita data to the new index.
+            # Map the electricity demand and demand per capita data to
+            # the new index.
             country_electricity_data["Annual electricity demand (TWh)"] = (
-                country_electricity_data.index.year.map(electricity_demand).to_numpy()
-            )
-            country_electricity_data["Annual electricity demand per capita (MWh)"] = (
                 country_electricity_data.index.year.map(
-                    electricity_demand_per_capita
+                    electricity_demand
                 ).to_numpy()
             )
+            country_electricity_data[
+                "Annual electricity demand per capita (MWh)"
+            ] = country_electricity_data.index.year.map(
+                electricity_demand_per_capita
+            ).to_numpy()
 
-            # Convert the index to UTC and remove the time zone information.
-            country_electricity_data.index = country_electricity_data.index.tz_convert(
-                "UTC"
-            ).tz_localize(None)
+            # Convert the index to UTC and remove the time zone
+            # information.
+            country_electricity_data.index = (
+                country_electricity_data.index.tz_convert("UTC").tz_localize(
+                    None
+                )
+            )
 
             # Set the index name.
             country_electricity_data.index.name = "Time (UTC)"
 
             # Save the electricity demand to parquet and CSV files.
             country_electricity_data.to_parquet(file_path)
-            country_electricity_data.to_csv(file_path.replace(".parquet", ".csv"))
+            country_electricity_data.to_csv(
+                file_path.replace(".parquet", ".csv")
+            )
 
             logging.info(
-                f"Annual electricity data of {code} has been extracted and saved successfully."
+                f"Annual electricity data of {code} has been extracted and "
+                "saved successfully."
             )
 
         else:
             logging.info(
-                f"Annual electricity data of {code} already exists. Skipping download."
+                f"Annual electricity data of {code} already exists. Skipping "
+                "download."
             )
 
 
@@ -188,7 +222,9 @@ if __name__ == "__main__":
 
     # Set up the logging configuration.
     log_file_name = "gdp_data.log"
-    log_files_directory = util.directories.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.directories.read_folders_structure()[
+        "log_files_folder"
+    ]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),

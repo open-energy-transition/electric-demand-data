@@ -28,9 +28,9 @@ def _check_input_parameters(
 
     Parameters
     ----------
-    year : int
+    year : int, optional
         The year of the data to retrieve.
-    code : str
+    code : str, optional
         The code of the subdivision of interest.
     """
     # Check if the code is valid.

@@ -34,9 +34,9 @@ def _check_input_parameters(
     ----------
     code : str
         The code of the subdivision of interest.
-    start_date : pandas.Timestamp
+    start_date : pandas.Timestamp, optional
         The start date of the data retrieval.
-    end_date : pandas.Timestamp
+    end_date : pandas.Timestamp, optional
         The end date of the data retrieval.
     """
     # Check if the code is valid.

@@ -30,7 +30,7 @@ def get_request(
         The ERA5 variable of interest.
     year : int
         The year of the data retrieval.
-    bounds : list of float, optional
+    bounds : list[float], optional
         The lateral bounds of the area of interest
         (West, South, East, North).
 

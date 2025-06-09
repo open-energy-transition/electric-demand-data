@@ -4,15 +4,16 @@ License: AGPL-3.0.
 
 Description:
 
-    This script downloads weather data from the Copernicus Climate Data Store (CDS).
-
-    It then extracts the weather data for the countries and subdivisions of interest and saves it into NetCDF files.
-
-    The country and subdivision code can be specified or a list can be provided as a yaml file. If no file or code is provided, the script will use all available codes.
-
-    The variable of the weather data can be specified as a command line argument. The default variable is 2m_temperature.
-
-    The year of the weather data can be specified as a command line argument. If no year is provided, the script will use all the years of available electricity demand data.
+    This script downloads weather data from the Copernicus Climate Data
+    Store (CDS). It then extracts the weather data for the countries and
+    subdivisions of interest and saves it into NetCDF files. The country
+    and subdivision code can be specified or a list can be provided as a
+    yaml file. If no file or code is provided, the script will use all
+    available codes. The variable of the weather data can be specified
+    as a command line argument. The default variable is 2m_temperature.
+    The year of the weather data can be specified as a command line
+    argument. If no year is provided, the script will use all the years
+    of available electricity demand data.
 """
 
 import argparse
@@ -33,13 +34,17 @@ def read_command_line_arguments() -> argparse.Namespace:
     Returns
     -------
     args : argparse.Namespace
-        The command line arguments
+        The command line arguments.
     """
     # Create a parser for the command line arguments.
     parser = argparse.ArgumentParser(
-        description="Download and process weather data from the Copernicus Climate Data Store (CDS)."
-        "You can specify the country or subdivision code, provide a file containing the list of codes, "
-        "or use all available codes. The variable and year of the weather data can also be specified."
+        description=(
+            "Download and process weather data from the Copernicus Climate "
+            "Data Store (CDS). You can specify the country or subdivision "
+            "code, provide a file containing the list of codes, or use all "
+            "available codes. The variable and year of the weather data can "
+            "also be specified."
+        )
     )
 
     # Add the command line arguments.
@@ -47,14 +52,20 @@ def read_command_line_arguments() -> argparse.Namespace:
         "-c",
         "--code",
         type=str,
-        help='The ISO Alpha-2 code (example: "FR") or a combination of ISO Alpha-2 code and subdivision code (example: "US_CAL")',
+        help=(
+            'The ISO Alpha-2 code (example: "FR") or a combination of ISO '
+            'Alpha-2 code and subdivision code (example: "US_CAL")'
+        ),
         required=False,
     )
     parser.add_argument(
         "-f",
         "--file",
         type=str,
-        help="The path to the yaml file containing the list of codes of the countries and subdivisions of interest",
+        help=(
+            "The path to the yaml file containing the list of codes of the "
+            "countries and subdivisions of interest"
+        ),
         required=False,
     )
     parser.add_argument(
@@ -81,19 +92,28 @@ def read_command_line_arguments() -> argparse.Namespace:
 
 def run_data_retrieval(args: argparse.Namespace) -> None:
     """
-    Run the weather data retrieval for the countries and subdivisions of interest.
+    Run the weather data retrieval.
+
+    This function retrieves weather data from the Copernicus Climate
+    Data Store (CDS) for the countries and subdivisions of interest.
+    The data is saved into NetCDF files in the specified directory.
 
     Parameters
     ----------
     args : argparse.Namespace
-        The command line arguments
+        The command line arguments.
     """
     # Get the directory to store the population density data.
-    result_directory = util.directories.read_folders_structure()["weather_folder"]
+    result_directory = util.directories.read_folders_structure()[
+        "weather_folder"
+    ]
     os.makedirs(result_directory, exist_ok=True)
 
-    # Get the list of codes of the countries and subdivisions of interest.
-    codes = util.entities.check_and_get_codes(code=args.code, file_path=args.file)
+    # Get the list of codes of the countries and subdivisions of
+    # interest.
+    codes = util.entities.check_and_get_codes(
+        code=args.code, file_path=args.file
+    )
 
     # Loop over the countries and subdivisions of interest.
     for code in codes:
@@ -103,7 +123,8 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             # If the year is provided, use it.
             years = [args.year]
         else:
-            # Get the years of available data for the country or subdivision of interest.
+            # Get the years of available data for the country or
+            # subdivision of interest.
             years = util.entities.get_available_years(code)
 
         # Get the shape of the country or subdivision.
@@ -121,24 +142,29 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 result_directory, f"{code}_{args.variable}_{year}.nc"
             )
 
-            # Check if the file does not exist or if the year is the current year.
+            # Check if the file does not exist or if the year is the
+            # current year.
             if not os.path.exists(file_path) or (
-                os.path.exists(file_path) and year == pandas.Timestamp.now().year
+                os.path.exists(file_path)
+                and year == pandas.Timestamp.now().year
             ):
                 logging.info(f"Retrieving data for the year {year}.")
 
-                # Download the ERA5 data from the Copernicus Climate Data Store (CDS).
+                # Download the ERA5 data from the Copernicus Climate
+                # Data Store (CDS).
                 retrieval.copernicus.download_data(
                     year, args.variable, file_path, bounds=entity_bounds
                 )
 
             else:
                 logging.info(
-                    f"Data for the year {year} already exists. Skipping download."
+                    f"Data for the year {year} already exists. Skipping "
+                    "download."
                 )
 
         logging.info(
-            f"{args.variable} data for {code} has been successfully retrieved and saved."
+            f"{args.variable} data for {code} has been successfully retrieved "
+            "and saved."
         )
 
 
@@ -148,7 +174,9 @@ if __name__ == "__main__":
 
     # Set up the logging configuration.
     log_file_name = "weather_data.log"
-    log_files_directory = util.directories.read_folders_structure()["log_files_folder"]
+    log_files_directory = util.directories.read_folders_structure()[
+        "log_files_folder"
+    ]
     os.makedirs(log_files_directory, exist_ok=True)
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),
