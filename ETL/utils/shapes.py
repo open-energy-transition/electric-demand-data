@@ -17,8 +17,8 @@ import pandas
 import pycountry
 from shapely.geometry import Polygon
 
-import util.directories
-import util.figures
+import utils.directories
+import utils.figures
 
 
 def _remove_islands(
@@ -194,7 +194,7 @@ def _read_non_standard_shape_codes() -> dict[str, list[str]]:
         respective codes.
     """
     # Get the path to the shapes directory.
-    shapes_directory = util.directories.read_folders_structure()[
+    shapes_directory = utils.directories.read_folders_structure()[
         "shapes_folder"
     ]
 
@@ -248,7 +248,7 @@ def _get_non_standard_shape(
         GeoDataFrame containing the shape of the subdivision.
     """
     # Get the path to the shapes directory.
-    shapes_directory = util.directories.read_folders_structure()[
+    shapes_directory = utils.directories.read_folders_structure()[
         "shapes_folder"
     ]
 
@@ -339,7 +339,7 @@ def get_entity_shape(
     entity_shape = entity_shape.set_index("code")
 
     if make_plot:
-        util.figures.simple_plot(entity_shape, f"entity_shape_{code}")
+        utils.figures.simple_plot(entity_shape, f"entity_shape_{code}")
 
     return entity_shape
 

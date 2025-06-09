@@ -15,7 +15,7 @@ Description:
 import logging
 
 import pandas
-import util.fetcher
+import utils.fetcher
 
 
 def get_available_requests() -> None:
@@ -66,7 +66,7 @@ def download_and_extract_data() -> pandas.Series:
     url = get_url()
 
     # Fetch the electricity demand data.
-    electricity_demand_time_series = util.fetcher.fetch_data(url, "csv")
+    electricity_demand_time_series = utils.fetcher.fetch_data(url, "csv")
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(electricity_demand_time_series, pandas.DataFrame):

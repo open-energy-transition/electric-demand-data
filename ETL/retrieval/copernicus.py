@@ -14,7 +14,7 @@ Description:
 import os
 
 import cdsapi
-import util.directories
+import utils.directories
 from dotenv import load_dotenv
 
 
@@ -85,7 +85,7 @@ def download_data(
         (West, South, East, North).
     """
     # Get the root directory of the project.
-    root_directory = util.directories.read_folders_structure()["root_folder"]
+    root_directory = utils.directories.read_folders_structure()["root_folder"]
 
     # Load the environment variables.
     load_dotenv(dotenv_path=os.path.join(root_directory, ".env"))

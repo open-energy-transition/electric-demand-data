@@ -22,9 +22,9 @@ import os
 
 import pandas
 import retrieval.copernicus
-import util.directories
-import util.entities
-import util.shapes
+import utils.directories
+import utils.entities
+import utils.shapes
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -104,14 +104,14 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         The command line arguments.
     """
     # Get the directory to store the population density data.
-    result_directory = util.directories.read_folders_structure()[
+    result_directory = utils.directories.read_folders_structure()[
         "weather_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)
 
     # Get the list of codes of the countries and subdivisions of
     # interest.
-    codes = util.entities.check_and_get_codes(
+    codes = utils.entities.check_and_get_codes(
         code=args.code, file_path=args.file
     )
 
@@ -125,13 +125,13 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         else:
             # Get the years of available data for the country or
             # subdivision of interest.
-            years = util.entities.get_available_years(code)
+            years = utils.entities.get_available_years(code)
 
         # Get the shape of the country or subdivision.
-        entity_shape = util.shapes.get_entity_shape(code)
+        entity_shape = utils.shapes.get_entity_shape(code)
 
         # Get the lateral bounds of the country or subdivision.
-        entity_bounds = util.shapes.get_entity_bounds(
+        entity_bounds = utils.shapes.get_entity_bounds(
             entity_shape
         )  # West, South, East, North
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
     # Set up the logging configuration.
     log_file_name = "weather_data.log"
-    log_files_directory = util.directories.read_folders_structure()[
+    log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)

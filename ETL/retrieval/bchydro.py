@@ -17,8 +17,8 @@ import logging
 
 import numpy
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def _check_input_parameters(year: int) -> None:
@@ -49,7 +49,7 @@ def get_available_requests() -> list[int]:
         The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(
+    start_date, end_date = utils.entities.read_date_ranges(
         data_source="bchydro"
     )["CA_BC"]
 
@@ -231,7 +231,7 @@ def download_and_extract_data_for_request(year: int) -> pandas.Series:
     )
 
     # Fetch HTML content from the URL.
-    dataset = util.fetcher.fetch_data(
+    dataset = utils.fetcher.fetch_data(
         url,
         "excel",
         excel_kwargs={

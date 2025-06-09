@@ -15,8 +15,8 @@ Description:
 import logging
 
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def _check_input_parameters(
@@ -40,7 +40,7 @@ def _check_input_parameters(
 
     # Read the start date of the available data.
     start_date_of_data_availability = pandas.to_datetime(
-        util.entities.read_date_ranges(data_source="cen")["CL"][0]
+        utils.entities.read_date_ranges(data_source="cen")["CL"][0]
     )
 
     # Check that the start date is greater than or equal to the
@@ -66,7 +66,7 @@ def get_available_requests() -> list[
         The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="cen")[
+    start_date, end_date = utils.entities.read_date_ranges(data_source="cen")[
         "CL"
     ]
 
@@ -160,7 +160,7 @@ def download_and_extract_data_for_request(
     }
 
     # Fetch the data from the URL.
-    dataset = util.fetcher.fetch_data(
+    dataset = utils.fetcher.fetch_data(
         url,
         "html",
         read_with="requests.get",

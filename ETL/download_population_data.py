@@ -19,11 +19,11 @@ import argparse
 import logging
 import os
 
-import util.directories
-import util.entities
-import util.figures
-import util.geospatial
-import util.shapes
+import utils.directories
+import utils.entities
+import utils.figures
+import utils.geospatial
+import utils.shapes
 import xarray
 
 
@@ -97,7 +97,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         The command line arguments.
     """
     # Get the directory to store the population density data.
-    result_directory = util.directories.read_folders_structure()[
+    result_directory = utils.directories.read_folders_structure()[
         "population_density_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)
@@ -109,7 +109,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
     # Get the list of codes of the countries and subdivisions of
     # interest.
-    codes = util.entities.check_and_get_codes(
+    codes = utils.entities.check_and_get_codes(
         code=args.code, file_path=args.file
     )
 
@@ -131,12 +131,12 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         )
 
         # Harmonize the population density data.
-        global_population_density = util.geospatial.harmonize_coords(
+        global_population_density = utils.geospatial.harmonize_coords(
             global_population_density
         )
 
         # Clean the dataset.
-        global_population_density = util.geospatial.clean_raster(
+        global_population_density = utils.geospatial.clean_raster(
             global_population_density, "population_density"
         )
 
@@ -152,13 +152,13 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 logging.info(f"Extracting population density data of {code}.")
 
                 # Get the shape of the country or subdivision.
-                entity_shape = util.shapes.get_entity_shape(
+                entity_shape = utils.shapes.get_entity_shape(
                     code, make_plot=False
                 )
 
                 # Get the lateral bounds of the country or subdivision
                 # of interest.
-                entity_bounds = util.shapes.get_entity_bounds(
+                entity_bounds = utils.shapes.get_entity_bounds(
                     entity_shape
                 )  # West, South, East, North
 
@@ -171,7 +171,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
                 # Coarsen the population density data to the same
                 # resolution as the weather data.
-                population_density = util.geospatial.coarsen(
+                population_density = utils.geospatial.coarsen(
                     population_density, entity_bounds
                 )
 
@@ -181,7 +181,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 make_plot = False
                 if make_plot:
                     # Make a plot of the population density data.
-                    util.figures.simple_plot(
+                    utils.figures.simple_plot(
                         population_density,
                         f"population_density_{code}_{year}",
                     )
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     # Set up the logging configuration.
     log_file_name = "population_density_data.log"
-    log_files_directory = util.directories.read_folders_structure()[
+    log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)

@@ -16,8 +16,8 @@ Description:
 import logging
 
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def get_available_requests(code: str) -> None:
@@ -33,7 +33,7 @@ def get_available_requests(code: str) -> None:
         The code of the subdivision.
     """
     # Check if the code is valid.
-    util.entities.check_code(code, "ccei")
+    utils.entities.check_code(code, "ccei")
 
     logging.debug("The data is retrieved all at once.")
 
@@ -53,7 +53,7 @@ def get_url(code: str) -> str:
         The URL of the electricity demand data.
     """
     # Check if the code is valid.
-    util.entities.check_code(code, "ccei")
+    utils.entities.check_code(code, "ccei")
 
     # Extract the subdivision code.
     subdivision_code = code.split("_")[1]
@@ -109,13 +109,13 @@ def download_and_extract_data(code: str) -> pandas.Series:
         If the extracted data is not a pandas DataFrame.
     """
     # Check if the code is valid.
-    util.entities.check_code(code, "ccei")
+    utils.entities.check_code(code, "ccei")
 
     # Get the URL of the electricity demand data.
     url = get_url(code)
 
     # Fetch HTML content from the URL.
-    dataset = util.fetcher.fetch_data(url, "csv")
+    dataset = utils.fetcher.fetch_data(url, "csv")
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):

@@ -24,10 +24,10 @@ import geopandas
 import numpy
 import pandas
 import pytz
-import util.directories
-import util.entities
-import util.geospatial
-import util.shapes
+import utils.directories
+import utils.entities
+import utils.geospatial
+import utils.shapes
 import xarray
 
 
@@ -119,7 +119,7 @@ def get_temperature_in_largest_population_density_areas(
     """
     # Read the temperature data downloaded from the Copernicus Climate
     # Data Store (CDS).
-    temperature_data_directory = util.directories.read_folders_structure()[
+    temperature_data_directory = utils.directories.read_folders_structure()[
         "weather_folder"
     ]
     temperature_data = xarray.open_mfdataset(
@@ -130,7 +130,7 @@ def get_temperature_in_largest_population_density_areas(
     )
 
     # Harmonize the temperature data.
-    temperature_data = util.geospatial.harmonize_coords(temperature_data)
+    temperature_data = utils.geospatial.harmonize_coords(temperature_data)
 
     # Extract the temperature data for the given year in local time.
     start_date = (
@@ -158,7 +158,7 @@ def get_temperature_in_largest_population_density_areas(
 
     # Read the population density data of the country or subdivision of
     # interest.
-    population_density_directory = util.directories.read_folders_structure()[
+    population_density_directory = utils.directories.read_folders_structure()[
         "population_density_folder"
     ]
     population_density = xarray.open_dataarray(
@@ -170,8 +170,10 @@ def get_temperature_in_largest_population_density_areas(
 
     # Get the grid cells with the largest population densities in the
     # given shape.
-    largest_population_densities = util.geospatial.get_largest_values_in_shape(
-        entity_shape, population_density, number_of_grid_cells
+    largest_population_densities = (
+        utils.geospatial.get_largest_values_in_shape(
+            entity_shape, population_density, number_of_grid_cells
+        )
     )
 
     # Get the temperature data for the grid cells with the largest
@@ -340,14 +342,14 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
         The command line arguments.
     """
     # Create a directory to store the weather data.
-    result_directory = util.directories.read_folders_structure()[
+    result_directory = utils.directories.read_folders_structure()[
         "temperature_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)
 
     # Get the list of codes of the countries and subdivisions of
     # interest.
-    codes = util.entities.check_and_get_codes(
+    codes = utils.entities.check_and_get_codes(
         code=args.code, file_path=args.file
     )
 
@@ -361,13 +363,13 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
         else:
             # Get the years of available data for the country or
             # subdivision of interest.
-            years = util.entities.get_available_years(code)
+            years = utils.entities.get_available_years(code)
 
         # Get the shape of the country or subdivision.
-        entity_shape = util.shapes.get_entity_shape(code, make_plot=False)
+        entity_shape = utils.shapes.get_entity_shape(code, make_plot=False)
 
         # Get the time zone information for the country or subdivision.
-        entity_time_zone = util.entities.get_time_zone(code)
+        entity_time_zone = utils.entities.get_time_zone(code)
 
         # Loop over the years.
         for year in years:
@@ -435,7 +437,7 @@ if __name__ == "__main__":
     args = read_command_line_arguments()
 
     # Set up the logging configuration.
-    log_files_directory = util.directories.read_folders_structure()[
+    log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)

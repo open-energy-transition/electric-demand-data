@@ -18,8 +18,8 @@ Description:
 import logging
 
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 province_id = {
     "AR": 1002,  # Argentina
@@ -63,7 +63,7 @@ def get_available_requests() -> list[str]:
         The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(
+    start_date, end_date = utils.entities.read_date_ranges(
         data_source="cammesa"
     )["AR"]
 
@@ -135,7 +135,7 @@ def download_and_extract_data_for_request(date: str) -> pandas.Series:
     url = get_url(date)
 
     # Fetch the data from the URL.
-    dataset = util.fetcher.fetch_data(
+    dataset = utils.fetcher.fetch_data(
         url, "html", read_with="requests.get", read_as="json"
     )
 

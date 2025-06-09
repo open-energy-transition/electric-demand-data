@@ -17,8 +17,8 @@ Description:
 import logging
 
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def _check_input_parameters(
@@ -39,7 +39,7 @@ def _check_input_parameters(
         The month of the data to retrieve.
     """
     # Check if the code is valid.
-    util.entities.check_code(code, "aemo_nem")
+    utils.entities.check_code(code, "aemo_nem")
 
     if year is not None and month is not None:
         # Check if the year and month are valid.
@@ -69,7 +69,7 @@ def get_available_requests(code: str) -> list[tuple[int, int]]:
     _check_input_parameters(code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(
+    start_date, end_date = utils.entities.read_date_ranges(
         data_source="aemo_nem"
     )[code]
 
@@ -159,7 +159,7 @@ def download_and_extract_data_for_request(
     url = get_url(year, month, code)
 
     # Fetch the electricity demand data from the URL.
-    dataset = util.fetcher.fetch_data(
+    dataset = utils.fetcher.fetch_data(
         url,
         "html",
         read_with="requests.get",

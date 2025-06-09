@@ -18,8 +18,8 @@ from io import BytesIO, StringIO
 
 import pandas
 import requests
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def _check_input_parameters(
@@ -40,7 +40,7 @@ def _check_input_parameters(
         The end date of the data retrieval.
     """
     # Check if the code is valid.
-    util.entities.check_code(code, "cenace")
+    utils.entities.check_code(code, "cenace")
 
     if start_date is not None and end_date is not None:
         # Check if the retrieval period is less than 1 year.
@@ -51,7 +51,7 @@ def _check_input_parameters(
 
         # Read the start date of the available data.
         start_date_of_data_availability = pandas.to_datetime(
-            util.entities.read_date_ranges(data_source="cenace")[code][0]
+            utils.entities.read_date_ranges(data_source="cenace")[code][0]
         )
 
         # Check that the start date is greater than or equal to the
@@ -84,7 +84,7 @@ def get_available_requests(
     _check_input_parameters(code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(
+    start_date, end_date = utils.entities.read_date_ranges(
         data_source="cenace"
     )[code]
 
@@ -193,7 +193,7 @@ def download_and_extract_data_for_request(
     header_params = {"User-Agent": "Mozilla/5.0"}
 
     # Fetch HTML content from the URL.
-    response = util.fetcher.fetch_data(
+    response = utils.fetcher.fetch_data(
         url,
         "html",
         read_with="requests.post",
@@ -227,7 +227,7 @@ def download_and_extract_data_for_request(
         subdivision_code = code.split("_")[1]
 
         # Get the time zone of the country or subdivision.
-        time_zone = util.entities.get_time_zone(code)
+        time_zone = utils.entities.get_time_zone(code)
 
         # Initialize the list to store the daily values.
         daily_values_list = []

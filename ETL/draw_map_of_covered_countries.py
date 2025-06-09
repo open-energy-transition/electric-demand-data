@@ -18,16 +18,16 @@ import cartopy.feature
 import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot
-import util.directories
-import util.entities
-import util.shapes
+import utils.directories
+import utils.entities
+import utils.shapes
 
 # Create a directory to store the figures.
-figure_directory = util.directories.read_folders_structure()["figures_folder"]
+figure_directory = utils.directories.read_folders_structure()["figures_folder"]
 os.makedirs(figure_directory, exist_ok=True)
 
 # Read the codes of all countries and subdivisions.
-codes = util.entities.read_all_codes()
+codes = utils.entities.read_all_codes()
 
 # Define the map projection and the coordinate reference system of the
 # data to plot.
@@ -46,7 +46,7 @@ ax.add_feature(cartopy.feature.LAND, facecolor="lightgray")
 ax.add_feature(cartopy.feature.OCEAN, facecolor="white")
 
 # Get the range of available data for all countries and subdivisions.
-date_ranges = util.entities.read_all_date_ranges()
+date_ranges = utils.entities.read_all_date_ranges()
 
 # Define the colormap.
 map_cmap = matplotlib.pyplot.get_cmap("Blues")
@@ -61,7 +61,7 @@ upper_bound = 0.9
 # Loop over the countries.
 for code in codes:
     # Get the shape of the country or subdivision.
-    entity_shape = util.shapes.get_entity_shape(code, make_plot=False)
+    entity_shape = utils.shapes.get_entity_shape(code, make_plot=False)
 
     # Calculate the number of years of available data.
     n_years = (date_ranges[code][1] - date_ranges[code][0]).days / 365

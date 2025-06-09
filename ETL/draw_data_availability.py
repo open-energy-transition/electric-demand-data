@@ -26,8 +26,8 @@ import matplotlib.ticker
 import numpy
 import pandas
 import requests
-import util.directories
-import util.entities
+import utils.directories
+import utils.entities
 
 
 def _get_year_fractions(codes: list[str]) -> dict[str, dict[str, float]]:
@@ -48,7 +48,7 @@ def _get_year_fractions(codes: list[str]) -> dict[str, dict[str, float]]:
         values.
     """
     # Get the data time range for all countries and subdivisions.
-    data_time_ranges = util.entities.read_all_date_ranges()
+    data_time_ranges = utils.entities.read_all_date_ranges()
 
     # Initialize a dictionary to store the fractions of years for which
     # data is available for each country or subdivision.
@@ -469,21 +469,21 @@ def _add_bar_chart(
 
 
 # Create a directory to store the figures.
-figure_directory = util.directories.read_folders_structure()["figures_folder"]
+figure_directory = utils.directories.read_folders_structure()["figures_folder"]
 os.makedirs(figure_directory, exist_ok=True)
 
 # Read the codes of all countries and subdivisions.
-codes = util.entities.read_all_codes()
+codes = utils.entities.read_all_codes()
 
 # Get the ISO alpha-3 codes for all countries and subdivisions.
 alpha_3_codes = {}
 for code in codes:
-    alpha_3_codes[code] = util.entities.get_iso_alpha_3_code(code)
+    alpha_3_codes[code] = utils.entities.get_iso_alpha_3_code(code)
 
 # Get the continent for each country.
 continent_codes = {}
 for code in codes:
-    continent_codes[code] = util.entities.get_continent_code(code)
+    continent_codes[code] = utils.entities.get_continent_code(code)
 
 # Get the fractions of years for which data is available for each
 # country or subdivision.

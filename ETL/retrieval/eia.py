@@ -16,9 +16,9 @@ import logging
 import os
 
 import pandas
-import util.directories
-import util.entities
-import util.fetcher
+import utils.directories
+import utils.entities
+import utils.fetcher
 from dotenv import load_dotenv
 
 
@@ -40,7 +40,7 @@ def _check_input_parameters(
         The end date of the data retrieval.
     """
     # Check if the code is valid.
-    util.entities.check_code(code, "eia")
+    utils.entities.check_code(code, "eia")
 
     if start_date is not None and end_date is not None:
         # Check that the number of time points is less than 5000.
@@ -50,7 +50,7 @@ def _check_input_parameters(
 
         # Read the start date of the available data.
         start_date_of_data_availability = pandas.to_datetime(
-            util.entities.read_date_ranges(data_source="eia")[code][0]
+            utils.entities.read_date_ranges(data_source="eia")[code][0]
         )
 
         # Check that the start date is greater than or equal to the
@@ -84,7 +84,7 @@ def get_available_requests(
     _check_input_parameters(code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="eia")[
+    start_date, end_date = utils.entities.read_date_ranges(data_source="eia")[
         code
     ]
 
@@ -134,7 +134,7 @@ def get_url(
     _check_input_parameters(code, start_date=start_date, end_date=end_date)
 
     # Get the root directory of the project.
-    root_directory = util.directories.read_folders_structure()["root_folder"]
+    root_directory = utils.directories.read_folders_structure()["root_folder"]
 
     # Load the environment variables.
     load_dotenv(dotenv_path=os.path.join(root_directory, ".env"))
@@ -208,7 +208,7 @@ def download_and_extract_data_for_request(
     url = get_url(start_date, end_date, code)
 
     # Fetch the electricity demand data from the URL.
-    dataset = util.fetcher.fetch_data(
+    dataset = utils.fetcher.fetch_data(
         url,
         "html",
         read_with="requests.get",

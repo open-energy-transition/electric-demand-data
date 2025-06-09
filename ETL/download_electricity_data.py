@@ -42,9 +42,9 @@ import retrieval.sonelgaz
 import retrieval.tepco
 import retrieval.tsoc
 import retrieval.xm
-import util.directories
-import util.entities
-import util.time_series
+import utils.directories
+import utils.entities
+import utils.time_series
 
 retrieval_module = {
     "AEMO_NEM": retrieval.aemo_nem,
@@ -162,7 +162,7 @@ def retrieve_data(data_source: str, code: str) -> pandas.Series:
     """
     # Check if there is only one code in the data source.
     one_code_in_data_source = (
-        len(util.entities.read_codes(data_source=args.data_source)) == 1
+        len(utils.entities.read_codes(data_source=args.data_source)) == 1
     )
 
     # Get the list of requests to retrieve the electricity demand time
@@ -238,7 +238,7 @@ def retrieve_data(data_source: str, code: str) -> pandas.Series:
         )
 
     # Clean the data.
-    electricity_demand_time_series = util.time_series.clean_data(
+    electricity_demand_time_series = utils.time_series.clean_data(
         electricity_demand_time_series, "Load (MW)"
     )
 
@@ -275,7 +275,7 @@ def save_data(
     date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
 
     # Get the directory to store the electricity demand time series.
-    result_directory = util.directories.read_folders_structure()[
+    result_directory = utils.directories.read_folders_structure()[
         "electricity_demand_folder"
     ]
     result_directory = os.path.join(result_directory, date_of_retrieval)
@@ -296,7 +296,7 @@ def save_data(
     if upload_to_gcs is not None:
         # Upload the parquet file of the electricity demand time series
         # to GCS.
-        util.time_series.upload_to_gcs(
+        utils.time_series.upload_to_gcs(
             file_path + ".parquet",
             upload_to_gcs,
             "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
@@ -319,7 +319,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     """
     # Get the list of codes of the countries and subdivisions of
     # interest.
-    codes = util.entities.check_and_get_codes(
+    codes = utils.entities.check_and_get_codes(
         args.data_source, args.code, args.file
     )
 
@@ -355,7 +355,7 @@ if __name__ == "__main__":
 
     # Set up the logging configuration.
     log_file_name = f"electricity_data_from_{args.data_source}.log"
-    log_files_directory = util.directories.read_folders_structure()[
+    log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)

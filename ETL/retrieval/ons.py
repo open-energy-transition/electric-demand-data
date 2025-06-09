@@ -16,8 +16,8 @@ Description:
 import logging
 
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def _check_input_parameters(
@@ -34,7 +34,7 @@ def _check_input_parameters(
         The code of the subdivision of interest.
     """
     # Check if the code is valid.
-    util.entities.check_code(code, "ons")
+    utils.entities.check_code(code, "ons")
 
     if year is not None:
         # Check if the year is supported.
@@ -64,7 +64,7 @@ def get_available_requests(code: str) -> list[int]:
     _check_input_parameters(code=code)
 
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(data_source="ons")[
+    start_date, end_date = utils.entities.read_date_ranges(data_source="ons")[
         code
     ]
 
@@ -134,7 +134,7 @@ def download_and_extract_data_for_request(
     url = get_url(year)
 
     # Fetch the data from the URL.
-    dataset = util.fetcher.fetch_data(url, "csv", csv_kwargs={"sep": ";"})
+    dataset = utils.fetcher.fetch_data(url, "csv", csv_kwargs={"sep": ";"})
 
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):

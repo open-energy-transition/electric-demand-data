@@ -19,8 +19,8 @@ import logging
 import os
 
 import pandas
-import util.directories
-import util.entities
+import utils.directories
+import utils.entities
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -93,13 +93,13 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         The command line arguments.
     """
     # Get the directory to store the population density data.
-    result_directory = util.directories.read_folders_structure()[
+    result_directory = utils.directories.read_folders_structure()[
         "annual_electricity_demand_folder"
     ]
     os.makedirs(result_directory, exist_ok=True)
 
     # Get the list of codes of the countries and subdivisions.
-    codes = util.entities.check_and_get_codes(
+    codes = utils.entities.check_and_get_codes(
         code=args.code, file_path=args.file
     )
 
@@ -126,10 +126,10 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             else:
                 # Get the years of available data for the country or
                 # subdivision.
-                years = util.entities.get_available_years(code)
+                years = utils.entities.get_available_years(code)
 
             # Get the ISO Alpha-3 code of the country.
-            iso_alpha_3_code = util.entities.get_iso_alpha_3_code(code)
+            iso_alpha_3_code = utils.entities.get_iso_alpha_3_code(code)
 
             # Extract the electricity data for the country and years of
             # interest.
@@ -157,7 +157,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             )
 
             # Get the time zone of the country.
-            time_zone = util.entities.get_time_zone(code)
+            time_zone = utils.entities.get_time_zone(code)
 
             # Define a new index with hourly frequency in the local time
             # zone.
@@ -222,7 +222,7 @@ if __name__ == "__main__":
 
     # Set up the logging configuration.
     log_file_name = "gdp_data.log"
-    log_files_directory = util.directories.read_folders_structure()[
+    log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)

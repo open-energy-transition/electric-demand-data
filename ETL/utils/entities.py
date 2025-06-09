@@ -20,7 +20,7 @@ import yaml
 from countryinfo import CountryInfo
 from timezonefinder import TimezoneFinder
 
-import util.directories
+import utils.directories
 
 
 def _read_data_sources() -> list[str]:
@@ -38,7 +38,7 @@ def _read_data_sources() -> list[str]:
         folder.
     """
     # Get the paths to the yaml files of the data sources.
-    file_paths = util.directories.list_yaml_files("retrieval_scripts_folder")
+    file_paths = utils.directories.list_yaml_files("retrieval_scripts_folder")
 
     # Read the data sources from the file names.
     return [
@@ -95,7 +95,7 @@ def _read_entities_info(
 
         # Get the path to the yaml file of the data source.
         file_path = os.path.join(
-            util.directories.read_folders_structure()[
+            utils.directories.read_folders_structure()[
                 "retrieval_scripts_folder"
             ],
             f"{data_source.lower()}.yaml",
@@ -174,7 +174,7 @@ def read_all_codes() -> list[str]:
         combination of the ISO Alpha-2 codes and the subdivision codes.
     """
     # Get the path of all yaml files in the retrieval scripts folder.
-    yaml_file_paths = util.directories.list_yaml_files(
+    yaml_file_paths = utils.directories.list_yaml_files(
         "retrieval_scripts_folder"
     )
 
@@ -518,7 +518,7 @@ def get_all_time_zones() -> dict[str, pytz.timezone]:
         yaml files.
     """
     # Get the path to all yaml files in the retrieval scripts folder.
-    yaml_file_paths = util.directories.list_yaml_files(
+    yaml_file_paths = utils.directories.list_yaml_files(
         "retrieval_scripts_folder"
     )
 
@@ -690,7 +690,7 @@ def read_all_date_ranges() -> dict[str, tuple[datetime.date, datetime.date]]:
         available data for the countries and subdivisions.
     """
     # Get the path to all yaml files in the retrieval scripts folder.
-    yaml_file_paths = util.directories.list_yaml_files(
+    yaml_file_paths = utils.directories.list_yaml_files(
         "retrieval_scripts_folder"
     )
 

@@ -17,7 +17,7 @@ import logging
 import os
 
 import pandas
-import util.directories
+import utils.directories
 
 
 def get_available_requests() -> None:
@@ -57,7 +57,7 @@ def download_and_extract_data() -> pandas.Series:
         The electricity demand time series in MW.
     """
     # Get the data folder.
-    data_directory = util.directories.read_folders_structure()[
+    data_directory = utils.directories.read_folders_structure()[
         "manually_downloaded_data_folder"
     ]
 

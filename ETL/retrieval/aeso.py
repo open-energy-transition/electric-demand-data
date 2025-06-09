@@ -16,7 +16,7 @@ Description:
 import logging
 
 import pandas
-import util.fetcher
+import utils.fetcher
 
 
 def _check_input_parameters(file_number: int) -> None:
@@ -210,7 +210,7 @@ def download_and_extract_data_for_request(file_number: int) -> pandas.Series:
     )
 
     # Fetch the electricity demand data from the URL.
-    dataset = util.fetcher.fetch_data(
+    dataset = utils.fetcher.fetch_data(
         url,
         "excel",
         excel_kwargs={

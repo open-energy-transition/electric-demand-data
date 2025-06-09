@@ -19,8 +19,8 @@ Description:
 import logging
 
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def _check_input_parameters(
@@ -60,7 +60,7 @@ def get_available_requests() -> list[tuple[bool, int, int | None, int | None]]:
         List of tuples in the format (year, month, day).
     """
     # Read the start and end date of the available data.
-    start_date, end_date = util.entities.read_date_ranges(
+    start_date, end_date = utils.entities.read_date_ranges(
         data_source="aemo_wem"
     )["AU_WA"]
 
@@ -184,7 +184,7 @@ def download_and_extract_data_for_request(
         url = get_url(pre_reform, year, month, day)
 
         # Fetch the data from the URL.
-        dataset = util.fetcher.fetch_data(url, "csv")
+        dataset = utils.fetcher.fetch_data(url, "csv")
 
         # Make sure the dataset is a pandas DataFrame.
         if not isinstance(dataset, pandas.DataFrame):
@@ -225,7 +225,7 @@ def download_and_extract_data_for_request(
         url = get_url(pre_reform, year, month, day)
 
         # Fetch the data from the URL.
-        dataset = util.fetcher.fetch_data(
+        dataset = utils.fetcher.fetch_data(
             url,
             "html",
             read_with="requests.get",

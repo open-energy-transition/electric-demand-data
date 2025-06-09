@@ -13,7 +13,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 import pytz
-import util.entities
+import utils.entities
 
 
 @pytest.fixture
@@ -64,7 +64,7 @@ def test_read_entities_info(sample_yaml):
     """
     # Read the entities info from the sample yaml file.
     with patch("builtins.open", mock_open(read_data=sample_yaml)):
-        entities = util.entities._read_entities_info(file_path="dummy.yaml")
+        entities = utils.entities._read_entities_info(file_path="dummy.yaml")
 
     # Check if function returns a list of entities.
     assert isinstance(entities, list)
@@ -103,7 +103,7 @@ def test_read_codes(sample_yaml):
     """
     # Read the codes from the sample yaml file.
     with patch("builtins.open", mock_open(read_data=sample_yaml)):
-        codes = util.entities.read_codes(file_path="dummy.yaml")
+        codes = utils.entities.read_codes(file_path="dummy.yaml")
 
     # Check if function returns a list of codes.
     assert isinstance(codes, list)
@@ -122,12 +122,12 @@ def test_check_code():
     """
     # Check if the function correctly identifies valid and invalid
     # codes.
-    util.entities.check_code("FR", data_source="ENTSOE")
-    util.entities.check_code("US_TEX", data_source="EIA")
+    utils.entities.check_code("FR", data_source="ENTSOE")
+    utils.entities.check_code("US_TEX", data_source="EIA")
     with pytest.raises(AssertionError):
-        util.entities.check_code("INVALID_CODE", data_source="ENTSOE")
+        utils.entities.check_code("INVALID_CODE", data_source="ENTSOE")
     with pytest.raises(ValueError):
-        util.entities.check_code("FR", data_source="INVALID_DATA_SOURCE")
+        utils.entities.check_code("FR", data_source="INVALID_DATA_SOURCE")
 
 
 def test_get_time_zone():
@@ -139,16 +139,16 @@ def test_get_time_zone():
     invalid code.
     """
     # Check the time zone of a country.
-    assert util.entities.get_time_zone("FR") == pytz.timezone("Europe/Paris")
+    assert utils.entities.get_time_zone("FR") == pytz.timezone("Europe/Paris")
 
     # Check the time zone of a subdivision.
-    assert util.entities.get_time_zone("US_CAL") == pytz.timezone(
+    assert utils.entities.get_time_zone("US_CAL") == pytz.timezone(
         "America/Los_Angeles"
     )
 
     # Invalid code should raise an error.
     with pytest.raises(ValueError):
-        util.entities.get_time_zone("INVALID_CODE")
+        utils.entities.get_time_zone("INVALID_CODE")
 
 
 def test_read_date_ranges(sample_yaml):
@@ -166,7 +166,7 @@ def test_read_date_ranges(sample_yaml):
     """
     # Read the date ranges from the sample yaml file.
     with patch("builtins.open", mock_open(read_data=sample_yaml)):
-        date_ranges = util.entities.read_date_ranges(file_path="dummy.yaml")
+        date_ranges = utils.entities.read_date_ranges(file_path="dummy.yaml")
 
     # Check if function returns a list of date ranges.
     assert isinstance(date_ranges, dict)

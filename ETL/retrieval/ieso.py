@@ -17,8 +17,8 @@ Description:
 import logging
 
 import pandas
-import util.entities
-import util.fetcher
+import utils.entities
+import utils.fetcher
 
 
 def _check_input_parameters(year: int | None, before_Apr_2002: bool) -> None:
@@ -51,7 +51,7 @@ def get_available_requests() -> list[tuple[int | None, bool]]:
         The list of available requests.
     """
     # Read the start and end date of the available data.
-    __, end_date = util.entities.read_date_ranges(data_source="ieso")["CA_ON"]
+    __, end_date = utils.entities.read_date_ranges(data_source="ieso")["CA_ON"]
 
     # Define the date that separates the two periods of data.
     date_after_Apr_2002 = pandas.Timestamp("2002-04-01")
@@ -146,7 +146,7 @@ def download_and_extract_data_for_request(
         )
 
         # Fetch HTML content from the URL.
-        dataset = util.fetcher.fetch_data(
+        dataset = utils.fetcher.fetch_data(
             url,
             "html",
             read_with="requests.get",
@@ -188,7 +188,7 @@ def download_and_extract_data_for_request(
         )
 
         # Fetch HTML content from the URL.
-        dataset = util.fetcher.fetch_data(
+        dataset = utils.fetcher.fetch_data(
             url, "csv", csv_kwargs={"skiprows": 3}
         )
 

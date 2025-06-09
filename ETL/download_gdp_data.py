@@ -22,11 +22,11 @@ import os
 
 import py7zr
 import requests
-import util.directories
-import util.entities
-import util.figures
-import util.geospatial
-import util.shapes
+import utils.directories
+import utils.entities
+import utils.figures
+import utils.geospatial
+import utils.shapes
 import xarray
 
 
@@ -99,7 +99,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         The command line arguments.
     """
     # Get the directory to store the population density data.
-    result_directory = util.directories.read_folders_structure()["gdp_folder"]
+    result_directory = utils.directories.read_folders_structure()["gdp_folder"]
     os.makedirs(result_directory, exist_ok=True)
 
     if args.year is not None:
@@ -109,7 +109,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
     # Get the list of codes of the countries and subdivisions of
     # interest.
-    codes = util.entities.check_and_get_codes(
+    codes = utils.entities.check_and_get_codes(
         code=args.code, file_path=args.file
     )
 
@@ -133,10 +133,10 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         )
 
         # Harmonize the GDP data.
-        global_gdp = util.geospatial.harmonize_coords(global_gdp)
+        global_gdp = utils.geospatial.harmonize_coords(global_gdp)
 
         # Clean the dataset.
-        global_gdp = util.geospatial.clean_raster(global_gdp, "gdp")
+        global_gdp = utils.geospatial.clean_raster(global_gdp, "gdp")
 
         # Loop over the countries and subdivisions of interest.
         for code in codes:
@@ -150,13 +150,13 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 logging.info(f"Extracting GDP data of {code}.")
 
                 # Get the shape of the country or subdivision.
-                entity_shape = util.shapes.get_entity_shape(
+                entity_shape = utils.shapes.get_entity_shape(
                     code, make_plot=False
                 )
 
                 # Get the lateral bounds of the country or subdivision
                 # of interest.
-                entity_bounds = util.shapes.get_entity_bounds(
+                entity_bounds = utils.shapes.get_entity_bounds(
                     entity_shape
                 )  # West, South, East, North
 
@@ -173,7 +173,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 make_plot = False
                 if make_plot:
                     # Make a plot of the GDP data.
-                    util.figures.simple_plot(gdp, f"gdp_{code}_{year}")
+                    utils.figures.simple_plot(gdp, f"gdp_{code}_{year}")
 
                 logging.info(
                     f"GDP data for {code} has been successfully extracted and "
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     # Set up the logging configuration.
     log_file_name = "gdp_data.log"
-    log_files_directory = util.directories.read_folders_structure()[
+    log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)

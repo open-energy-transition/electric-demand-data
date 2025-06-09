@@ -17,7 +17,7 @@ Description:
 import logging
 
 import pandas
-import util.fetcher
+import utils.fetcher
 
 
 def get_available_requests() -> None:
@@ -68,7 +68,7 @@ def download_and_extract_data() -> pandas.Series:
     url = get_url()
 
     # Fetch the data from the URL.
-    dataset = util.fetcher.fetch_data(
+    dataset = utils.fetcher.fetch_data(
         url,
         "excel",
         excel_kwargs={"sheet_name": "Demand Timeseries", "skiprows": 3},
