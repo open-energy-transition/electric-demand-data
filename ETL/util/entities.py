@@ -20,6 +20,9 @@ import yaml
 from countryinfo import CountryInfo
 from timezonefinder import TimezoneFinder
 
+# Add countries that are not fully recognized.
+pycountry.countries.add_entry(alpha_2="XK", alpha_3="XKX", name="Kosovo", numeric="926")
+
 
 def _read_data_sources() -> list[str]:
     """
@@ -237,12 +240,6 @@ def get_iso_alpha_3_code(code: str) -> str:
     iso_alpha_3_code : str
         The ISO Alpha-3 code of the country
     """
-
-    # Define countries that are not fully recognized.
-    pycountry.countries.add_entry(
-        alpha_2="XK", alpha_3="XKX", name="Kosovo", numeric="926"
-    )
-
     # Check if the code specifies a subdivision.
     if "_" in code:
         # Extract the ISO Alpha-2 code of the country.
@@ -593,8 +590,11 @@ def get_continent_code(code: str) -> str:
         iso_alpha_2_code = code
 
     # Get the continent code.
-    continent_code = pycountry_convert.country_alpha2_to_continent_code(
-        iso_alpha_2_code
-    )
+    try:
+        continent_code = pycountry_convert.country_alpha2_to_continent_code(
+            iso_alpha_2_code
+        )
+    except KeyError:
+        raise ValueError(f"Invalid or unknown ISO Alpha-2 code: {iso_alpha_2_code}")
 
     return continent_code
