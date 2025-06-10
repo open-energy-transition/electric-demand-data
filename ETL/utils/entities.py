@@ -28,6 +28,12 @@ pycountry.countries.add_entry(
 )
 
 
+# Add countries that are not fully recognized.
+pycountry.countries.add_entry(
+    alpha_2="XK", alpha_3="XKX", name="Kosovo", numeric="926"
+)
+
+
 def _read_data_sources() -> list[str]:
     """
     Read the the names of the data sources.
@@ -275,18 +281,24 @@ def check_and_get_codes(
         # specified file.
         codes = read_codes(file_path=file_path)
 
+        # Initialize a list of the remaining codes.
+        remaining_codes = codes.copy()
+
         # Check if the codes are available.
         for code in codes:
             if code not in all_codes:
                 logging.error(f"Code {code} is not available.")
-                codes.remove(code)
+                remaining_codes.remove(code)
 
         # Check if there are any codes left.
-        if len(codes) == 0:
+        if len(remaining_codes) == 0:
             raise ValueError(
                 "None of the codes in the file are available. Please choose "
                 f"from the following: {', '.join(all_codes)}"
             )
+        else:
+            # If there are codes left, return them.
+            codes = remaining_codes
     else:
         # If no code or file path is provided, use all available codes.
         codes = all_codes
@@ -412,9 +424,7 @@ def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
     return time_zone
 
 
-def _get_time_zones(
-    file_path: str = "", data_source: str = ""
-) -> dict[str, pytz.timezone]:
+def _get_time_zones(file_path: str) -> dict[str, pytz.timezone]:
     """
     Get the time zones of the countries and subdivisions.
 
@@ -424,14 +434,10 @@ def _get_time_zones(
 
     Parameters
     ----------
-    file_path : str, optional
+    file_path : str
         The path to the file containing the information of the countries
         and subdivisions. If provided, the function will read the yaml
         file from this path.
-    data_source : str, optional
-        The name of the data source. If provided, the function will look
-        for a yaml file with the same name in the retrieval scripts
-        folder.
 
     Returns
     -------
@@ -447,9 +453,7 @@ def _get_time_zones(
         zone for a country or subdivision.
     """
     # Extract the information of the countries and subdivisions.
-    entities = _read_entities_info(
-        file_path=file_path, data_source=data_source
-    )
+    entities = _read_entities_info(file_path=file_path)
 
     # Define a dictionary to store the time zones of the countries and
     # subdivisions.
@@ -472,7 +476,7 @@ def _get_time_zones(
         # the country code.
         elif "time_zone" not in entity and "_" not in code:
             time_zone = _get_country_time_zone(code)
-        # If the code specifies a subdivision and the time zone is also
+        # If the code specifies a country and the time zone is also
         # defined in the file, check if the time zone is the same as the
         # one in the file.
         elif "time_zone" in entity and "_" not in code:
@@ -529,7 +533,7 @@ def get_all_time_zones() -> dict[str, pytz.timezone]:
     # Iterate over the yaml files and read the time zones.
     for yaml_file_path in yaml_file_paths:
         # Read the time zones from the file.
-        file_time_zones = _get_time_zones(file_path=yaml_file_path)
+        file_time_zones = _get_time_zones(yaml_file_path)
 
         # Check for duplicates.
         for code, time_zone in file_time_zones.items():
@@ -751,12 +755,12 @@ def get_available_years(code: str) -> list[int]:
     list[int]
         The years of the available data for the country or subdivision.
     """
+    # Get the time zone of the country or subdivision.
+    entity_time_zone = get_time_zone(code)
+
     # Read the start and end dates of the available data for the country
     # or subdivision of interest.
     start_date, end_date = read_all_date_ranges()[code]
-
-    # Get the time zone of the country or subdivision.
-    entity_time_zone = get_time_zone(code)
 
     # Convert the start and end dates to the time zone of the country or
     # subdivision.
@@ -810,7 +814,7 @@ def get_continent_code(code: str) -> str:
         # Alpha-2 code directly.
         iso_alpha_2_code = code
 
-    # Get the continent code.
+    # Get the continent code from the ISO Alpha-2 code.
     try:
         continent_code = pycountry_convert.country_alpha2_to_continent_code(
             iso_alpha_2_code
