@@ -17,6 +17,11 @@ def load_input_data(data_path: str) -> pandas.DataFrame:
     """
     Load input data from local file for inference.
 
+    Parameters
+    ----------
+    data_path : str
+        The path to the input data file.
+
     Returns
     -------
     pandas.DataFrame
@@ -39,6 +44,11 @@ def load_input_data(data_path: str) -> pandas.DataFrame:
 def load_model(model_path: str) -> XGBRegressor:
     """
     Load the pre-trained XGBoost model.
+
+    Parameters
+    ----------
+    model_path : str
+        The path to the pre-trained XGBoost model file.
 
     Returns
     -------

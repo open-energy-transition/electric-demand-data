@@ -45,6 +45,11 @@ def setupFastAPI(args: argparse.Namespace):
     """
     Set up FastAPI app with specified command line arguments.
 
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Arguments from the command line.
+
     Returns
     -------
     app : FastAPI
@@ -115,6 +120,11 @@ def setupFastAPI(args: argparse.Namespace):
     def predict(input_data: PredictionInput):
         """
         Predict normalized electricity demand with required freatures.
+
+        Parameters
+        ----------
+        input_data : PredictionInput
+            See class PredictionInput for details
 
         Returns
         -------
