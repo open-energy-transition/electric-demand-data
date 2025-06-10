@@ -182,4 +182,3 @@ Arguments:
 The script will extract time series of temperature based on the largest and three largest population density areas and output `.csv` or `.parquet` files in `data/temperature/`.
 
 Note that the `get_temperature_data.py` script requires both weather and population data to be available in the specified directories.
-
