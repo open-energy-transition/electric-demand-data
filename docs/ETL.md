@@ -146,7 +146,6 @@ The script:
 - Retrieves temperature data from the Copernicus Climate Data Store.
 - Stores `.nc` files in `data/weather/`.
 
-
 Note that the size of weather data files is on the order of 100 MB per country per year, so ensure you have sufficient storage space.
 
 ## Gross Domestic Product (GDP) data
