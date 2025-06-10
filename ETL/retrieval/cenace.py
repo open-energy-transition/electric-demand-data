@@ -202,7 +202,7 @@ def download_and_extract_data_for_request(
 
     # Iterate over the dates and extract the corresponding files.
     for date in dates:
-        # Define the file version to be extracted.
+        # Define the file version to be extracted. Start with the latest version and go backwards.
         file_version = -1
 
         # Define a flag to indicate if the data for the date was found.

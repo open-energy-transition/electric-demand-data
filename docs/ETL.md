@@ -26,25 +26,25 @@ Export cleaned data to local or cloud storage in Parquet or CSV format.
 
 ```bash
 ETL/
-├── download_electricity_data.py      # Main script to download electricity demand data
-├── download_population_data.py       # Script to retrieve population data from SEDAC
-├── download_weather_data.py          # Script to retrieve weather data from Copernicus
-├── get_temperature_data.py           # Script to extract temperature time series
-├── retrieval/                        # Data source-specific scripts and configuration
-│   ├── entsoe.py, eia.py, ...        # Retrieval logic for each data provider
-│   ├── entsoe.yaml, eia.yaml, ...    # Lists of country/subdivision codes per source
-│   └── copernicus.py                 # Copernicus Climate Data Store (CDS) retrieval functions
-├── shapes/                           # Non-standard subdivision shapes
-│   └── eia.py, ons.py, ...           # Scripts that generate non-standard shapefiles
-├── util/                             # Shared utilities
-│   ├── directories.py                # Functions to read directories
-│   ├── directories.yaml              # Keys to define the ETL folder structure
-│   ├── entities.py                   # Functions to read country and subdivision information
-│   ├── fetcher.py                    # Functions to fetch online content
-│   ├── geospatial.py                 # Functions to process geospatial data
-│   ├── shapes.py                     # Functions to read country and subdivision shapes
-│   └── time_series.py                # Time series processing
-└── .env                              # API keys (not included in repo)
+├── download_electricity_data.py    # Main script to download electricity demand data
+├── download_population_data.py     # Script to retrieve population data from SEDAC
+├── download_weather_data.py        # Script to retrieve weather data from Copernicus
+├── get_temperature_data.py         # Script to extract temperature time series
+├── retrieval/                      # Data source-specific scripts and configuration
+│   ├── entsoe.py, eia.py, ...      # Retrieval logic for each data provider
+│   ├── entsoe.yaml, eia.yaml, ...  # Lists of country/subdivision information per source
+│   └── copernicus.py               # Copernicus Climate Data Store (CDS) retrieval functions
+├── shapes/                         # Non-standard subdivision shapes
+│   └── eia.py, ons.py, ...         # Scripts that generate non-standard shapefiles
+├── util/                           # Shared utilities
+│   ├── directories.py              # Functions to read directories
+│   ├── directories.yaml            # Keys to define the ETL folder structure
+│   ├── entities.py                 # Functions to read country and subdivision information
+│   ├── fetcher.py                  # Functions to fetch online content
+│   ├── geospatial.py               # Functions to process geospatial data
+│   ├── shapes.py                   # Functions to read country and subdivision shapes
+│   └── time_series.py              # Time series processing
+└── .env                            # API keys (not included in repo)
 ```
 
 ## Application Programming Interface (API) keys
@@ -146,6 +146,9 @@ The script:
 - Retrieves temperature data from the Copernicus Climate Data Store.
 - Stores `.nc` files in `data/weather/`.
 
+
+Note that the size of weather data files is on the order of 100 MB per country per year, so ensure you have sufficient storage space.
+
 ## Gross Domestic Product (GDP) data
 
 To retrieve gridded GDP data, run:
@@ -177,3 +180,6 @@ Arguments:
 - `-y, --year`: (Optional) The year of the weather data to use.
 
 The script will extract time series of temperature based on the largest and three largest population density areas and output `.csv` or `.parquet` files in `data/temperature/`.
+
+Note that the `get_temperature_data.py` script requires both weather and population data to be available in the specified directories.
+
