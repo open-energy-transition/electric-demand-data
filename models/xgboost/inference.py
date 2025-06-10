@@ -1,4 +1,4 @@
-# This file includes code to perform inference using a pre-trained model.
+# This file includes code to perform inference using a pre-trained model
 
 import argparse
 import datetime
@@ -69,6 +69,8 @@ if __name__ == "__main__":
 
     # Save predictions
     output_path = (
-        "./" + datetime.datetime.today().strftime("%Y_%m_%d") + "_prediction.parquet"
+        "./"
+        + datetime.datetime.today().strftime("%Y_%m_%d")
+        + "_prediction.parquet"
     )
     predictions.to_parquet(output_path)

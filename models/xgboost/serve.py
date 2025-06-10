@@ -82,7 +82,9 @@ def setupFastAPI(args: argparse.Namespace):
                 timestamp=pandas.Timestamp.now().isoformat(),
             )
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Prediction error: {str(e)}"
+            )
 
     return app
 
