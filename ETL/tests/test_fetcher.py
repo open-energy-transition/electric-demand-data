@@ -248,13 +248,13 @@ def test_fetch_data_requests_get_errors():
     for error in errors:
         with patch("requests.get") as mock_get:
             mock_get.side_effect = error
-            with pytest.raises(Exception) as exc_info:
+            with pytest.raises(Exception): # as exc_info:
                 utils.fetcher.fetch_data(
                     "http://example.com", "html", retries=1, retry_delay=0
                 )
 
-            with open("ETL/tests/test_fetcher.log", "a") as log_file:
-                log_file.write(f"Error: {exc_info.value}\n")
+            # with open("test_fetcher.log", "a") as log_file:
+            #     log_file.write(f"Error: {exc_info.value}\n")
 
 
 def test_fetch_data_urlopen_errors():
