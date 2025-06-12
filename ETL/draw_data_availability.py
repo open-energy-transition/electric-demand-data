@@ -28,6 +28,7 @@ import pandas
 import requests
 import utils.directories
 import utils.entities
+from tailwind_colors import TAILWIND_COLORS_HEX
 
 
 def _get_year_fractions(codes: list[str]) -> dict[str, dict[str, float]]:
@@ -560,12 +561,12 @@ gdp_occurrence = _get_occurrences(
 
 # Define the colors for the continents.
 colors = {
-    "AF": "crimson",  # Africa
-    "AS": "teal",  # Asia
-    "EU": "gold",  # Europe
-    "NA": "indigo",  # North America
-    "SA": "coral",  # South America
-    "OC": "slategray",  # Oceania
+    "AF": TAILWIND_COLORS_HEX.VIOLET_900,  # Africa
+    "AS": TAILWIND_COLORS_HEX.GREEN_800,  # Asia
+    "EU": TAILWIND_COLORS_HEX.YELLOW_400,  # Europe
+    "NA": TAILWIND_COLORS_HEX.PINK_700,  # North America
+    "SA": TAILWIND_COLORS_HEX.RED_350,  # South America
+    "OC": TAILWIND_COLORS_HEX.CYAN_500,  # Oceania
 }
 
 # Set the font size.
