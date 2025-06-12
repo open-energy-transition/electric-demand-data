@@ -7,15 +7,15 @@ Description:
     This module contains tests for the fetcher module.
 """
 
+import email.message
 import urllib.error
 from unittest.mock import patch
-import email.message
 
 import pandas as pd
 import pytest
 import requests
-from entsoe.exceptions import NoMatchingDataError
 import utils.fetcher
+from entsoe.exceptions import NoMatchingDataError
 
 
 def test_fetch_data_csv():
@@ -28,8 +28,10 @@ def test_fetch_data_csv():
     """
     with patch("pandas.read_csv") as mock_read_csv:
         mock_read_csv.return_value = pd.DataFrame({"a": [1]})
-        df = utils.fetcher.fetch_data("http://example.com/file.csv", "csv")
-        assert isinstance(df, pd.DataFrame)
+        dataset = utils.fetcher.fetch_data(
+            "http://example.com/file.csv", "csv"
+        )
+        assert isinstance(dataset, pd.DataFrame)
 
 
 def test_fetch_data_excel():
@@ -42,8 +44,10 @@ def test_fetch_data_excel():
     """
     with patch("pandas.read_excel") as mock_read_excel:
         mock_read_excel.return_value = pd.DataFrame({"a": [1]})
-        df = utils.fetcher.fetch_data("http://example.com/file.xlsx", "excel")
-        assert isinstance(df, pd.DataFrame)
+        dataset = utils.fetcher.fetch_data(
+            "http://example.com/file.xlsx", "excel"
+        )
+        assert isinstance(dataset, pd.DataFrame)
 
 
 def test_fetch_data_html_urllib():
@@ -75,8 +79,8 @@ def test_fetch_data_html_requests_get():
     with patch("requests.get") as mock_get:
         # Test reading of HTML content with tabular data.
         mock_get.return_value.text = "col1,col2\n1,2"
-        df = utils.fetcher.fetch_data("http://example.com", "html")
-        assert isinstance(df, pd.DataFrame)
+        dataset = utils.fetcher.fetch_data("http://example.com", "html")
+        assert isinstance(dataset, pd.DataFrame)
 
         # Test reading HTML content with text.
         mock_get.return_value.text = "text content"
@@ -104,14 +108,14 @@ def test_fetch_data_html_requests_post_json():
     """
     with patch("requests.post") as mock_post:
         mock_post.return_value.json = lambda: {"data": [{"a": 1}]}
-        df = utils.fetcher.fetch_data(
+        dataset = utils.fetcher.fetch_data(
             "http://example.com",
             "html",
             read_with="requests.post",
             read_as="json",
             json_keys=["data"],
         )
-        assert isinstance(df, pd.DataFrame)
+        assert isinstance(dataset, pd.DataFrame)
 
 
 def test_fetch_data_html_requests_post_aspx():
@@ -132,13 +136,13 @@ def test_fetch_data_html_requests_post_aspx():
             <input id="__EVENTVALIDATION" value="EV" />
         """
         mock_post.return_value.text = "col1,col2\n1,2"
-        df = utils.fetcher.fetch_data(
+        dataset = utils.fetcher.fetch_data(
             "http://example.com",
             "html",
             read_with="requests.post",
             query_aspx_webpage=True,
         )
-        assert isinstance(df, pd.DataFrame)
+        assert isinstance(dataset, pd.DataFrame)
 
 
 def test_fetch_data_invalid_arguments():
