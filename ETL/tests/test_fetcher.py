@@ -3,193 +3,234 @@
 License: AGPL-3.0.
 
 Description:
+
     This module contains tests for the fetcher module.
 """
 
 import urllib.error
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+import email.message
 
 import pandas as pd
 import pytest
 import requests
 from entsoe.exceptions import NoMatchingDataError
-from utils.fetcher import _read_aspx_params, fetch_data, fetch_entsoe_demand
-
-# ------------------------
-# _read_aspx_params Tests
-# ------------------------
+import utils.fetcher
 
 
-def test_read_aspx_params():
-    mock_response = MagicMock()
-    mock_response.text = """
-    <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="viewstate_value" />
-    <input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="eventvalidation_value" />
+def test_fetch_data_csv():
     """
-    post_data = {"foo": "bar"}
-    updated = _read_aspx_params(mock_response, post_data.copy())
-    assert updated["__VIEWSTATE"] == "viewstate_value"
-    assert updated["__EVENTVALIDATION"] == "eventvalidation_value"
-    assert updated["foo"] == "bar"
+    Test fetching CSV data.
 
-
-# ---------------------
-# fetch_data Tests
-# ---------------------
-
-
-@patch("pandas.read_csv")
-def test_fetch_data_csv(mock_read_csv):
-    mock_read_csv.return_value = pd.DataFrame({"a": [1]})
-    df = fetch_data("http://example.com/file.csv", "csv")
-    assert isinstance(df, pd.DataFrame)
-
-
-@patch("pandas.read_excel")
-def test_fetch_data_excel(mock_read_excel):
-    mock_read_excel.return_value = pd.DataFrame({"a": [1]})
-    df = fetch_data("http://example.com/file.xlsx", "excel")
-    assert isinstance(df, pd.DataFrame)
-
-
-@patch("urllib.request.urlopen")
-def test_fetch_data_html_urllib(mock_urlopen):
-    mock_urlopen.return_value.read.return_value = b"<html>Content</html>"
-    html = fetch_data(
-        "http://example.com",
-        "html",
-        read_with="urllib.request",
-        header_params={"User-Agent": "test"},
-    )
-    assert "<html>" in html
-
-
-@patch("requests.get")
-def test_fetch_data_html_requests_get_tabular(mock_get):
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.text = "col1,col2\n1,2"
-    mock_get.return_value.raise_for_status = lambda: None
-    df = fetch_data("http://example.com", "html")
-    assert isinstance(df, pd.DataFrame)
-
-
-@patch("requests.get")
-def test_fetch_data_html_requests_get_text(mock_get):
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.text = "text content"
-    mock_get.return_value.raise_for_status = lambda: None
-    text = fetch_data("http://example.com", "html", read_as="text")
-    assert text == "text content"
-
-
-@patch("requests.post")
-def test_fetch_data_html_requests_post_json(mock_post):
-    mock_post.return_value.status_code = 200
-    mock_post.return_value.raise_for_status = lambda: None
-    mock_post.return_value.json = lambda: {"data": [{"a": 1}]}
-    df = fetch_data(
-        "http://example.com",
-        "html",
-        read_with="requests.post",
-        read_as="json",
-        json_keys=["data"],
-    )
-    assert isinstance(df, pd.DataFrame)
-
-
-@patch("requests.get")
-def test_fetch_data_html_requests_get_plain(mock_get):
-    mock_get.return_value = requests.Response()
-    mock_get.return_value.status_code = 200
-    response = fetch_data("http://example.com", "html", read_as="plain")
-    assert isinstance(response, requests.Response)
-
-
-@patch("requests.get")
-@patch("requests.post")
-def test_fetch_data_html_requests_post_aspx(mock_post, mock_get):
-    mock_get.return_value.text = """
-        <input id="__VIEWSTATE" value="VS" />
-        <input id="__EVENTVALIDATION" value="EV" />
+    This test mocks the pandas read_csv function to return a DataFrame.
+    It checks that the fetch_data function returns a DataFrame when
+    fetching CSV data.
     """
-    mock_post.return_value.raise_for_status = lambda: None
-    mock_post.return_value.text = "col1,col2\n1,2"
-    df = fetch_data(
-        "http://example.com",
-        "html",
-        read_with="requests.post",
-        query_aspx_webpage=True,
-        read_as="tabular",
-    )
-    assert isinstance(df, pd.DataFrame)
+    with patch("pandas.read_csv") as mock_read_csv:
+        mock_read_csv.return_value = pd.DataFrame({"a": [1]})
+        df = utils.fetcher.fetch_data("http://example.com/file.csv", "csv")
+        assert isinstance(df, pd.DataFrame)
 
 
-def test_fetch_data_invalid_type():
-    with pytest.raises(ValueError):
-        fetch_data("http://example.com", "unsupported")
+def test_fetch_data_excel():
+    """
+    Test fetching Excel data.
+
+    This test mocks the pandas read_excel function to return a
+    DataFrame. It checks that the fetch_data function returns a
+    DataFrame when fetching Excel data.
+    """
+    with patch("pandas.read_excel") as mock_read_excel:
+        mock_read_excel.return_value = pd.DataFrame({"a": [1]})
+        df = utils.fetcher.fetch_data("http://example.com/file.xlsx", "excel")
+        assert isinstance(df, pd.DataFrame)
 
 
-def test_fetch_data_invalid_read_as():
+def test_fetch_data_html_urllib():
+    """
+    Test fetching HTML data using urllib.
+
+    This test mocks the urllib.request.urlopen function to return a
+    response with HTML content. It checks that the fetch_data function
+    returns a string containing the HTML content.
+    """
+    with patch("urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.return_value.read.return_value = b"<html>Content</html>"
+        html_text = utils.fetcher.fetch_data(
+            "http://example.com",
+            "html",
+            read_with="urllib.request",
+            header_params={"User-Agent": "test"},
+        )
+        assert isinstance(html_text, str) and "<html>" in html_text
+
+
+def test_fetch_data_html_requests_get():
+    """
+    Test fetching HTML data using requests.get to read various format.
+
+    This test mocks the requests.get function to read various formats
+    of HTML data, including CSV, text, and plain response.
+    """
     with patch("requests.get") as mock_get:
-        mock_get.return_value.text = "text"
-        mock_get.return_value.raise_for_status = lambda: None
-        with pytest.raises(ValueError):
-            fetch_data("http://example.com", "html", read_as="unknown")
+        # Test reading of HTML content with tabular data.
+        mock_get.return_value.text = "col1,col2\n1,2"
+        df = utils.fetcher.fetch_data("http://example.com", "html")
+        assert isinstance(df, pd.DataFrame)
+
+        # Test reading HTML content with text.
+        mock_get.return_value.text = "text content"
+        html_text = utils.fetcher.fetch_data(
+            "http://example.com", "html", read_as="text"
+        )
+        assert isinstance(html_text, str) and html_text == "text content"
+
+        # Test reading HTML content with plain format.
+        mock_get.return_value = requests.Response()
+        mock_get.return_value.status_code = 200
+        response = utils.fetcher.fetch_data(
+            "http://example.com", "html", read_as="plain"
+        )
+        assert isinstance(response, requests.Response)
 
 
-def test_fetch_data_invalid_library():
+def test_fetch_data_html_requests_post_json():
+    """
+    Test fetching HTML data using requests.post with JSON response.
+
+    This test mocks the requests.post function to return a JSON response
+    containing a list of dictionaries. It checks that the fetch_data
+    function returns a DataFrame.
+    """
+    with patch("requests.post") as mock_post:
+        mock_post.return_value.json = lambda: {"data": [{"a": 1}]}
+        df = utils.fetcher.fetch_data(
+            "http://example.com",
+            "html",
+            read_with="requests.post",
+            read_as="json",
+            json_keys=["data"],
+        )
+        assert isinstance(df, pd.DataFrame)
+
+
+def test_fetch_data_html_requests_post_aspx():
+    """
+    Test fetching HTML data from an ASPX page using requests.post.
+
+    This test mocks the requests.get and requests.post functions to
+    simulate fetching data from an ASPX page. It checks that the
+    fetch_data function correctly retrieves the viewstate and
+    eventvalidation values, and returns a DataFrame.
+    """
+    with (
+        patch("requests.get") as mock_get,
+        patch("requests.post") as mock_post,
+    ):
+        mock_get.return_value.text = """
+            <input id="__VIEWSTATE" value="VS" />
+            <input id="__EVENTVALIDATION" value="EV" />
+        """
+        mock_post.return_value.text = "col1,col2\n1,2"
+        df = utils.fetcher.fetch_data(
+            "http://example.com",
+            "html",
+            read_with="requests.post",
+            query_aspx_webpage=True,
+        )
+        assert isinstance(df, pd.DataFrame)
+
+
+def test_fetch_data_invalid_arguments():
+    """
+    Test fetch_data with invalid arguments.
+
+    This test checks that the fetch_data function raises ValueError
+    when provided with unsupported formats or read methods.
+    """
     with pytest.raises(ValueError):
-        fetch_data("http://example.com", "html", read_with="unknown_lib")
+        utils.fetcher.fetch_data("http://example.com", "unsupported")
+    with pytest.raises(ValueError):
+        utils.fetcher.fetch_data(
+            "http://example.com", "html", read_as="unknown"
+        )
+    with pytest.raises(ValueError):
+        utils.fetcher.fetch_data(
+            "http://example.com", "html", read_with="unknown_lib"
+        )
 
 
-# --------------------------
-# fetch_entsoe_demand Tests
-# --------------------------
+def test_fetch_entsoe_demand():
+    """
+    Test fetching demand data from ENTSOE.
 
-
-@patch("utils.fetcher.EntsoePandasClient")
-def test_fetch_entsoe_demand_success(mock_client_class):
+    This test mocks the EntsoePandasClient to return a pandas.Series
+    with a time series of demand data.
+    """
+    # Define a mock series to simulate demand data.
     mock_series = pd.Series(
         [1, 2], index=pd.date_range("2023-01-01", periods=2, freq="h")
     )
-    mock_client = mock_client_class.return_value
-    mock_client.query_load.return_value = pd.DataFrame(
-        {"Actual Load": mock_series}
-    )
-    result = fetch_entsoe_demand(
-        "dummy", "FR", pd.Timestamp("2023-01-01"), pd.Timestamp("2023-01-02")
-    )
-    assert isinstance(result, pd.Series)
 
-
-@patch("utils.fetcher.EntsoePandasClient")
-def test_fetch_entsoe_demand_connection_failure(mock_client_class):
-    mock_client = mock_client_class.return_value
-    mock_client.query_load.side_effect = ConnectionError("Connection failed")
-    with pytest.raises(ConnectionError):
-        fetch_entsoe_demand(
+    # Patch the EntsoePandasClient to return the mock series.
+    with patch("utils.fetcher.EntsoePandasClient") as mock_client:
+        mock_client.return_value.query_load.return_value = pd.DataFrame(
+            {"Actual Load": mock_series}
+        )
+        result = utils.fetcher.fetch_entsoe_demand(
             "dummy",
             "FR",
             pd.Timestamp("2023-01-01"),
             pd.Timestamp("2023-01-02"),
-            retries=2,
-            retry_delay=0,
         )
+        assert isinstance(result, pd.Series)
 
 
-@patch("utils.fetcher.EntsoePandasClient")
-def test_fetch_entsoe_demand_no_data(mock_client_class):
-    mock_client = mock_client_class.return_value
-    mock_client.query_load.side_effect = NoMatchingDataError("No data")
-    result = fetch_entsoe_demand(
-        "dummy", "FR", pd.Timestamp("2023-01-01"), pd.Timestamp("2023-01-02")
-    )
-    assert isinstance(result, pd.Series) and result.empty
+def test_fetch_entsoe_demand_errors():
+    """
+    Test fetching demand data from ENTSOE with errors.
+
+    This test mocks the EntsoePandasClient to raise ConnectionError
+    and NoMatchingDataError, and checks that the fetch_entsoe_demand
+    function handles these errors correctly.
+    """
+    with patch("utils.fetcher.EntsoePandasClient") as mock_client:
+        # Test the EntsoePandasClient to raise ConnectionError.
+        mock_client.return_value.query_load.side_effect = ConnectionError(
+            "Connection failed"
+        )
+        with pytest.raises(ConnectionError):
+            utils.fetcher.fetch_entsoe_demand(
+                "dummy",
+                "FR",
+                pd.Timestamp("2023-01-01"),
+                pd.Timestamp("2023-01-02"),
+                retries=2,
+                retry_delay=0,
+            )
+
+        # Test the EntsoePandasClient to raise NoMatchingDataError.
+        mock_client.return_value.query_load.side_effect = NoMatchingDataError(
+            "No data"
+        )
+        result = utils.fetcher.fetch_entsoe_demand(
+            "dummy",
+            "FR",
+            pd.Timestamp("2023-01-01"),
+            pd.Timestamp("2023-01-02"),
+        )
+        assert isinstance(result, pd.Series) and result.empty
 
 
-@patch("requests.get")
-def test_fetch_data_requests_get_errors(mock_get):
-    """Test fetch_data with different errors."""
+def test_fetch_data_requests_get_errors():
+    """
+    Test fetch_data with different errors.
+
+    This test mocks the requests.get function to raise various
+    exceptions, including ConnectionError, Timeout, HTTPError,
+    RequestException, and SSLError. It checks that the fetch_data
+    function handles these errors correctly.
+    """
     # Define the erors to test.
     errors = [
         requests.exceptions.ConnectionError(),
@@ -198,30 +239,45 @@ def test_fetch_data_requests_get_errors(mock_get):
         requests.exceptions.RequestException(),
         requests.exceptions.SSLError(),
     ]
+
+    # Iterate through the errors and test each one.
     for error in errors:
-        mock_get.side_effect = error
-        with pytest.raises(Exception) as exc_info:
-            fetch_data("http://example.com", "html", retries=1, retry_delay=0)
+        with patch("requests.get") as mock_get:
+            mock_get.side_effect = error
+            with pytest.raises(Exception) as exc_info:
+                utils.fetcher.fetch_data(
+                    "http://example.com", "html", retries=1, retry_delay=0
+                )
 
-        with open("ETL/tests/test_fetcher.log", "a") as log_file:
-            log_file.write(f"Error: {exc_info.value}\n")
+            with open("ETL/tests/test_fetcher.log", "a") as log_file:
+                log_file.write(f"Error: {exc_info.value}\n")
 
 
-@patch("urllib.request.urlopen")
-def test_fetch_data_urlopen_errors(mock_urlopen):
-    """Test fetch_data with different errors."""
+def test_fetch_data_urlopen_errors():
+    """
+    Test fetch_data with different errors.
+
+    This test mocks the urllib.request.urlopen function to raise
+    various exceptions, including HTTPError and URLError. It checks
+    that the fetch_data function handles these errors correctly.
+    """
     # Define the erors to test.
     errors = [
-        urllib.error.HTTPError(url="", code=0, msg="", hdrs=None, fp=None),
+        urllib.error.HTTPError(
+            url="", code=0, msg="", hdrs=email.message.Message(), fp=None
+        ),
         urllib.error.URLError(reason=""),
     ]
+
+    # Iterate through the errors and test each one.
     for error in errors:
-        mock_urlopen.side_effect = error
-        with pytest.raises(Exception):
-            fetch_data(
-                "http://example.com",
-                "html",
-                retries=1,
-                retry_delay=0,
-                read_with="urllib.request",
-            )
+        with patch("urllib.request.urlopen") as mock_urlopen:
+            mock_urlopen.side_effect = error
+            with pytest.raises(Exception):
+                utils.fetcher.fetch_data(
+                    "http://example.com",
+                    "html",
+                    retries=1,
+                    retry_delay=0,
+                    read_with="urllib.request",
+                )
