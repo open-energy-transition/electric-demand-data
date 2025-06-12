@@ -246,7 +246,8 @@ def _get_electricity_demand_data(
     )
 
     # Initialize the electricity demand data series for each country or
-    # subdivision.
+    # subdivision. The dictionary structure is specified bacause
+    # required by the type hint.
     electricity_demand_data: dict[str, dict[str, pandas.Series]] = {}
 
     # Loop over the ISO alpha-3 codes.
@@ -321,6 +322,8 @@ def _get_world_bank_gdp_data(
     world_bank_gdp_data = _retrieve_world_bank_data("gdp_per_capita")
 
     # Initialize the GDP data series for each country or subdivision.
+    # The dictionary structure is specified bacause required by the type
+    # hint.
     gdp_data: dict[str, dict[str, pandas.Series]] = {}
 
     # Loop over the ISO alpha-3 codes.
