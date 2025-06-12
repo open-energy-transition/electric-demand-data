@@ -6,19 +6,19 @@ This module contains all scripts related to the extraction, transformation, and 
 
 The ETL process consists of four main stages:
 
-### 1. Fetch the data
+<h3>1. Fetch the data</h3>
 
 Retrieve raw data from online sources or APIs.
 
-### 2. Transform into tabular format
+<h3>2. Transform into tabular format</h3>
 
 Convert raw data into structured, tabular (Parquet-compatible) formats.
 
-### 3. Data cleaning
+<h3>3. Data cleaning</h3>
 
 Ensure time synchronization and unit consistency.
 
-### 4. Save processed data
+<h3>4. Save processed data</h3>
 
 Export cleaned data to local or cloud storage in Parquet or CSV format.
 

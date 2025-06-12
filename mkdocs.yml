@@ -24,11 +24,13 @@ theme:
 
   features:
     - navigation.footer
+    - navigation.indexes
     - navigation.instant
     - navigation.instant.progress
     - navigation.tracking
     - search.highlight
     - search.suggest
+    - toc.integrate
 
 plugins:
   - privacy
@@ -36,3 +38,11 @@ plugins:
 
 repo_name: OET/electric-demand-data
 repo_url: https://github.com/open-energy-transition/electric-demand-data
+
+nav:
+  - index.md
+  - ETL/ETL.md
+  - Models:
+      - Models/index.md
+      - Models/xgboost.md
+  - Deployment/index.md
