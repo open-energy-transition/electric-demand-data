@@ -17,3 +17,8 @@ disable_error_code = [
 files = [
   "ETL/**/*.py",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "ETL",
+]
