@@ -512,12 +512,12 @@ gdp_occurrence = get_occurrences(
 
 # Define the colors for the continents.
 colors = {
-    "AF": TAILWIND_COLORS_HEX.VIOLET_900, # Africa
-    "AS": TAILWIND_COLORS_HEX.GREEN_800, # Asia
-    "EU": TAILWIND_COLORS_HEX.YELLOW_400, # Europe
-    "NA": TAILWIND_COLORS_HEX.PINK_700, # North America
-    "SA": TAILWIND_COLORS_HEX.RED_350, # South America
-    "OC": TAILWIND_COLORS_HEX.CYAN_500, # Oceania
+    "AF": TAILWIND_COLORS_HEX.VIOLET_900,  # Africa
+    "AS": TAILWIND_COLORS_HEX.GREEN_800,  # Asia
+    "EU": TAILWIND_COLORS_HEX.YELLOW_400,  # Europe
+    "NA": TAILWIND_COLORS_HEX.PINK_700,  # North America
+    "SA": TAILWIND_COLORS_HEX.RED_350,  # South America
+    "OC": TAILWIND_COLORS_HEX.CYAN_500,  # Oceania
 }
 
 # Set the font size.
