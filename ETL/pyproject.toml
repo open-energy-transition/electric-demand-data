@@ -21,6 +21,7 @@ dependencies = [
     "py7zr>=0.22.0",
     "pyarrow>=19.0.0",
     "pycountry>=24.6.1",
+    "pycountry-convert>=0.7.2",
     "python-dotenv>=1.0.1",
     "pytz>=2025.1",
     "rasterio>=1.4.3",
