@@ -8,10 +8,12 @@ BCHYDRO \
 CAMMESA \
 CCEI \
 CEN \
+CENACE \
 COES \
 EIA \
 EMI \
 ENTSOE \
+EPIAS \
 ESKOM \
 HYDROQUEBEC \
 IESO \
@@ -21,7 +23,8 @@ NIGERIA \
 ONS \
 SONELGAZ \
 TEPCO \
-TSOC"
+TSOC \
+XM"
 
 # Iterate over each data source and download the electricity time series data.
 for source in $data_sources; do

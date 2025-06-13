@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script generates the shapes of the four major subsystems of the Brazilian electricity sector.
+    This script generates the shapes of the four major subsystems of the
+    Brazilian electricity sector.
 
     Source: https://pt.wikipedia.org/wiki/Sistema_Interligado_Nacional
 """
@@ -15,7 +16,8 @@ import cartopy.io.shapereader
 import geopandas
 import pandas
 
-# Define the codes of the Brazilian states and their corresponding subdivisions.
+# Define the codes of the Brazilian states and their corresponding
+# subdivisions.
 codes_of_brazilian_subdivisions = {
     "BR-AC": "BR_N",
     "BR-AP": "BR_N",
@@ -54,7 +56,8 @@ names_of_brazilian_subdivisions = {
     "BR_S": "South",
 }
 
-# Load the shapefile containing the subdivision shapes from the Natural Earth database.
+# Load the shapefile containing the subdivision shapes from the Natural
+# Earth database.
 all_shapes = cartopy.io.shapereader.natural_earth(
     resolution="50m", category="cultural", name="admin_1_states_provinces"
 )
@@ -64,7 +67,9 @@ reader = cartopy.io.shapereader.Reader(all_shapes)
 
 # Read the shapefiles of all Brazilian states.
 state_shapes = [
-    shape for shape in list(reader.records()) if shape.attributes["iso_a2"] == "BR"
+    shape
+    for shape in list(reader.records())
+    if shape.attributes["iso_a2"] == "BR"
 ]
 
 # Create a DataFrame from the shapes of the states.
@@ -106,4 +111,6 @@ for subdivision_code in subdivisions["code"]:
 # Save the shapes of the subdivisions to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "ons")
 os.makedirs(shapes_dir, exist_ok=True)
-subdivisions.to_file(os.path.join(shapes_dir, "ons.shp"), driver="ESRI Shapefile")
+subdivisions.to_file(
+    os.path.join(shapes_dir, "ons.shp"), driver="ESRI Shapefile"
+)

@@ -1,4 +1,9 @@
-# This file includes code to perform inference using a pre-trained model.
+"""
+Run inference for an XGBoost model that outputs electricity demand.
+
+This module loads the input data, loads the pre-trained XGBoost model,
+performs inference using the loaded model, and saves the results.
+"""
 
 import argparse
 import datetime
@@ -11,6 +16,21 @@ from xgboost import XGBRegressor
 def load_input_data(data_path: str) -> pandas.DataFrame:
     """
     Load input data from local file for inference.
+
+    Parameters
+    ----------
+    data_path : str
+        The path to the input data file.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The input data as a pandas DataFrame.
+
+    Raises
+    ------
+    ValueError
+        If the input file format is not supported.
     """
     # Determine file format and load accordingly
     if data_path.endswith(".parquet"):
@@ -24,6 +44,23 @@ def load_input_data(data_path: str) -> pandas.DataFrame:
 def load_model(model_path: str) -> XGBRegressor:
     """
     Load the pre-trained XGBoost model.
+
+    Parameters
+    ----------
+    model_path : str
+        The path to the pre-trained XGBoost model file.
+
+    Returns
+    -------
+    model : XGBRegressor
+        The loaded XGBoost model.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the model file does not exist.
+    RuntimeError
+        If the model could not be loaded.
     """
     try:
         model = XGBRegressor()
@@ -37,7 +74,12 @@ def load_model(model_path: str) -> XGBRegressor:
 
 def read_command_line_arguments() -> argparse.Namespace:
     """
-    Create a parser for the command line arguments, returns parsed arguments.
+    Create a parser for the command line arguments.
+
+    Returns
+    -------
+    args : argparse.Namespace
+        The parsed command line arguments.
     """
     parser = argparse.ArgumentParser(
         description="Run inference using a pre-trained XGBoost model"
@@ -75,6 +117,8 @@ if __name__ == "__main__":
 
     # Save predictions
     output_path = (
-        "./" + datetime.datetime.today().strftime("%Y_%m_%d") + "_prediction.parquet"
+        "./"
+        + datetime.datetime.today().strftime("%Y_%m_%d")
+        + "_prediction.parquet"
     )
     predictions.to_parquet(output_path)

@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-License: AGPL-3.0
+License: AGPL-3.0.
 
 Description:
 
-    This script generates the shape of Japanese region served by the Tokyo Electric Power Company (TEPCO).
-
-    TEPCO serves the Kantō region, Yamanashi Prefecture, and the eastern portion of Shizuoka Prefecture.
+    This script generates the shape of Japanese region served by the
+    Tokyo Electric Power Company (TEPCO). TEPCO serves the Kantō region,
+    Yamanashi Prefecture, and the eastern portion of Shizuoka
+    Prefecture.
 
     Source: https://en.wikipedia.org/wiki/Electricity_sector_in_Japan#/media/File:Power_Grid_of_Japan.svg
     Source: https://en.wikipedia.org/wiki/Tokyo_Electric_Power_Company
     Source: https://en.wikipedia.org/wiki/ISO_3166-2:JP
     Source: https://data.humdata.org/dataset/cod-xa-jpn
-"""
+"""  # noqa: W505
 
 import os
 import shutil
@@ -24,8 +25,13 @@ import pandas
 import requests
 from shapely.geometry import Polygon
 
-# Define the URL of the zip file containing the shapefile of the prefectures.
-url = "https://data.humdata.org/dataset/6ba099c6-350b-4711-9a65-d85a1c5e519c/resource/f82faadf-a608-42cf-ae15-75ce672d7e69/download/jpn_adm_2019_shp.zip"
+# Define the URL of the zip file containing the shapefile of the
+# prefectures.
+url = (
+    "https://data.humdata.org/dataset/6ba099c6-350b-4711-9a65-d85a1c5e519c/"
+    "resource/f82faadf-a608-42cf-ae15-75ce672d7e69/download/"
+    "jpn_adm_2019_shp.zip"
+)
 
 # Download the zip file.
 response = requests.get(url)
@@ -72,7 +78,9 @@ whole_prefectures = whole_prefectures.reset_index()
 codes_of_prefecture_to_cut = "JP22"
 
 # Select the prefecture to be cut.
-prefecture_to_cut = prefectures[prefectures["ADM1_PCODE"] == codes_of_prefecture_to_cut]
+prefecture_to_cut = prefectures[
+    prefectures["ADM1_PCODE"] == codes_of_prefecture_to_cut
+]
 
 # Define a polygon to cut the prefecture.
 new_bounds = geopandas.GeoSeries(
@@ -100,7 +108,14 @@ all_prefectures = all_prefectures.reset_index()
 # Define a polygon to cut remote islands.
 new_bounds = geopandas.GeoSeries(
     Polygon(
-        [(138.9, 34.4), (139.4, 35), (140, 34), (140.75, 34.5), (143, 38), (135, 38)]
+        [
+            (138.9, 34.4),
+            (139.4, 35),
+            (140, 34),
+            (140.75, 34.5),
+            (143, 38),
+            (135, 38),
+        ]
     )
 )
 new_bounds = geopandas.GeoDataFrame.from_features(new_bounds, crs=4326)
@@ -123,7 +138,9 @@ all_prefectures["code"] = ["JP_Kantō"]
 # Save the shape of the region to a shapefile.
 shapes_dir = os.path.join(os.path.dirname(__file__), "tepco")
 os.makedirs(shapes_dir, exist_ok=True)
-all_prefectures.to_file(os.path.join(shapes_dir, "tepco.shp"), driver="ESRI Shapefile")
+all_prefectures.to_file(
+    os.path.join(shapes_dir, "tepco.shp"), driver="ESRI Shapefile"
+)
 
 # Remove the temporary directory.
 shutil.rmtree(temporary_dir)
