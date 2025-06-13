@@ -1,4 +1,4 @@
-site_name: Electric demand data documentation
+site_name: DemandCast documentation
 theme:
   name: material
   icon:
