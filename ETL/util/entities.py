@@ -13,11 +13,15 @@ import os
 
 import pandas
 import pycountry
+import pycountry_convert
 import pytz
 import util.directories
 import yaml
 from countryinfo import CountryInfo
 from timezonefinder import TimezoneFinder
+
+# Add countries that are not fully recognized.
+pycountry.countries.add_entry(alpha_2="XK", alpha_3="XKX", name="Kosovo", numeric="926")
 
 
 def _read_data_sources() -> list[str]:
@@ -236,7 +240,6 @@ def get_iso_alpha_3_code(code: str) -> str:
     iso_alpha_3_code : str
         The ISO Alpha-3 code of the country
     """
-
     # Check if the code specifies a subdivision.
     if "_" in code:
         # Extract the ISO Alpha-2 code of the country.
@@ -245,8 +248,16 @@ def get_iso_alpha_3_code(code: str) -> str:
         # If the code does not specify a subdivision, use the ISO Alpha-2 code directly.
         iso_alpha_2_code = code
 
+    # Get the country information.
+    country_info = pycountry.countries.get(alpha_2=iso_alpha_2_code)
+
     # Get the ISO Alpha-3 code of the country.
-    iso_alpha_3_code = pycountry.countries.get(alpha_2=iso_alpha_2_code).alpha_3
+    if country_info is not None:
+        iso_alpha_3_code = country_info.alpha_3
+    else:
+        raise ValueError(
+            f"Country code {iso_alpha_2_code} is not recognized or not available."
+        )
 
     return iso_alpha_3_code
 
@@ -553,3 +564,37 @@ def get_available_years(code: str) -> list[int]:
 
     # Return the years of the data availability.
     return [year for year in range(start_date.year, end_date.year + 1)]
+
+
+def get_continent_code(code: str) -> str:
+    """
+    Get the continent of a country or subdivision.
+
+    Parameters
+    ----------
+    code : str
+        The ISO Alpha-2 code of the country or the combination of the ISO Alpha-2 and the subdivision code
+
+    Returns
+    -------
+    continent : str
+        The continent code of the country or subdivision
+    """
+
+    # Check if the code specifies a subdivision.
+    if "_" in code:
+        # Extract the ISO Alpha-2 code of the country.
+        iso_alpha_2_code = code.split("_")[0]
+    else:
+        # If the code does not specify a subdivision, use the ISO Alpha-2 code directly.
+        iso_alpha_2_code = code
+
+    # Get the continent code.
+    try:
+        continent_code = pycountry_convert.country_alpha2_to_continent_code(
+            iso_alpha_2_code
+        )
+    except KeyError:
+        raise ValueError(f"Invalid or unknown ISO Alpha-2 code: {iso_alpha_2_code}")
+
+    return continent_code
