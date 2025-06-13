@@ -91,7 +91,7 @@ Each retrieval script in the `retrieval/` folder is designed to fetch electricit
 - **Check input parameters (`_check_input_parameters`)**: Checks that the input parameters are valid.
 - **Data request construction (`get_available_requests`)**: Builds all data requests based on the availability of the data source.
 - **URL construction (`get_url`)**: Generates the appropriate web request URL.
-- **Data download and processing (`download_and_extract_data_for_request`)**: Fetches the data using `util.fetcher` functions and transforms it into a `pandas.Series`.
+- **Data download and processing (`download_and_extract_data_for_request`)**: Fetches the data using `utils.fetcher` functions and transforms it into a `pandas.Series`.
 
 ### Names, codes, time zones, and data time ranges for countries and subdivisions
 
