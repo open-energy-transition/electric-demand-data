@@ -239,24 +239,21 @@ def test_fetch_data_requests_get_errors():
     """
     # Define the erors to test.
     errors = [
-        requests.exceptions.ConnectionError(),
-        requests.exceptions.Timeout(),
-        requests.exceptions.HTTPError(),
+        requests.exceptions.SSLError(),  # Subclass of ConnectionError
+        requests.exceptions.ConnectionError(),  # Subclass of RequestException
+        requests.exceptions.Timeout(),  # Subclass of RequestException
+        requests.exceptions.HTTPError(),  # Subclass of RequestException
         requests.exceptions.RequestException(),
-        requests.exceptions.SSLError(),
     ]
 
     # Iterate through the errors and test each one.
     for error in errors:
         with patch("requests.get"):
             requests.get.side_effect = error
-            with pytest.raises(Exception):  # as exc_info:
+            with pytest.raises(Exception):
                 utils.fetcher.fetch_data(
                     "http://example.com", "html", retries=1, retry_delay=0
                 )
-
-            # with open("test_fetcher.log", "a") as log_file:
-            #     log_file.write(f"Error: {exc_info.value}\n")
 
 
 def test_fetch_data_urlopen_errors():
