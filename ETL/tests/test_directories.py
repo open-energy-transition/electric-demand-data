@@ -57,15 +57,19 @@ def test_list_yaml_files():
     ]
 
     with (
-        patch(
-            "utils.directories.read_folders_structure",
-            return_value={folder_name: target_path},
-        ),
-        patch(
-            "os.listdir",
-            return_value=["file1.yaml", "file2.yaml", "ignore.txt"],
-        ),
+        patch("utils.directories.read_folders_structure"),
+        patch("os.listdir"),
     ):
+        # Mock the return value of read_folders_structure to return a
+        # dictionary with the folder name and target path.
+        utils.directories.read_folders_structure.return_value = {
+            folder_name: target_path
+        }
+
+        # Mock the return value of os.listdir to simulate the presence
+        # of yaml files and other files in the directory.
+        os.listdir.return_value = ["file1.yaml", "file2.yaml", "ignore.txt"]
+
         # Call the function to test.
         result = utils.directories.list_yaml_files(folder_name)
 

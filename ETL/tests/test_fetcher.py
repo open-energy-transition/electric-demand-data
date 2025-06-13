@@ -11,7 +11,7 @@ import email.message
 import urllib.error
 from unittest.mock import patch
 
-import pandas as pd
+import pandas
 import pytest
 import requests
 import utils.fetcher
@@ -26,12 +26,12 @@ def test_fetch_data_csv():
     It checks that the fetch_data function returns a DataFrame when
     fetching CSV data.
     """
-    with patch("pandas.read_csv") as mock_read_csv:
-        mock_read_csv.return_value = pd.DataFrame({"a": [1]})
+    with patch("pandas.read_csv"):
+        pandas.read_csv.return_value = pandas.DataFrame({"a": [1]})
         dataset = utils.fetcher.fetch_data(
             "http://example.com/file.csv", "csv"
         )
-        assert isinstance(dataset, pd.DataFrame)
+        assert isinstance(dataset, pandas.DataFrame)
 
 
 def test_fetch_data_excel():
@@ -42,12 +42,12 @@ def test_fetch_data_excel():
     DataFrame. It checks that the fetch_data function returns a
     DataFrame when fetching Excel data.
     """
-    with patch("pandas.read_excel") as mock_read_excel:
-        mock_read_excel.return_value = pd.DataFrame({"a": [1]})
+    with patch("pandas.read_excel"):
+        pandas.read_excel.return_value = pandas.DataFrame({"a": [1]})
         dataset = utils.fetcher.fetch_data(
             "http://example.com/file.xlsx", "excel"
         )
-        assert isinstance(dataset, pd.DataFrame)
+        assert isinstance(dataset, pandas.DataFrame)
 
 
 def test_fetch_data_html_urllib():
@@ -58,8 +58,10 @@ def test_fetch_data_html_urllib():
     response with HTML content. It checks that the fetch_data function
     returns a string containing the HTML content.
     """
-    with patch("urllib.request.urlopen") as mock_urlopen:
-        mock_urlopen.return_value.read.return_value = b"<html>Content</html>"
+    with patch("urllib.request.urlopen"):
+        urllib.request.urlopen.return_value.read.return_value = (
+            b"<html>Content</html>"
+        )
         html_text = utils.fetcher.fetch_data(
             "http://example.com",
             "html",
@@ -76,22 +78,22 @@ def test_fetch_data_html_requests_get():
     This test mocks the requests.get function to read various formats
     of HTML data, including CSV, text, and plain response.
     """
-    with patch("requests.get") as mock_get:
+    with patch("requests.get"):
         # Test reading of HTML content with tabular data.
-        mock_get.return_value.text = "col1,col2\n1,2"
+        requests.get.return_value.text = "col1,col2\n1,2"
         dataset = utils.fetcher.fetch_data("http://example.com", "html")
-        assert isinstance(dataset, pd.DataFrame)
+        assert isinstance(dataset, pandas.DataFrame)
 
         # Test reading HTML content with text.
-        mock_get.return_value.text = "text content"
+        requests.get.return_value.text = "text content"
         html_text = utils.fetcher.fetch_data(
             "http://example.com", "html", read_as="text"
         )
         assert isinstance(html_text, str) and html_text == "text content"
 
         # Test reading HTML content with plain format.
-        mock_get.return_value = requests.Response()
-        mock_get.return_value.status_code = 200
+        requests.get.return_value = requests.Response()
+        requests.get.return_value.status_code = 200
         response = utils.fetcher.fetch_data(
             "http://example.com", "html", read_as="plain"
         )
@@ -106,8 +108,8 @@ def test_fetch_data_html_requests_post_json():
     containing a list of dictionaries. It checks that the fetch_data
     function returns a DataFrame.
     """
-    with patch("requests.post") as mock_post:
-        mock_post.return_value.json = lambda: {"data": [{"a": 1}]}
+    with patch("requests.post"):
+        requests.post.return_value.json = lambda: {"data": [{"a": 1}]}
         dataset = utils.fetcher.fetch_data(
             "http://example.com",
             "html",
@@ -115,7 +117,7 @@ def test_fetch_data_html_requests_post_json():
             read_as="json",
             json_keys=["data"],
         )
-        assert isinstance(dataset, pd.DataFrame)
+        assert isinstance(dataset, pandas.DataFrame)
 
 
 def test_fetch_data_html_requests_post_aspx():
@@ -128,21 +130,21 @@ def test_fetch_data_html_requests_post_aspx():
     eventvalidation values, and returns a DataFrame.
     """
     with (
-        patch("requests.get") as mock_get,
-        patch("requests.post") as mock_post,
+        patch("requests.get"),
+        patch("requests.post"),
     ):
-        mock_get.return_value.text = """
+        requests.get.return_value.text = """
             <input id="__VIEWSTATE" value="VS" />
             <input id="__EVENTVALIDATION" value="EV" />
         """
-        mock_post.return_value.text = "col1,col2\n1,2"
+        requests.post.return_value.text = "col1,col2\n1,2"
         dataset = utils.fetcher.fetch_data(
             "http://example.com",
             "html",
             read_with="requests.post",
             query_aspx_webpage=True,
         )
-        assert isinstance(dataset, pd.DataFrame)
+        assert isinstance(dataset, pandas.DataFrame)
 
 
 def test_fetch_data_invalid_arguments():
@@ -172,22 +174,22 @@ def test_fetch_entsoe_demand():
     with a time series of demand data.
     """
     # Define a mock series to simulate demand data.
-    mock_series = pd.Series(
-        [1, 2], index=pd.date_range("2023-01-01", periods=2, freq="h")
+    mock_series = pandas.Series(
+        [1, 2], index=pandas.date_range("2023-01-01", periods=2, freq="h")
     )
 
     # Patch the EntsoePandasClient to return the mock series.
     with patch("utils.fetcher.EntsoePandasClient") as mock_client:
-        mock_client.return_value.query_load.return_value = pd.DataFrame(
+        mock_client.return_value.query_load.return_value = pandas.DataFrame(
             {"Actual Load": mock_series}
         )
         result = utils.fetcher.fetch_entsoe_demand(
             "dummy",
             "FR",
-            pd.Timestamp("2023-01-01"),
-            pd.Timestamp("2023-01-02"),
+            pandas.Timestamp("2023-01-01"),
+            pandas.Timestamp("2023-01-02"),
         )
-        assert isinstance(result, pd.Series)
+        assert isinstance(result, pandas.Series)
 
 
 def test_fetch_entsoe_demand_errors():
@@ -207,8 +209,8 @@ def test_fetch_entsoe_demand_errors():
             utils.fetcher.fetch_entsoe_demand(
                 "dummy",
                 "FR",
-                pd.Timestamp("2023-01-01"),
-                pd.Timestamp("2023-01-02"),
+                pandas.Timestamp("2023-01-01"),
+                pandas.Timestamp("2023-01-02"),
                 retries=2,
                 retry_delay=0,
             )
@@ -220,10 +222,10 @@ def test_fetch_entsoe_demand_errors():
         result = utils.fetcher.fetch_entsoe_demand(
             "dummy",
             "FR",
-            pd.Timestamp("2023-01-01"),
-            pd.Timestamp("2023-01-02"),
+            pandas.Timestamp("2023-01-01"),
+            pandas.Timestamp("2023-01-02"),
         )
-        assert isinstance(result, pd.Series) and result.empty
+        assert isinstance(result, pandas.Series) and result.empty
 
 
 def test_fetch_data_requests_get_errors():
@@ -246,8 +248,8 @@ def test_fetch_data_requests_get_errors():
 
     # Iterate through the errors and test each one.
     for error in errors:
-        with patch("requests.get") as mock_get:
-            mock_get.side_effect = error
+        with patch("requests.get"):
+            requests.get.side_effect = error
             with pytest.raises(Exception):  # as exc_info:
                 utils.fetcher.fetch_data(
                     "http://example.com", "html", retries=1, retry_delay=0
@@ -275,8 +277,8 @@ def test_fetch_data_urlopen_errors():
 
     # Iterate through the errors and test each one.
     for error in errors:
-        with patch("urllib.request.urlopen") as mock_urlopen:
-            mock_urlopen.side_effect = error
+        with patch("urllib.request.urlopen"):
+            urllib.request.urlopen.side_effect = error
             with pytest.raises(Exception):
                 utils.fetcher.fetch_data(
                     "http://example.com",
