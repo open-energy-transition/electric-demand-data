@@ -45,6 +45,7 @@ import retrievals.xm
 import utils.directories
 import utils.entities
 import utils.time_series
+import utils.uploader
 
 retrieval_module = {
     "AEMO_NEM": retrievals.aemo_nem,
@@ -296,7 +297,7 @@ def save_data(
     if upload_to_gcs is not None:
         # Upload the parquet file of the electricity demand time series
         # to GCS.
-        utils.time_series.upload_to_gcs(
+        utils.uploader.upload_to_gcs(
             file_path + ".parquet",
             upload_to_gcs,
             "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
