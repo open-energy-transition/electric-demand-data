@@ -69,24 +69,30 @@ def upload_to_gcs(
 
 
 def upload_to_zenodo(
-    file_path: str,
-    zenodo_url: str,
+    file_paths: list[str], new_version: bool = False, testing: bool = True
 ) -> None:
     """
-    Upload a file to Zenodo.
+    Upload files to Zenodo.
 
-    This function uploads a file to Zenodo using the Zenodo API. It
+    This function uploads files to Zenodo using the Zenodo API. It
     requires an access token for authentication.
 
     Parameters
     ----------
-    file_path : str
-        The path to the file to be uploaded.
+    file_paths : list[str]
+        A list of file paths to be uploaded.
+    new_version : bool, optional
+        If True, a new version of the deposition (dataset) will be
+        created. If False, an entirely new deposition (dataset) will be
+        created.
+    testing : bool, optional
+        If True, the function will use the testing environment for
+        Zenodo. If False, it will use the production environment.
 
     Raises
     ------
     Exception
-        If there is an error uploading the file to Zenodo or if the
+        If there is an error uploading a file to Zenodo or if the
         response from Zenodo is not successful.
     """
     # Get the root directory of the project.
@@ -96,12 +102,17 @@ def upload_to_zenodo(
     load_dotenv(dotenv_path=os.path.join(root_directory, ".env"))
 
     # Get the Zenodo access token from environment variables.
-    access_token = os.getenv("ZENODO_ACCESS_TOKEN")
+    if testing:
+        access_token = os.getenv("SANDBOX_ZENODO_ACCESS_TOKEN")
+        sandbox_url = "sandbox."
+    else:
+        access_token = os.getenv("ZENODO_ACCESS_TOKEN")
+        sandbox_url = ""
 
     # Define the deposition metadata for the dataset.
     data = {
         "metadata": {
-            "title": "Global Electricity Demand Dataset",
+            "title": "Global Hourly Electricity Demand Dataset",
             "upload_type": "dataset",
             "publication_date": pandas.Timestamp.now().strftime("%Y-%m-%d"),
             "description": (
@@ -146,22 +157,129 @@ def upload_to_zenodo(
         }
     }
 
-    # Create a new deposition in Zenodo.
-    response = requests.post(
-        "https://zenodo.org/api/deposit/depositions",
-        params={"access_token": access_token},
-        data=json.dumps(data),
-    )
+    if new_version:
+        # Get all the depositions from Zenodo.
+        response = requests.get(
+            f"https://{sandbox_url}zenodo.org/api/deposit/depositions",
+            params={"access_token": access_token},
+        )
 
-    # Extract the bucket URL and deposition ID from the response.
-    bucket_url = response.json()["links"]["bucket"]
-    deposition_id = response.json()["id"]
+        # Check if the response is successful.
+        if response.status_code != 200:
+            logging.error(
+                f"Failed to retrieve depositions from Zenodo: {response.text}"
+            )
+            raise Exception(
+                f"Zenodo deposition retrieval failed: {response.text}"
+            )
 
-    # Upload the file to Zenodo.
-    with open(file_path, "rb") as file_to_upload:
+        # Select the deposition with the title "Global Electricity
+        # Demand Dataset".
+        for deposition in response.json():
+            if (
+                deposition["metadata"]["title"]
+                == "Global Electricity Demand Dataset"
+            ):
+                # Extract the URL for the new version action.
+                newversion_url = deposition["links"]["newversion"]
+                break
+
+        # Create a new version of the existing deposition in Zenodo.
+        response = requests.post(
+            newversion_url, params={"access_token": access_token}
+        )
+
+        # Check if the response is successful.
+        if response.status_code != 201:
+            logging.error(
+                f"Failed to create new version in Zenodo: {response.text}"
+            )
+            raise Exception(
+                f"Zenodo new version creation failed: {response.text}"
+            )
+
+        # Extract the deposition ID from the response.
+        deposition_id = response.json()["id"]
+
+        # Update the metadata for the new version.
         response = requests.put(
-            f"{bucket_url}/{os.path.basename(file_path)}",
-            data=file_to_upload,
+            (
+                f"https://{sandbox_url}zenodo.org/api/deposit/"
+                f"depositions/{deposition_id}"
+            ),
+            params={"access_token": access_token},
+            data=json.dumps(data),
+        )
+
+        # Check if the response is successful.
+        if response.status_code != 200:
+            logging.error(
+                "Failed to update metadata for new version in Zenodo: "
+                f"{response.text}"
+            )
+            raise Exception(f"Zenodo metadata update failed: {response.text}")
+
+        # Get the list of files in the deposition.
+        response = requests.get(
+            f"https://{sandbox_url}zenodo.org/api/deposit/"
+            f"depositions/{deposition_id}/files",
+            params={"access_token": access_token},
+        )
+
+        # Check if the response is successful.
+        if response.status_code != 200:
+            logging.error(
+                f"Failed to retrieve files from Zenodo deposition: "
+                f"{response.text}"
+            )
+            raise Exception(f"Zenodo file retrieval failed: {response.text}")
+
+        # Delete all files in the deposition.
+        for file_info in response.json():
+            file_id = file_info["id"]
+            response = requests.delete(
+                f"https://{sandbox_url}zenodo.org/api/deposit/depositions/"
+                f"{deposition_id}/files/{file_id}",
+                params={"access_token": access_token},
+            )
+
+            # Check if the response is successful.
+            if response.status_code != 204:
+                logging.error(
+                    f"Failed to delete file {file_info['filename']} "
+                    f"from Zenodo deposition: {response.text}"
+                )
+                raise Exception(
+                    f"Zenodo file deletion failed: {response.text}"
+                )
+    else:
+        # Create a new deposition in Zenodo.
+        response = requests.post(
+            f"https://{sandbox_url}zenodo.org/api/deposit/depositions",
+            params={"access_token": access_token},
+            data=json.dumps(data),
+        )
+
+        # Check if the response is successful.
+        if response.status_code != 201:
+            logging.error(
+                f"Failed to create deposition in Zenodo: {response.text}"
+            )
+            raise Exception(
+                f"Zenodo deposition creation failed: {response.text}"
+            )
+
+        # Extract the deposition ID from the response.
+        deposition_id = response.json()["id"]
+
+    # Iterate over the file paths to upload each file.
+    for file_path in file_paths:
+        # Upload the file to Zenodo.
+        response = requests.post(
+            f"https://{sandbox_url}zenodo.org/api/deposit/depositions/"
+            f"{deposition_id}/files",
+            data={"name": os.path.basename(file_path)},
+            files={"file": open(file_path, "rb")},
             params={"access_token": access_token},
         )
 
@@ -174,8 +292,15 @@ def upload_to_zenodo(
     # Publish the deposition in Zenodo.
     response = requests.post(
         (
-            "https://zenodo.org/api/deposit/depositions/"
+            f"https://{sandbox_url}zenodo.org/api/deposit/depositions/"
             f"{deposition_id}/actions/publish"
         ),
         params={"access_token": access_token},
     )
+
+    # Check if the response is successful.
+    if response.status_code != 202:
+        logging.error(
+            f"Failed to publish deposition in Zenodo: {response.text}"
+        )
+        raise Exception(f"Zenodo publication failed: {response.text}")
