@@ -118,7 +118,10 @@ def upload_to_zenodo(
                 "hourly resolution for various countries. The data is "
                 "generated using machine learning models trained on "
                 "historical demand data, weather data, and socioeconomic "
-                "indicators."
+                "indicators.\n\n"
+                "Details on the generation process and the models used "
+                "can be found in the GitHub repository "
+                "https//github.com/open-energy-transition/demandcast."
             ),
             "creators": [
                 {
@@ -135,11 +138,20 @@ def upload_to_zenodo(
                     "affiliation": "Open Energy Transition",
                 },
             ],
+            "contributors": [
+                {
+                    "name": "Open Energy Transition",
+                    "type": "HostingInstitution",
+                },
+                {
+                    "name": "Breakthrough Energy",
+                    "type": "Sponsor",
+                },
+            ],
             "access_right": "open",
             "license": "agpl-1.0-or-later",
             "keywords": [
-                "electricity",
-                "demand",
+                "electricity demand",
                 "synthetic data",
                 "machine learning",
             ],
@@ -152,6 +164,7 @@ def upload_to_zenodo(
                     "resource_type": "software",
                 }
             ],
+            "language": "eng",
         }
     }
 
