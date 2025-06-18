@@ -55,5 +55,5 @@ jobs:
         working-directory: ${{ matrix.working-directory }}
 
       - name: "Pytest check coverage report"
-        run: uv run pytest --cov
+        run: uv run pytest --cov --cov-report term-missing
         working-directory: ${{ matrix.working-directory }}
