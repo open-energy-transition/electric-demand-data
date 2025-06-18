@@ -6,7 +6,7 @@ It implements machine learning algorithms under the Gradient Boosting framework.
 ## Motivation
 
 The core motivation for using XGBoost to generate hourly electricity demand forecasts is due to previous work in literature.
-Our approach involves using socioeconomic and weather parameters passed to an XGBoost model to predict the historical electricity demand.
+Our approach involves using socioeconomic and weather parameters passed to an XGBoost model to predict the hourly electricity demand.
 For this purpose it is a fast model to train and perform inference,
 therefore serves as a great option for a baseline that can be expanded on in future work.
 
@@ -54,23 +54,29 @@ class PredictionInput(BaseModel):
 
 <h3>Weather</h3>
 
+The grid cells used for these features has a resolution of (0.25° x 0.25°) and is bounded by the respective country borders.
+
 <h4>Average temperature for the month</h4>
 `month_temp_avg: float`
-Calculated based on the temperature in the most populous city.
+
+Calculated based on the temperature in the most populous grid cell.
 
 <h4>Temperature rank of the month</h4>
 `month_temp_rank: int = Field(ge=1, le=12)`
-Calculated based on the temperature in the most populous city.
+
+Calculated based on the temperature in the most populous grid cell.
 
 <h4>Yearly temperature percentiles</h4>
 `year_temp_percentile_5: float`
-`year_temp_percentile_95: float`
-Calculated based on the temperature in the most populous city.
 
-<h4>Average temperature in most populous city</h4>
+`year_temp_percentile_95: float`
+
+Calculated based on the temperature in the most populous grid cell.
+
+<h4>Average temperature in most populous grid cell</h4>
 `year_temp_top1: float`
 
-<h4>Average temperature in most populous 3 cities</h4>
+<h4>Average temperature in most populous 3 grid cells</h4>
 `year_temp_top3: float`
 
 ## Implementation
