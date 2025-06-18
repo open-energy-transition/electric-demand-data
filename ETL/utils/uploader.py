@@ -57,7 +57,7 @@ def upload_to_gcs(
     # Create a new blob.
     blob = bucket.blob(destination_blob_name)
 
-    # Updload the file to GCS.
+    # Upload the file to GCS.
     try:
         blob.upload_from_filename(file_path)
     except (OSError, GoogleCloudError) as e:
@@ -273,19 +273,20 @@ def upload_to_zenodo(
     # Iterate over the file paths to upload each file.
     for file_path in file_paths:
         # Upload the file to Zenodo.
-        response = requests.post(
-            f"https://{sandbox_url}zenodo.org/api/deposit/depositions/"
-            f"{deposition_id}/files",
-            data={"name": os.path.basename(file_path)},
-            files={"file": open(file_path, "rb")},
-            params={"access_token": access_token},
-        )
-
-        if response.status_code != 201:
-            logging.error(
-                f"Failed to upload file {file_path} to Zenodo: {response.text}"
+        with open(file_path, "rb") as file_to_upload:
+            response = requests.post(
+                f"https://{sandbox_url}zenodo.org/api/deposit/depositions/"
+                f"{deposition_id}/files",
+                data={"name": os.path.basename(file_path)},
+                files={"file": file_to_upload},
+                params={"access_token": access_token},
             )
-            raise Exception(f"Zenodo upload failed: {response.text}")
+
+            if response.status_code != 201:
+                logging.error(
+                    f"Failed to upload file {file_path} to Zenodo: {response.text}"
+                )
+                raise Exception(f"Zenodo upload failed: {response.text}")
 
     if not publish:
         logging.info(
