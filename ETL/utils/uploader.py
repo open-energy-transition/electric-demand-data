@@ -125,7 +125,7 @@ def upload_to_zenodo(
             "subdivisions. The data is retrieved from various sources, and "
             "the retrieval scripts are available in the GitHub "
             "repository "
-            "https//github.com/open-energy-transition/demandcast."
+            "https://github.com/open-energy-transition/demandcast."
         )
     elif data_type == "synthetic":
         # Define the deposition title and description for the synthetic
@@ -138,7 +138,7 @@ def upload_to_zenodo(
             "historical demand data, weather data, and socioeconomic "
             "indicators. Details on the generation process and the models "
             "used can be found in the GitHub repository "
-            "https//github.com/open-energy-transition/demandcast."
+            "https://github.com/open-energy-transition/demandcast."
         )
     else:
         raise ValueError(

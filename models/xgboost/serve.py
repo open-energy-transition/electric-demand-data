@@ -90,7 +90,7 @@ def setupFastAPI(args: argparse.Namespace):
                 Description of available endpoints
         """
         return {
-            "service": "Electricity Demand Prediction API",
+            "service": "DemandCast API",
             "status": "active",
             "model": "XGBoost",
             "endpoints": {
