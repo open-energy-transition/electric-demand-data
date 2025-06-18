@@ -41,9 +41,11 @@ ETL/
 │   ├── directories.yaml            # Keys to define the ETL folder structure
 │   ├── entities.py                 # Functions to read country and subdivision information
 │   ├── fetcher.py                  # Functions to fetch online content
+│   ├── figures.py                  # Functions to plot basic figures
 │   ├── geospatial.py               # Functions to process geospatial data
 │   ├── shapes.py                   # Functions to read country and subdivision shapes
-│   └── time_series.py              # Time series processing
+│   ├── time_series.py              # Time series processing
+│   └── uploader.py                 # Functions for cloud storage uploads
 └── .env                            # API keys (not included in repo)
 ```
 
@@ -52,9 +54,11 @@ ETL/
 Some scripts require API keys to access data from external services. These keys should be stored in a `.env` file in the `ETL/` directory. The `.env` file should not be included in the repository and should contain the following environment variables:
 
 ```plaintext
-CDS_API_KEY=<your_copernicus_api_key>  # For Copernicus Climate Data Store
-ENTSOE_API_KEY=<your_entsoe_api_key>   # For ENTSO-E data retrieval
-EIA_API_KEY=<your_eia_api_key>         # For EIA data retrieval
+CDS_API_KEY=<your_key>             # For data retrieval from Copernicus CDS
+ENTSOE_API_KEY=<your_key>          # For data retrieval from ENTSO-E
+EIA_API_KEY=<your_key>             # For data retrieval from EIA
+ZENODO_API_KEY=<your_key>          # For data upload to Zenodo
+SANDBOX_ZENODO_API_KEY=<your_key>  # For data upload to Zenodo Sandbox
 ```
 
 ## Electricity demand data
@@ -66,7 +70,7 @@ Scripts in this section download and process electricity demand data from multip
 Run the main script with:
 
 ```bash
-uv run download_electricity_data.py <data_source> [-c country_or_subdivision_code] [-f code_file] [-u bucket_name]
+uv run download_electricity_data.py <data_source> [-c country_or_subdivision_code] [-f code_file] [-g bucket_name] [-z] [-p]
 ```
 
 Arguments:
@@ -74,7 +78,9 @@ Arguments:
 - `<data_source>`: The acronym of the data source as defined in the retrieval modules (e.g., `ENTSOE`).
 - `-c, --code`: (Optional) The ISO Alpha-2 code (e.g., `FR`) or a combination of ISO Alpha-2 code and subdivision code (e.g., `US_CAL`).
 - `-f, --file`: (Optional) The path to the YAML file containing the list of codes for the countries and subdivisions of interest.
-- `-u, --upload_to_gcs`: (Optional) The bucket name of the Google Cloud Storage (GCS) to upload the data.
+- `-g, --upload_to_gcs`: (Optional) The bucket name of the Google Cloud Storage (GCS) to upload the data.
+- `-z, --upload_to_zenodo`: (Optional) If set, the script will upload the data to a new or existing Zenodo record.
+- `-p, --publish_to_zenodo`: (Optional) If set, the script will publish the Zenodo record after uploading.
 
 #### Example
 
