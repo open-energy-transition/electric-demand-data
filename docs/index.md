@@ -1,4 +1,8 @@
-<h1 align="center">Electricity Demand Data</h1>
+<h1 align="center">DemandCast</h1>
+
+<h2 align="center">
+    Global hourly electricity demand forecasting
+</h2>
 
 <h3 align="center">
     <p>Supported by</p>
@@ -12,7 +16,7 @@
 
 ## About
 
-Electric Demand Data is a Python-based project focused on collecting, processing, and forecasting hourly electricity demand data. The aim of this project is to support energy planning studies by using machine learning models to generate hourly time series of future electricity demand or for countries without available data.
+DemandCast is a Python-based project focused on collecting, processing, and forecasting hourly electricity demand data. The aim of this project is to support energy planning studies by using machine learning models to generate hourly time series of future electricity demand or for countries without available data.
 
 ### Features
 
@@ -78,6 +82,12 @@ Scripts can be run directly using:
 uv run path/to/script.py
 ```
 
+If you have chosen `conda` as your package manager, you can run scripts with:
+
+```bash
+python path/to/script.py
+```
+
 Jupyter notebooks ([details](https://docs.astral.sh/uv/guides/integration/jupyter/#using-jupyter-within-a-project)) can be launched with:
 
 ```bash
@@ -90,15 +100,16 @@ uv run --with jupyter jupyter lab --allow-root
 
 ```bash
 uv run pytest
-uv run pytest --cov
+uv run pytest --cov --cov-report term-missing
 ```
 
 ### Pre-commit and lint code
 
 ```bash
-uvx pre-commit
 uvx ruff format
+uvx ruff check --fix
 uvx mypy
+uvx pre-commit
 ```
 
 ## Documentation
