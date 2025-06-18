@@ -90,7 +90,7 @@ wheels = [
 ]
 
 [[package]]
-name = "electric-demand-data"
+name = "demandcast"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

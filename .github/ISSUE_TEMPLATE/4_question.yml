@@ -1,12 +1,12 @@
 name: Question
-description: Ask a question about electric-demand-data
+description: Ask a question about DemandCast
 labels: ["Question"]
 body:
   - type: markdown
     attributes:
       value: >
         #### Before submitting a question, please make sure it hasn't been already
-        been asked by searching through [the past issues](https://github.com/open-energy-transition/electric-demand-data/issues).
+        been asked by searching through [the past issues](https://github.com/open-energy-transition/demandcast/issues).
 
   - type: textarea
     attributes:

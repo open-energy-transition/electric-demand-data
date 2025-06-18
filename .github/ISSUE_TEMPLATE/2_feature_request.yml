@@ -7,7 +7,7 @@ body:
     attributes:
       value: >
         #### Before submitting a feature request, please make sure the request hasn't been already
-        addressed by searching through [the past issues](https://github.com/open-energy-transition/electric-demand-data/issues).
+        addressed by searching through [the past issues](https://github.com/open-energy-transition/demandcast/issues).
 
   - type: textarea
     attributes:

@@ -36,8 +36,8 @@ plugins:
   - privacy
   - search
 
-repo_name: OET/electric-demand-data
-repo_url: https://github.com/open-energy-transition/electric-demand-data
+repo_name: OET/demandcast
+repo_url: https://github.com/open-energy-transition/demandcast
 
 nav:
   - index.md

@@ -16,9 +16,9 @@ Electric Demand Data is a Python-based project focused on collecting, processing
 
 ### Features
 
-- Retrieval of open hourly and sub-hourly electricity demand data from public sources ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
-- Retrieval of weather and socio-economic data ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
-- Forecasting using machine learning models ([models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)).
+- Retrieval of open hourly and sub-hourly electricity demand data from public sources ([ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL)).
+- Retrieval of weather and socio-economic data ([ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL)).
+- Forecasting using machine learning models ([models](https://github.com/open-energy-transition/demandcast/tree/main/models/)).
 - Modular design for adding new countries or data sources.
 - Support for reproducible, containerized development.
 
@@ -27,7 +27,7 @@ The project is in active development, we are always looking for suggestions and 
 ## Repository structure
 
 ```
-electric-demand-data/
+demandcast/
 ├── docs/                   # Project documentation (MkDocs)
 ├── ETL/                    # Scripts for extracting, transforming, and loading data
 ├── models/                 # Machine learning models for demand forecasting
@@ -49,15 +49,15 @@ electric-demand-data/
 ![Countries and subdivisions for which retrieval scripts of electricity demand data are available](ETL/available_entities_light_mode.png#only-light)
 ![Countries and subdivisions for which retrieval scripts of electricity demand data are available](ETL/available_entities_dark_mode.png#only-dark)
 
-Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL) folder.
+Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL) folder.
 
 ## Getting started
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/open-energy-transition/electric-demand-data.git
-cd electric-demand-data
+git clone https://github.com/open-energy-transition/demandcast.git
+cd demandcast
 ```
 
 ### 2. Set up your environment
