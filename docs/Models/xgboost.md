@@ -56,13 +56,19 @@ class PredictionInput(BaseModel):
 
 <h4>Average temperature for the month</h4>
 `month_temp_avg: float`
+Calculated based on the temperature in the most populous city.
 
 <h4>Temperature rank of the month</h4>
 `month_temp_rank: int = Field(ge=1, le=12)`
+Calculated based on the temperature in the most populous city.
 
 <h4>Yearly temperature percentiles</h4>
 `year_temp_percentile_5: float`
 `year_temp_percentile_95: float`
+Calculated based on the temperature in the most populous city.
+
+<h4>Average temperature in most populous city</h4>
+`year_temp_top1: float`
 
 <h4>Average temperature in most populous 3 cities</h4>
 `year_temp_top3: float`
