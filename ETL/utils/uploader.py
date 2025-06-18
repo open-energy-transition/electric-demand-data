@@ -135,7 +135,6 @@ def upload_to_zenodo(
                 },
                 {
                     "name": "Steijn, Kevin",
-                    "affiliation": "Open Energy Transition",
                 },
             ],
             "contributors": [
