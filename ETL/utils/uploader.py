@@ -114,14 +114,14 @@ def upload_to_zenodo(
             "upload_type": "dataset",
             "publication_date": pandas.Timestamp.now().strftime("%Y-%m-%d"),
             "description": (
-                "This dataset contains synthetic electricity demand data at "
+                "<p>This dataset contains synthetic electricity demand data at "
                 "hourly resolution for various countries. The data is "
                 "generated using machine learning models trained on "
                 "historical demand data, weather data, and socioeconomic "
-                "indicators.\n\n"
-                "Details on the generation process and the models used "
+                "indicators.</p>\n"
+                "<p>Details on the generation process and the models used "
                 "can be found in the GitHub repository "
-                "https//github.com/open-energy-transition/demandcast."
+                "https//github.com/open-energy-transition/demandcast.</p>"
             ),
             "creators": [
                 {
@@ -164,6 +164,18 @@ def upload_to_zenodo(
                     "resource_type": "software",
                 }
             ],
+            "custom": {
+                "code:codeRepository": (
+                    "https://github.com/open-energy-transition/demandcast/"
+                ),
+                "code:programmingLanguage": [
+                    {"id": "python", "title": {"en": "Python"}}
+                ],
+                "code:developmentStatus": {
+                    "id": "active",
+                    "title": {"en": "Active"},
+                },
+            },
             "language": "eng",
         }
     }
