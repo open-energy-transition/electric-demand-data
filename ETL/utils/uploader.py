@@ -192,8 +192,7 @@ def upload_to_zenodo(
         )
         raise Exception(f"Zenodo deposition retrieval failed: {response.text}")
 
-    # Check if a deposition with the title "Global Electricity Demand
-    # Dataset" exists.
+    # Check if a deposition with the same title already exists.
     new_version = False
     for deposition in response.json():
         if deposition["metadata"]["title"] == data["metadata"]["title"]:
