@@ -69,7 +69,7 @@ def upload_to_gcs(
 
 
 def upload_to_zenodo(
-    file_paths: list[str], new_version: bool = False, testing: bool = True
+    file_paths: list[str], publish: bool = False, testing: bool = True
 ) -> None:
     """
     Upload files to Zenodo.
@@ -81,10 +81,8 @@ def upload_to_zenodo(
     ----------
     file_paths : list[str]
         A list of file paths to be uploaded.
-    new_version : bool, optional
-        If True, a new version of the deposition (dataset) will be
-        created. If False, an entirely new deposition (dataset) will be
-        created.
+    publish : bool, optional
+        If True, the function will publish the deposition in Zenodo.
     testing : bool, optional
         If True, the function will use the testing environment for
         Zenodo. If False, it will use the production environment.
@@ -157,33 +155,33 @@ def upload_to_zenodo(
         }
     }
 
-    if new_version:
-        # Get all the depositions from Zenodo.
-        response = requests.get(
-            f"https://{sandbox_url}zenodo.org/api/deposit/depositions",
-            params={"access_token": access_token},
+    # Get all the depositions from Zenodo.
+    response = requests.get(
+        f"https://{sandbox_url}zenodo.org/api/deposit/depositions",
+        params={"access_token": access_token},
+    )
+
+    # Check if the response is successful.
+    if response.status_code != 200:
+        logging.error(
+            f"Failed to retrieve depositions from Zenodo: {response.text}"
         )
+        raise Exception(f"Zenodo deposition retrieval failed: {response.text}")
 
-        # Check if the response is successful.
-        if response.status_code != 200:
-            logging.error(
-                f"Failed to retrieve depositions from Zenodo: {response.text}"
-            )
-            raise Exception(
-                f"Zenodo deposition retrieval failed: {response.text}"
-            )
+    # Check if a deposition with the title "Global Electricity
+    # Demand Dataset" exists.
+    new_version = False
+    for deposition in response.json():
+        if deposition["metadata"]["title"] == data["metadata"]["title"]:
+            # If a deposition with the same title exists, set
+            # new_version to True.
+            new_version = True
 
-        # Select the deposition with the title "Global Electricity
-        # Demand Dataset".
-        for deposition in response.json():
-            if (
-                deposition["metadata"]["title"]
-                == "Global Electricity Demand Dataset"
-            ):
-                # Extract the URL for the new version action.
-                newversion_url = deposition["links"]["newversion"]
-                break
+            # Extract the URL for the new version action.
+            newversion_url = deposition["links"]["newversion"]
+            break
 
+    if new_version:
         # Create a new version of the existing deposition in Zenodo.
         response = requests.post(
             newversion_url, params={"access_token": access_token}
@@ -289,18 +287,25 @@ def upload_to_zenodo(
             )
             raise Exception(f"Zenodo upload failed: {response.text}")
 
-    # Publish the deposition in Zenodo.
-    response = requests.post(
-        (
-            f"https://{sandbox_url}zenodo.org/api/deposit/depositions/"
-            f"{deposition_id}/actions/publish"
-        ),
-        params={"access_token": access_token},
-    )
-
-    # Check if the response is successful.
-    if response.status_code != 202:
-        logging.error(
-            f"Failed to publish deposition in Zenodo: {response.text}"
+    if not publish:
+        logging.info(
+            "Files uploaded to Zenodo but not published. "
+            "Set 'publish' to True to publish the deposition or "
+            "use the Zenodo web interface to publish it."
         )
-        raise Exception(f"Zenodo publication failed: {response.text}")
+    else:
+        # Publish the deposition in Zenodo.
+        response = requests.post(
+            (
+                f"https://{sandbox_url}zenodo.org/api/deposit/depositions/"
+                f"{deposition_id}/actions/publish"
+            ),
+            params={"access_token": access_token},
+        )
+
+        # Check if the response is successful.
+        if response.status_code != 202:
+            logging.error(
+                f"Failed to publish deposition in Zenodo: {response.text}"
+            )
+            raise Exception(f"Zenodo publication failed: {response.text}")
