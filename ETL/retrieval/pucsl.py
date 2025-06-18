@@ -11,99 +11,92 @@ Description:
     Source: https://gendata.pucsl.gov.lk/generation-profile
 """
 
-import logging
-import os
+from datetime import datetime, timedelta
 
 import pandas
-import util.directories
+import requests
 
 
-def get_available_requests() -> None:
+def get_available_requests():
     """
     Get the list of available requests to retrieve the electricity demand data from the PUCSL website.
     """
+    start_date = datetime(2023, 1, 1)
+    end_limit = datetime.now()
+    delta = timedelta(days=7)
 
-    logging.debug("The data is retrieved manually in one-week intervals.")
+    requests_list = []
+
+    while start_date < end_limit:
+        end_date = min(start_date + delta, end_limit)
+        requests_list.append((start_date, end_date))
+        start_date = end_date  # advance to next interval
+
+    return requests_list
 
 
-def get_url() -> str:
+def get_url(start_date: datetime, end_date: datetime) -> str:
     """
-    Get the URL of the electricity demand data from the PUCSL website.
+    Get the URL of the electricity demand data on the PUCSL website.
 
     Returns
     -------
     str
-        The URL of the electricity demand data
+        The API URL of the electricity demand data
     """
 
-    # Return the URL of the electricity demand data.
-    return "https://gendata.pucsl.gov.lk/generation-profile"
+    from_str = start_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    to_str = end_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    return (
+        "https://gendata.pucsl.gov.lk/api/actual-system-dispatch"
+        f"?dateAggregation=15min"
+        f"&from={from_str}"
+        f"&to={to_str}"
+    )
 
 
-def download_and_extract_data() -> pandas.Series:
+def download_and_extract_data_for_request(start_date, end_date) -> pandas.Series:
     """
-    Extract the electricity demand data retrieved from the PUCSL website.
-
-    This function assumes that the data has been downloaded and is available in the specified folder.
+    Download and extract the electricity generation data from the PUCSL website.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
-        The electricity demand time series in MW
+        The electricity generation time series in MW
     """
 
-    # Get the data folder.
-    data_directory = util.directories.read_folders_structure()[
-        "manually_downloaded_data_folder"
-    ]
+    # Get the URL of the electricity demand data.
+    url = get_url(start_date, end_date)
 
-    # Get the paths of the downloaded files. Each file starts with "PUC".
-    downloaded_file_paths = [
-        os.path.join(data_directory, file)
-        for file in os.listdir(data_directory)
-        if file.startswith("PUC")
-    ]
+    # Fetch the data from the URL.
+    response = requests.get(url)
+    data = response.json()["data"]
 
-    # Load the data from the downloaded files into a pandas DataFrame.
-    dataset = pandas.concat(
-        [pandas.read_csv(file_path) for file_path in downloaded_file_paths]
+    dataset = pandas.DataFrame(data)
+    dataset["reportTimestamp"] = pandas.to_datetime(
+        dataset["reportTimestamp"], utc=True
     )
 
-    # List of relevant generation columns
-    generation_cols = [
-        "Solar (Telemetered) (Power in MW)",
-        "Mini Hydro (Telemetered) (Power in MW)",
-        "Biomass and Waste Heat (Power in MW)",
-        "Wind (Power in MW)",
-        "Major Hydro (Power in MW)",
-        "Oil (IPP) (Power in MW)",
-        "Oil (CEB) (Power in MW)",
-        "Coal (Power in MW)",
-    ]
+    # Aggregate total generation (in MW) across all power plants for each timestamp
+    dataset_grouped = dataset.groupby("reportTimestamp", as_index=False)[
+        "dispatchValueInMW"
+    ].sum()
 
-    # Convert relevant columns to numeric, coercing errors (e.g. 'Data N/A') to NaN
-    dataset[generation_cols] = dataset[generation_cols].apply(
-        lambda col: pandas.to_numeric(col, errors="coerce")
-    )
-
-    # Sum the generation columns row-wise to get total generation
-    total_generation = dataset[generation_cols].sum(axis=1)
-
-    # Create a time series indexed by the datetime column
+    # Format as pandas.Series
     electricity_demand_time_series = pandas.Series(
-        total_generation.values, index=pandas.to_datetime(dataset["Date (GMT+5:30)"])
+        dataset_grouped["dispatchValueInMW"].values,
+        index=dataset_grouped["reportTimestamp"],
     )
 
-    # Add 15 minutes to the index to reflect data timestamp adjustment
+    # Add 15 minutes to the index because the electricity demand seems to be provided at the beginning of the hour.
     electricity_demand_time_series.index = (
         electricity_demand_time_series.index + pandas.Timedelta(minutes=15)
     )
 
-    # Localize the index to 'Asia/Colombo' timezone, handle ambiguous/nonexistent times by setting NaT
+    # Add the timezone information to the index.
     electricity_demand_time_series.index = (
-        electricity_demand_time_series.index.tz_localize(
-            "Asia/Colombo", ambiguous="NaT", nonexistent="NaT"
-        )
+        electricity_demand_time_series.index.tz_convert("Asia/Colombo")
     )
 
     return electricity_demand_time_series
