@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Discussions
-    url: https://github.com/open-energy-transition/electric-demand-data/discussions/new
-    about: Ask questions and discuss with other electric-demand-data community members
+    url: https://github.com/open-energy-transition/demandcast/discussions/new
+    about: Ask questions and discuss with other DemandCast community members
   - name: Blank issue
-    url: https://github.com/open-energy-transition/electric-demand-data/issues/new
+    url: https://github.com/open-energy-transition/demandcast/issues/new
     about: Please note that GitHub Discussions should be used in most cases instead

@@ -1,1 +1,1 @@
-### [Models documentation](https://open-energy-transition.github.io/electric-demand-data/models/)
+### [Models documentation](https://open-energy-transition.github.io/demandcast/models/)
