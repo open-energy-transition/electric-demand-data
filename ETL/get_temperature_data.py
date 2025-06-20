@@ -19,6 +19,7 @@ Description:
 import argparse
 import logging
 import os
+from datetime import datetime
 
 import geopandas
 import numpy
@@ -441,7 +442,9 @@ if __name__ == "__main__":
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)
-    log_file_name = "temperature_data.log"
+    log_file_name = (
+        "temperature_data_" + datetime.now().strftime("%Y%m%d_%H%M") + ".log"
+    )
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,

@@ -18,6 +18,7 @@ Description:
 import argparse
 import logging
 import os
+from datetime import datetime
 
 import utils.directories
 import utils.entities
@@ -203,7 +204,11 @@ if __name__ == "__main__":
     args = read_command_line_arguments()
 
     # Set up the logging configuration.
-    log_file_name = "population_density_data.log"
+    log_file_name = (
+        "population_density_data_"
+        + datetime.now().strftime("%Y%m%d_%H%M")
+        + ".log"
+    )
     log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
