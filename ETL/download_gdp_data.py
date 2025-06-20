@@ -19,6 +19,7 @@ import argparse
 import io
 import logging
 import os
+from datetime import datetime
 
 import py7zr
 import requests
@@ -124,19 +125,19 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         )
 
         # Extract the archive from the response.
-        with py7zr.SevenZipFile(io.BytesIO(response.content), mode="r") as archive:
-
+        with py7zr.SevenZipFile(
+            io.BytesIO(response.content), mode="r"
+        ) as archive:
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Extract only the specific file we need to a temporary directory
                 archive.extract(path=temp_dir, targets=[f"025d/GDP{year}.tif"])
-                
+
                 # Open the GDP data for the specified year
                 tif_path = os.path.join(temp_dir, f"025d/GDP{year}.tif")
                 global_gdp = xarray.open_dataarray(
                     tif_path,
                     engine="rasterio",
                 )
-
 
         # Harmonize the GDP data.
         global_gdp = utils.geospatial.harmonize_coords(global_gdp)
@@ -197,7 +198,9 @@ if __name__ == "__main__":
     args = read_command_line_arguments()
 
     # Set up the logging configuration.
-    log_file_name = "gdp_data.log"
+    log_file_name = (
+        "gdp_data_" + datetime.now().strftime("%Y%m%d_%H%M") + ".log"
+    )
     log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
