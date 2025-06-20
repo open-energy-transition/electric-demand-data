@@ -124,13 +124,19 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
         )
 
         # Extract the archive from the response.
-        archive = py7zr.SevenZipFile(io.BytesIO(response.content), mode="r")
+        with py7zr.SevenZipFile(io.BytesIO(response.content), mode="r") as archive:
 
-        # Extract the GDP data for the specified year.
-        global_gdp = xarray.open_dataarray(
-            archive.read([f"025d/GDP{year}.tif"])[f"025d/GDP{year}.tif"],
-            engine="rasterio",
-        )
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Extract only the specific file we need to a temporary directory
+                archive.extract(path=temp_dir, targets=[f"025d/GDP{year}.tif"])
+                
+                # Open the GDP data for the specified year
+                tif_path = os.path.join(temp_dir, f"025d/GDP{year}.tif")
+                global_gdp = xarray.open_dataarray(
+                    tif_path,
+                    engine="rasterio",
+                )
+
 
         # Harmonize the GDP data.
         global_gdp = utils.geospatial.harmonize_coords(global_gdp)
