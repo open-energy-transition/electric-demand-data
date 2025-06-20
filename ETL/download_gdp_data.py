@@ -19,6 +19,7 @@ import argparse
 import io
 import logging
 import os
+import tempfile
 from datetime import datetime
 
 import py7zr
@@ -129,7 +130,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             io.BytesIO(response.content), mode="r"
         ) as archive:
             with tempfile.TemporaryDirectory() as temp_dir:
-                # Extract only the specific file we need to a temporary directory
+                # Extract only the file we need to a temporary directory
                 archive.extract(path=temp_dir, targets=[f"025d/GDP{year}.tif"])
 
                 # Open the GDP data for the specified year

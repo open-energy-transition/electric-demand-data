@@ -4,13 +4,15 @@ License: AGPL-3.0.
 
 Description:
 
-    This script downloads global weather data from the Copernicus Climate Data
-    Store (CDS) for entire years, then processes it to create country-specific
-    files. It extracts the weather data for all countries and subdivisions of
-    interest and saves it into separate NetCDF files. The variable of the weather
-    data can be specified as a command line argument. The default variable is
-    2m_temperature. The year or range of years can be specified as command line
-    arguments. If no year is provided, the script will use the current year.
+    This script downloads global weather data from the
+    Copernicus Climate Data Store (CDS) for entire years,
+    then processes it to create country-specific files.
+    It extracts the variable, default is 2m_temperature,
+    for all countries and subdivisions of interest,
+    and saves it into separate NetCDF files.
+    The variable of the weather data can be specified,
+    along with the specific year or range of years.
+    If no year is provided, the script will use the current year.
 """
 
 import argparse
@@ -88,9 +90,10 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     """
     Run the weather data retrieval.
 
-    This function retrieves global weather data from the Copernicus Climate
-    Data Store (CDS) for entire years, then processes it to create
-    country-specific files for all countries and subdivisions of interest.
+    This function retrieves global weather data from the
+    Copernicus Climate Data Store (CDS) for entire years,
+    then processes it to create country-specific files for
+    all countries and subdivisions of interest.
     The data is saved into NetCDF files in the specified directory.
 
     Parameters
@@ -104,7 +107,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
     ]
     os.makedirs(result_directory, exist_ok=True)
 
-    # Get the list of codes of the countries and subdivisions of interest.
+    # Get the list of codes of the countries and subdivisions.
     codes = utils.entities.check_and_get_codes()
 
     # Determine which years to process
@@ -129,14 +132,15 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             result_directory, f"{year}_{args.variable}.nc"
         )
 
-        # Check if the global file does not exist or if the year is the current year.
+        # Check if the global file does not exist
+        # or if the year is the current year (to overwrite)
         if not os.path.exists(global_file_path) or (
             os.path.exists(global_file_path)
             and year == pandas.Timestamp.now().year
         ):
             logging.info(f"Downloading global data for the year {year}.")
 
-            # Download the global ERA5 data from the Copernicus Climate Data Store (CDS).
+            # Download the global ERA5 data from CDS.
             retrievals.copernicus.download_data(
                 year, args.variable, global_file_path
             )
@@ -160,6 +164,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                     )
 
                     # Check if the country file already exists
+                    # or if the year is the current year (to overwrite)
                     if not os.path.exists(country_file_path) or (
                         os.path.exists(country_file_path)
                         and year == pandas.Timestamp.now().year
@@ -171,12 +176,12 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                         # Get the shape of the country or subdivision
                         entity_shape = utils.shapes.get_entity_shape(code)
 
-                        # Get the lateral bounds of the country or subdivision
+                        # Get the lateral bounds for the shape
                         entity_bounds = utils.shapes.get_entity_bounds(
                             entity_shape
                         )  # West, South, East, North
 
-                        # Extract the data for the country or subdivision
+                        # Extract data for the country or subdivision
                         country_data = global_data.sel(
                             longitude=slice(
                                 entity_bounds[0], entity_bounds[2]
