@@ -37,6 +37,12 @@ def harmonize_coords(
     xarray.Dataset or xarray.DataArray
         The harmonized xarray dataset or data array with renamed
         coordinates and reset longitudes.
+
+    Raises
+    ------
+    ValueError
+        If the x coordinate contains values less than -180 or greater
+        than 180.
     """
     # Rename longitude and latitude coordinates to x and y coordinates.
     if "longitude" in ds.coords and "latitude" in ds.coords:
@@ -45,10 +51,24 @@ def harmonize_coords(
         ds = ds.rename({"lon": "x", "lat": "y"})
 
     # Reset longitudes from the range [0, 360] to [-180, 180].
-    if ds["x"].min() == 0:
+    if ds["x"].min() >= 0:
         ds = ds.assign_coords(
             x=(ds["x"] + 179.99999) % 360 - 179.99999
         ).sortby("x")
+
+    # Drop duplicate x coordinates if they exist.
+    ds = ds.drop_duplicates("x")
+
+    if ds["x"].min() < -180:
+        raise ValueError(
+            "The x coordinate contains values less than -180. "
+            "Please ensure that the x coordinate is in the correct range."
+        )
+    elif ds["x"].max() > 180:
+        raise ValueError(
+            "The x coordinate contains values greater than 180. "
+            "Please ensure that the x coordinate is in the correct range."
+        )
 
     # Sort the dataset by the y coordinate and return it.
     return ds.sortby("y")

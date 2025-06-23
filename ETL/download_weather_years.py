@@ -149,7 +149,10 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
                 f"Global data for the year {year} already exists. Using existing file."
             )
 
-            global_data = xarray.open_dataset(global_file_path)
+            global_data = xarray.open_dataarray(global_file_path)
+
+            # Harmonize the coordinates of the global data.
+            global_data = utils.geospatial.harmonize_coords(global_data)
 
             # Process each country/subdivision
             for code in tqdm(codes, desc=f"Processing countries for {year}"):
