@@ -25,6 +25,7 @@ import geopandas
 import numpy
 import pandas
 import pytz
+from tqdm import tqdm
 import utils.directories
 import utils.entities
 import utils.geospatial
@@ -77,6 +78,26 @@ def read_command_line_arguments() -> argparse.Namespace:
         "--year",
         type=int,
         help="Year of the weather data to use",
+        required=False,
+    )
+    parser.add_argument(
+        "-y_max",
+        "--year_maximum",
+        type=int,
+        help=(
+            "The maximum year for weather data to use,"
+            "available data after this year will be ignored"
+        ),
+        required=False,
+    )
+    parser.add_argument(
+        "-y_min",
+        "--year_minimum",
+        type=int,
+        help=(
+            "The minimum year for weather data to use, "
+            "available data before this year will be ignored"
+        ),
         required=False,
     )
 
@@ -355,7 +376,7 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
     )
 
     # Loop over the countries and subdivisions of interest.
-    for code in codes:
+    for code in tqdm(codes, desc="Processing entities"):
         logging.info(f"Extracting temperature data for {code}.")
 
         if args.year is not None:
@@ -365,7 +386,12 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
             # Get the years of available data for the country or
             # subdivision of interest.
             years = utils.entities.get_available_years(code)
-
+            
+            # Filter years based on minimum and maximum if provided
+            if args.year_minimum is not None:
+                years = [year for year in years if year >= args.year_minimum]
+            if args.year_maximum is not None:
+                years = [year for year in years if year <= args.year_maximum]
         # Get the shape of the country or subdivision.
         entity_shape = utils.shapes.get_entity_shape(code, make_plot=False)
 
