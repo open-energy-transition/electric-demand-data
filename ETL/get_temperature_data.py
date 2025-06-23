@@ -25,12 +25,12 @@ import geopandas
 import numpy
 import pandas
 import pytz
-from tqdm import tqdm
 import utils.directories
 import utils.entities
 import utils.geospatial
 import utils.shapes
 import xarray
+from tqdm import tqdm
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -386,7 +386,7 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
             # Get the years of available data for the country or
             # subdivision of interest.
             years = utils.entities.get_available_years(code)
-            
+
             # Filter years based on minimum and maximum if provided
             if args.year_minimum is not None:
                 years = [year for year in years if year >= args.year_minimum]
