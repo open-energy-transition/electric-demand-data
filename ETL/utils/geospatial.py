@@ -59,12 +59,12 @@ def harmonize_coords(
     # Drop duplicate x coordinates if they exist.
     ds = ds.drop_duplicates("x")
 
-    if ds["x"].min() < -180:
+    if ds["x"].min() < -180.01:
         raise ValueError(
             "The x coordinate contains values less than -180. "
             "Please ensure that the x coordinate is in the correct range."
         )
-    elif ds["x"].max() > 180:
+    elif float(ds["x"].max()) > 180.01:
         raise ValueError(
             "The x coordinate contains values greater than 180. "
             "Please ensure that the x coordinate is in the correct range."
