@@ -188,10 +188,8 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
 
                         # Extract data for the country or subdivision
                         country_data = global_data.sel(
-                            longitude=slice(
-                                entity_bounds[0], entity_bounds[2]
-                            ),
-                            latitude=slice(entity_bounds[3], entity_bounds[1]),
+                            x=slice(entity_bounds[0], entity_bounds[2]),
+                            y=slice(entity_bounds[1], entity_bounds[3]),
                         )
 
                         # Save the country-specific data
