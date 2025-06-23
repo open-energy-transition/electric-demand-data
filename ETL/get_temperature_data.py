@@ -198,11 +198,17 @@ def get_temperature_in_largest_population_density_areas(
         )
     )
 
+    # Fix roundig errors in the coordinates of the grid cells.
+    x_coords = largest_population_densities["x"].round(2).to_numpy()
+    y_coords = largest_population_densities["y"].round(2).to_numpy()
+    temperature_data["x"] = temperature_data["x"].round(2)
+    temperature_data["y"] = temperature_data["y"].round(2)
+
     # Get the temperature data for the grid cells with the largest
     # population densities.
     temperature_in_largest_population_densities = temperature_data.sel(
-        y=largest_population_densities["y"].values,
-        x=largest_population_densities["x"].values,
+        y=y_coords,
+        x=x_coords,
     )
 
     # Calculate the average temperature for the grid cells with the
