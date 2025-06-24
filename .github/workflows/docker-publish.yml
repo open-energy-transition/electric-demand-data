@@ -6,7 +6,6 @@ on:
     tags: "v*"
   pull_request:
     branches: ["main"]
-    tags: "v*"
 
 env:
   REGISTRY: ghcr.io
@@ -74,11 +73,6 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Debug metadata
-        run: |
-          echo "Tags: ${{ steps.meta.outputs.tags }}"
-          echo "Labels: ${{ steps.meta.outputs.labels }}"
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
