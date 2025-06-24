@@ -10,14 +10,14 @@ Description:
     data quality and clean data.
 """
 
+import datetime
 import logging
 
 import pandas
-import pytz
 
 
 def add_missing_time_steps(
-    time_series: pandas.Series, local_time_zone: pytz.timezone
+    time_series: pandas.Series, local_time_zone: datetime.tzinfo
 ) -> pandas.Series:
     """
     Add the missing time steps to a time series.
@@ -31,7 +31,7 @@ def add_missing_time_steps(
     ----------
     time_series : pandas.Series
         Original time series.
-    local_time_zone : pytz.timezone
+    local_time_zone : datetime.tzinfo
         Local time zone of the time series.
 
     Returns
@@ -206,7 +206,7 @@ def check_time_series_data_quality(time_series: pandas.Series) -> None:
 
 def harmonize_time_series(
     time_series: pandas.Series,
-    local_time_zone: pytz.timezone,
+    local_time_zone: datetime.tzinfo,
     resample: bool = True,
     target_time_resolution: str = "1h",
     interpolate_missing_values: bool = True,
@@ -222,7 +222,7 @@ def harmonize_time_series(
     ----------
     time_series : pandas.Series
         The original time series.
-    local_time_zone : pytz.timezone
+    local_time_zone : datetime.tzinfo
         Local time zone of the time series.
     resample : bool, optional
         If True, resample the time series to the target time resolution.

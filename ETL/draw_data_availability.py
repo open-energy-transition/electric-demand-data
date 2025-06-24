@@ -162,7 +162,7 @@ def _extract_ember_electricity_data(
         The data for the specified country.
     """
     # Get the data for the country in the Ember dataset.
-    ember_series = ember_data[(ember_data["Country code"] == alpha_3_code)]
+    ember_series = ember_data[(ember_data["ISO 3 code"] == alpha_3_code)]
 
     # Extract the values for the available years in the Ember dataset.
     ember_series = ember_series[

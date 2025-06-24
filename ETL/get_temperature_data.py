@@ -17,18 +17,19 @@ Description:
 """
 
 import argparse
+import datetime
 import logging
 import os
 
 import geopandas
 import numpy
 import pandas
-import pytz
 import utils.directories
 import utils.entities
 import utils.geospatial
 import utils.shapes
 import xarray
+from tqdm import tqdm
 
 
 def read_command_line_arguments() -> argparse.Namespace:
@@ -78,6 +79,26 @@ def read_command_line_arguments() -> argparse.Namespace:
         help="Year of the weather data to use",
         required=False,
     )
+    parser.add_argument(
+        "-y_max",
+        "--year_maximum",
+        type=int,
+        help=(
+            "The maximum year for weather data to use,"
+            "available data after this year will be ignored"
+        ),
+        required=False,
+    )
+    parser.add_argument(
+        "-y_min",
+        "--year_minimum",
+        type=int,
+        help=(
+            "The minimum year for weather data to use, "
+            "available data before this year will be ignored"
+        ),
+        required=False,
+    )
 
     # Read the arguments from the command line.
     args = parser.parse_args()
@@ -88,7 +109,7 @@ def read_command_line_arguments() -> argparse.Namespace:
 def get_temperature_in_largest_population_density_areas(
     year: int,
     entity_shape: geopandas.GeoDataFrame,
-    entity_time_zone: pytz.timezone,
+    entity_time_zone: datetime.tzinfo,
     number_of_grid_cells: int = 1,
 ) -> pandas.Series:
     """
@@ -106,7 +127,7 @@ def get_temperature_in_largest_population_density_areas(
         The year of the temperature data.
     entity_shape : geopandas.GeoDataFrame
         The shape of the country or subdivision of interest.
-    entity_time_zone : pytz.timezone
+    entity_time_zone : datetime.tzinfo
         Time zone of the country or subdivision of interest.
     number_of_grid_cells : int, optional
         The number of grid cells to consider.
@@ -176,11 +197,17 @@ def get_temperature_in_largest_population_density_areas(
         )
     )
 
+    # Fix roundig errors in the coordinates of the grid cells.
+    x_coords = largest_population_densities["x"].round(2).to_numpy()
+    y_coords = largest_population_densities["y"].round(2).to_numpy()
+    temperature_data["x"] = temperature_data["x"].round(2)
+    temperature_data["y"] = temperature_data["y"].round(2)
+
     # Get the temperature data for the grid cells with the largest
     # population densities.
     temperature_in_largest_population_densities = temperature_data.sel(
-        y=largest_population_densities["y"].values,
-        x=largest_population_densities["x"].values,
+        y=y_coords,
+        x=x_coords,
     )
 
     # Calculate the average temperature for the grid cells with the
@@ -196,7 +223,7 @@ def get_temperature_in_largest_population_density_areas(
 def build_temperature_database(
     temperature_time_series_top_1: pandas.Series,
     temperature_time_series_top_3: pandas.Series,
-    entity_time_zone: pytz.timezone,
+    entity_time_zone: datetime.tzinfo,
 ) -> pandas.DataFrame:
     """
     Build the temperature database for the given country or subdivision.
@@ -218,7 +245,7 @@ def build_temperature_database(
     temperature_time_series_top_3 : pandas.Series
         The temperature time series for the 3 largest population density
         areas.
-    entity_time_zone : pytz.timezone
+    entity_time_zone : datetime.tzinfo
         Time zone of the country or subdivision of interest.
 
     Returns
@@ -354,7 +381,7 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
     )
 
     # Loop over the countries and subdivisions of interest.
-    for code in codes:
+    for code in tqdm(codes, desc="Processing entities"):
         logging.info(f"Extracting temperature data for {code}.")
 
         if args.year is not None:
@@ -365,6 +392,11 @@ def run_temperature_calculation(args: argparse.Namespace) -> None:
             # subdivision of interest.
             years = utils.entities.get_available_years(code)
 
+            # Filter years based on minimum and maximum if provided
+            if args.year_minimum is not None:
+                years = [year for year in years if year >= args.year_minimum]
+            if args.year_maximum is not None:
+                years = [year for year in years if year <= args.year_maximum]
         # Get the shape of the country or subdivision.
         entity_shape = utils.shapes.get_entity_shape(code, make_plot=False)
 
@@ -441,7 +473,11 @@ if __name__ == "__main__":
         "log_files_folder"
     ]
     os.makedirs(log_files_directory, exist_ok=True)
-    log_file_name = "temperature_data.log"
+    log_file_name = (
+        "temperature_data_"
+        + datetime.datetime.now().strftime("%Y%m%d_%H%M")
+        + ".log"
+    )
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),
         level=logging.INFO,
