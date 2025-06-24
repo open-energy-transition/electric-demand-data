@@ -135,7 +135,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             # Extract the electricity data for the country and years of
             # interest.
             country_electricity_data = global_electricity_data[
-                (global_electricity_data["Country code"] == iso_alpha_3_code)
+                (global_electricity_data["ISO 3 code"] == iso_alpha_3_code)
                 & (global_electricity_data["Year"].isin(years))
             ]
 
