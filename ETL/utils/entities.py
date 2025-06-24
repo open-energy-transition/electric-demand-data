@@ -123,6 +123,52 @@ def _read_entities_info(
     return content["entities"]
 
 
+def _get_data_sources(code: str) -> list[str]:
+    """
+    Get the data source for a given code.
+
+    This function retrieves the data source for which the provided code
+    is available. It checks all yaml files in the retrieval scripts
+    folder and returns a list of data sources that contain the code.
+
+    Parameters
+    ----------
+    code : str
+        The code of the country or subdivision.
+
+    Returns
+    -------
+    data_sources : list[str]
+        The list of data sources that contain the provided code.
+    """
+    # Get the paths to the yaml files of the data sources.
+    file_paths = utils.directories.list_yaml_files("retrieval_scripts_folder")
+
+    # Initialize a list to store the data sources.
+    data_sources = []
+
+    # Iterate over the file paths and check if the code is in the file.
+    for file_path in file_paths:
+        # Read the content from the file.
+        entities = _read_entities_info(file_path=file_path)
+
+        # Iterate over the entities in the file.
+        for entity in entities:
+            # Extract the code of the country or subdivision.
+            entity_code = (
+                entity["country_code"] + "_" + entity["subdivision_code"]
+                if "subdivision_code" in entity
+                else entity["country_code"]
+            )
+
+            # Check if the provided code matches the entity code.
+            if entity_code == code:
+                # Add the data source to the list.
+                data_sources.append(os.path.basename(file_path).split(".")[0])
+
+    return data_sources
+
+
 def read_codes(file_path: str = "", data_source: str = "") -> list[str]:
     """
     Read the codes of the countries and subdivisions.
@@ -413,17 +459,24 @@ def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
 
 
 def _get_time_zones(
-    file_path: str = "", data_source: str = ""
-) -> dict[str, pytz.timezone]:
+    code: str = "", file_path: str = "", data_source: str = ""
+) -> pytz.timezone | dict[str, pytz.timezone]:
     """
     Get the time zones of the countries and subdivisions.
 
     This function reads the time zones of the countries and subdivisions
     from a specified yaml file or from the yaml file of a specified data
-    source.
+    source. It then extracts the time zone of the specified country or
+    subdivision if the code is provided. If the code is not provided,
+    it returns the time zones of all countries and subdivisions defined
+    in the file.
 
     Parameters
     ----------
+    code : str, optional
+        The ISO Alpha-2 code of the country or the combination of the
+        ISO Alpha-2 codes and the subdivision codes. If provided, the
+        function will return its time zone.
     file_path : str, optional
         The path to the file containing the information of the countries
         and subdivisions. If provided, the function will read the yaml
@@ -435,9 +488,10 @@ def _get_time_zones(
 
     Returns
     -------
-    time_zones : dict[str, pytz.timezone]
-        The dictionary containing the time zones of the countries and
-        subdivisions.
+    pytz.timezone | dict[str, pytz.timezone]
+        The time zone of the specified country or subdivision or a
+        dictionary containing the time zones of all countries and
+        subdivisions defined in the file.
 
     Raises
     ------
@@ -458,7 +512,7 @@ def _get_time_zones(
     # Iterate over the entities and extract the time zones.
     for entity in entities:
         # Extract the code of the country or subdivision.
-        code = (
+        entity_code = (
             entity["country_code"] + "_" + entity["subdivision_code"]
             if "subdivision_code" in entity
             else entity["country_code"]
@@ -466,86 +520,38 @@ def _get_time_zones(
 
         # If the code specifies a subdivision, extract the time zone
         # from the file.
-        if "time_zone" in entity and "_" in code:
+        if "time_zone" in entity and "_" in entity_code:
             time_zone = pytz.timezone(entity["time_zone"])
         # If the code specifies a country, get the time zone based on
         # the country code.
-        elif "time_zone" not in entity and "_" not in code:
-            time_zone = _get_country_time_zone(code)
+        elif "time_zone" not in entity and "_" not in entity_code:
+            time_zone = _get_country_time_zone(entity_code)
         # If the code specifies a subdivision and the time zone is also
         # defined in the file, check if the time zone is the same as the
         # one in the file.
-        elif "time_zone" in entity and "_" not in code:
-            time_zone = _get_country_time_zone(code)
+        elif "time_zone" in entity and "_" not in entity_code:
+            time_zone = _get_country_time_zone(entity_code)
             # Check if the time zone is the same as the one in the file.
             if time_zone.zone != entity["time_zone"]:
                 raise ValueError(
                     f"The time zone {entity['time_zone']} in "
-                    f"{os.path.basename(file_path)} for {code} does not "
-                    f"match the expected time zone {time_zone.zone}."
+                    f"{os.path.basename(file_path)} for {entity_code} does "
+                    f"not match the expected time zone {time_zone.zone}."
                 )
         # If the code specifies a subdivision and the time zone is not
         # defined in the file, raise an error.
         else:
-            raise ValueError(f"The time zone is not defined for {code}.")
+            raise ValueError(
+                f"The time zone is not defined for {entity_code}."
+            )
+
+        # If the code is provided, return the time zone of the country
+        # or subdivision.
+        if code != "" and entity_code == code:
+            return time_zone
 
         # Add the code to the dictionary and the respective time zone.
-        time_zones[code] = time_zone
-
-    return time_zones
-
-
-def get_all_time_zones() -> dict[str, pytz.timezone]:
-    """
-    Get the time zones of all countries and subdivisions.
-
-    This function reads the time zones of all countries and subdivisions
-    from all yaml files in the retrieval scripts folder. It combines the
-    time zones from all files and checks for duplicates. If a duplicate
-    is found, it raises an error if the time zone is different from the
-    previously defined time zone for the same code.
-
-    Returns
-    -------
-    time_zones : dict[str, pytz.timezone]
-        The dictionary containing the time zones of the countries and
-        subdivisions.
-
-    Raises
-    ------
-    ValueError
-        If a duplicate code is found with a different time zone in the
-        yaml files.
-    """
-    # Get the path to all yaml files in the retrieval scripts folder.
-    yaml_file_paths = utils.directories.list_yaml_files(
-        "retrieval_scripts_folder"
-    )
-
-    # Define a dictionary to store the time zones of the countries and
-    # subdivisions.
-    time_zones: dict[str, pytz.timezone] = {}
-
-    # Iterate over the yaml files and read the time zones.
-    for yaml_file_path in yaml_file_paths:
-        # Read the time zones from the file.
-        file_time_zones = _get_time_zones(file_path=yaml_file_path)
-
-        # Check for duplicates.
-        for code, time_zone in file_time_zones.items():
-            # If the code is already in the dictionary, check if the
-            # time zone is the same as the one in the file.
-            if code in time_zones:
-                if time_zones[code].zone != time_zone.zone:
-                    raise ValueError(
-                        f"The time zone {time_zone.zone} in "
-                        f"{os.path.basename(yaml_file_path)} for {code} does "
-                        f"not match the previously defined time zone "
-                        f"{time_zones[code].zone}."
-                    )
-            else:
-                # If the code is not in the dictionary, add it.
-                time_zones[code] = time_zone
+        time_zones[entity_code] = time_zone
 
     return time_zones
 
@@ -573,21 +579,43 @@ def get_time_zone(code: str) -> pytz.timezone:
     Raises
     ------
     ValueError
-        If the code is not among the available countries and
-        subdivisions.
+        If the code is not available in any data source or if the time
+        zone in the data source does not match the expected time zone.
     """
-    # Get the time zones of all countries and subdivisions.
-    time_zones = get_all_time_zones()
+    # Get the data sources for which the code is available.
+    data_sources = _get_data_sources(code)
 
-    # Check if the code is in the dictionary.
-    if code in time_zones:
-        # If the code is in the dictionary, return the time zone.
-        return time_zones[code]
-    else:
-        # If the code is not in the dictionary, raise an error.
-        raise ValueError(
-            f"{code} is not among the available countries and subdivisions."
+    # If the code is not available in any data source, raise an error.
+    if len(data_sources) == 0:
+        raise ValueError(f"Code {code} is not available in any data source.")
+
+    # Initialize the time zone variable.
+    time_zone = None
+
+    # Iterate over the data sources and read the time zones.
+    for data_source in data_sources:
+        # Read the time zone from the file.
+        data_source_time_zone = _get_time_zones(
+            code=code, data_source=data_source
         )
+
+        # Check if the time zone is a single pytz.timezone object.
+        if isinstance(data_source_time_zone, pytz.timezone):
+            # If the time zone is not set, set it to the one from the
+            # data source.
+            if time_zone is None:
+                time_zone = data_source_time_zone
+            else:
+                # Check if the time zone is the same as the one already
+                # set.
+                if time_zone.zone != data_source_time_zone.zone:
+                    raise ValueError(
+                        f"The time zone {data_source_time_zone.zone} in "
+                        f"{data_source} for {code} does not match the "
+                        f"previously defined time zone {time_zone.zone}."
+                    )
+
+    return time_zone
 
 
 def read_date_ranges(
