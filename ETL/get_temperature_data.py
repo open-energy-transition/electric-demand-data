@@ -17,14 +17,13 @@ Description:
 """
 
 import argparse
+import datetime
 import logging
 import os
-from datetime import datetime
 
 import geopandas
 import numpy
 import pandas
-import pytz
 import utils.directories
 import utils.entities
 import utils.geospatial
@@ -110,7 +109,7 @@ def read_command_line_arguments() -> argparse.Namespace:
 def get_temperature_in_largest_population_density_areas(
     year: int,
     entity_shape: geopandas.GeoDataFrame,
-    entity_time_zone: pytz.timezone,
+    entity_time_zone: datetime.tzinfo,
     number_of_grid_cells: int = 1,
 ) -> pandas.Series:
     """
@@ -128,7 +127,7 @@ def get_temperature_in_largest_population_density_areas(
         The year of the temperature data.
     entity_shape : geopandas.GeoDataFrame
         The shape of the country or subdivision of interest.
-    entity_time_zone : pytz.timezone
+    entity_time_zone : datetime.tzinfo
         Time zone of the country or subdivision of interest.
     number_of_grid_cells : int, optional
         The number of grid cells to consider.
@@ -224,7 +223,7 @@ def get_temperature_in_largest_population_density_areas(
 def build_temperature_database(
     temperature_time_series_top_1: pandas.Series,
     temperature_time_series_top_3: pandas.Series,
-    entity_time_zone: pytz.timezone,
+    entity_time_zone: datetime.tzinfo,
 ) -> pandas.DataFrame:
     """
     Build the temperature database for the given country or subdivision.
@@ -246,7 +245,7 @@ def build_temperature_database(
     temperature_time_series_top_3 : pandas.Series
         The temperature time series for the 3 largest population density
         areas.
-    entity_time_zone : pytz.timezone
+    entity_time_zone : datetime.tzinfo
         Time zone of the country or subdivision of interest.
 
     Returns
@@ -475,7 +474,9 @@ if __name__ == "__main__":
     ]
     os.makedirs(log_files_directory, exist_ok=True)
     log_file_name = (
-        "temperature_data_" + datetime.now().strftime("%Y%m%d_%H%M") + ".log"
+        "temperature_data_"
+        + datetime.datetime.now().strftime("%Y%m%d_%H%M")
+        + ".log"
     )
     logging.basicConfig(
         filename=os.path.join(log_files_directory, log_file_name),

@@ -388,7 +388,7 @@ def get_iso_alpha_3_code(code: str) -> str:
         )
 
 
-def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
+def _get_country_time_zone(iso_alpha_2_code: str) -> datetime.tzinfo:
     """
     Get the time zone of a country.
 
@@ -405,7 +405,7 @@ def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
 
     Returns
     -------
-    time_zone : pytz.timezone
+    time_zone : datetime.tzinfo
         The time zone of the country.
 
     Raises
@@ -460,7 +460,7 @@ def _get_country_time_zone(iso_alpha_2_code: str) -> pytz.timezone:
 
 def _get_time_zones(
     code: str = "", file_path: str = "", data_source: str = ""
-) -> pytz.timezone | dict[str, pytz.timezone]:
+) -> datetime.tzinfo | dict[str, datetime.tzinfo]:
     """
     Get the time zones of the countries and subdivisions.
 
@@ -488,7 +488,7 @@ def _get_time_zones(
 
     Returns
     -------
-    pytz.timezone | dict[str, pytz.timezone]
+    datetime.tzinfo | dict[str, datetime.tzinfo]
         The time zone of the specified country or subdivision or a
         dictionary containing the time zones of all countries and
         subdivisions defined in the file.
@@ -507,7 +507,7 @@ def _get_time_zones(
 
     # Define a dictionary to store the time zones of the countries and
     # subdivisions.
-    time_zones: dict[str, pytz.timezone] = {}
+    time_zones: dict[str, datetime.tzinfo] = {}
 
     # Iterate over the entities and extract the time zones.
     for entity in entities:
@@ -532,11 +532,11 @@ def _get_time_zones(
         elif "time_zone" in entity and "_" not in entity_code:
             time_zone = _get_country_time_zone(entity_code)
             # Check if the time zone is the same as the one in the file.
-            if time_zone.zone != entity["time_zone"]:
+            if time_zone != entity["time_zone"]:
                 raise ValueError(
                     f"The time zone {entity['time_zone']} in "
                     f"{os.path.basename(file_path)} for {entity_code} does "
-                    f"not match the expected time zone {time_zone.zone}."
+                    f"not match the expected time zone {time_zone}."
                 )
         # If the code specifies a subdivision and the time zone is not
         # defined in the file, raise an error.
@@ -556,7 +556,7 @@ def _get_time_zones(
     return time_zones
 
 
-def get_time_zone(code: str) -> pytz.timezone:
+def get_time_zone(code: str) -> datetime.tzinfo:
     """
     Get the time zone of a country or subdivision.
 
@@ -573,7 +573,7 @@ def get_time_zone(code: str) -> pytz.timezone:
 
     Returns
     -------
-    pytz.timezone
+    datetime.tzinfo
         The time zone of the country or subdivision.
 
     Raises
@@ -599,8 +599,8 @@ def get_time_zone(code: str) -> pytz.timezone:
             code=code, data_source=data_source
         )
 
-        # Check if the time zone is a single pytz.timezone object.
-        if isinstance(data_source_time_zone, pytz.timezone):
+        # Check if the time zone is a single datetime.tzinfo object.
+        if isinstance(data_source_time_zone, datetime.tzinfo):
             # If the time zone is not set, set it to the one from the
             # data source.
             if time_zone is None:
@@ -608,14 +608,20 @@ def get_time_zone(code: str) -> pytz.timezone:
             else:
                 # Check if the time zone is the same as the one already
                 # set.
-                if time_zone.zone != data_source_time_zone.zone:
+                if time_zone != data_source_time_zone:
                     raise ValueError(
-                        f"The time zone {data_source_time_zone.zone} in "
+                        f"The time zone {data_source_time_zone} in "
                         f"{data_source} for {code} does not match the "
-                        f"previously defined time zone {time_zone.zone}."
+                        f"previously defined time zone {time_zone}."
                     )
 
-    return time_zone
+    # Check if the time zone is set.
+    if time_zone is None:
+        raise ValueError(
+            f"The time zone is not defined for {code} in any data source."
+        )
+    else:
+        return time_zone
 
 
 def read_date_ranges(
