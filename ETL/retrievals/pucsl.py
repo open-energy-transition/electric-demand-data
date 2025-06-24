@@ -8,12 +8,12 @@ Description:
     data from the website of the Public Utilities Commission of Sri Lanka (PUCSL)
     in Srilanka. The data is downloaded from Jan 1, 2023 up to the
     current date. The data is retrieved in one-week intervals.
-    
+
     Note:
-    Although data is retrieved in 7-day intervals, retrieving data over a 
-    longer historical range (e.g., multiple years) may take considerable 
+    Although data is retrieved in 7-day intervals, retrieving data over a
+    longer historical range (e.g., multiple years) may take considerable
     time — up to 60 minutes in total, due to the number of API calls required.
-    
+
     Source: https://gendata.pucsl.gov.lk/generation-profile
 """
 
@@ -56,6 +56,7 @@ def _check_input_parameters(
         f"{start_date_of_data_availability}."
     )
 
+
 def get_available_requests() -> list[
     tuple[pandas.Timestamp, pandas.Timestamp]
 ]:
@@ -71,13 +72,15 @@ def get_available_requests() -> list[
         The list of available requests.
     """
     # Read the start and end date of the available data.
-    start_date, end_date = utils.entities.read_date_ranges(data_source="pucsl")[
-        "LK"
-    ]
+    start_date, end_date = utils.entities.read_date_ranges(
+        data_source="pucsl"
+    )["LK"]
 
-     # Define intervals for the retrieval periods.
+    # Define intervals for the retrieval periods.
     intervals = pandas.date_range(start_date, end_date, freq="7D")
-    intervals = intervals.union(pandas.to_datetime([start_date, end_date])).drop_duplicates()
+    intervals = intervals.union(
+        pandas.to_datetime([start_date, end_date])
+    ).drop_duplicates()
     intervals = intervals.sort_values()
 
     # Define start and end dates of the retrieval periods.
@@ -87,7 +90,6 @@ def get_available_requests() -> list[
     # Return the available requests, which are the beginning and end of
     # each one-year period.
     return list(zip(start_dates_and_times, end_dates_and_times))
-
 
 
 def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
@@ -106,10 +108,10 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
     str
         The URL of the electricity demand data.
     """
-    
+
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
-    
+
     # Convert timestamps to string format expected by the API
     from_str = start_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
     to_str = end_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
@@ -120,7 +122,6 @@ def get_url(start_date: pandas.Timestamp, end_date: pandas.Timestamp) -> str:
         f"&from={from_str}"
         f"&to={to_str}"
     )
-
 
 
 def download_and_extract_data_for_request(
@@ -143,8 +144,8 @@ def download_and_extract_data_for_request(
     -------
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW.
-    
-    
+
+
     Raises
     ------
     ValueError
@@ -152,27 +153,23 @@ def download_and_extract_data_for_request(
     """
     # Check if the input parameters are valid.
     _check_input_parameters(start_date, end_date)
-    
+
     logging.info(
         f"Retrieving data from {start_date.date()} to {end_date.date()}."
     )
-
 
     # Get the URL of the electricity demand data.
     url = get_url(start_date, end_date)
 
     # Fetch the electricity demand data from the URL.
     dataset = utils.fetcher.fetch_data(
-        url,
-        content_type="html",
-        read_as="json",
-        json_keys=["data"]
+        url, content_type="html", read_as="json", json_keys=["data"]
     )
-    
+
     # Make sure the dataset is a pandas DataFrame.
     if not isinstance(dataset, pandas.DataFrame):
         raise ValueError(
-            f"The extracted data is a {type(dataset)} object, "  
+            f"The extracted data is a {type(dataset)} object, "
             "expected a pandas DataFrame."
         )
     else:
@@ -180,19 +177,18 @@ def download_and_extract_data_for_request(
         dataset["reportTimestamp"] = pandas.to_datetime(
             dataset["reportTimestamp"]
         )
-        
+
         # Aggregate total generation (in MW) across all power plants for each timestamp
         dataset_grouped = dataset.groupby("reportTimestamp", as_index=False)[
             "dispatchValueInMW"
         ].sum()
-        
+
         # Extract the electricity demand time series
         electricity_demand_time_series = pandas.Series(
             dataset_grouped["dispatchValueInMW"].values,
             index=dataset_grouped["reportTimestamp"],
         )
-        
-        
+
         # Add 15 minutes to the index because the electricity demand seems to be provided at the beginning of the time-interval
         electricity_demand_time_series.index += pandas.Timedelta(minutes=15)
 
@@ -202,4 +198,3 @@ def download_and_extract_data_for_request(
         )
 
         return electricity_demand_time_series
-
