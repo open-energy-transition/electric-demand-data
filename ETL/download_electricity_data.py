@@ -16,6 +16,7 @@ Description:
 import argparse
 import logging
 import os
+from datetime import datetime
 
 import pandas
 import retrievals.aemo_nem
@@ -387,7 +388,11 @@ if __name__ == "__main__":
     args = read_command_line_arguments()
 
     # Set up the logging configuration.
-    log_file_name = f"electricity_data_from_{args.data_source}.log"
+    log_file_name = (
+        f"electricity_data_from_{args.data_source}_"
+        + datetime.now().strftime("%Y%m%d_%H%M")
+        + ".log"
+    )
     log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
