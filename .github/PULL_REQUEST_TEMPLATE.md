@@ -1,7 +1,7 @@
 <!--
 Thanks for contributing a pull request!
 Please ensure you have taken a look at the contribution guidelines:
-https://github.com/open-energy-transition/electric-demand-data/blob/main/CONTRIBUTING.md
+https://github.com/open-energy-transition/demandcast/blob/main/CONTRIBUTING.md
 -->
 
 #### Reference Issues/PRs

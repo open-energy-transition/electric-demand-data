@@ -1,7 +1,7 @@
 [project]
-name = "electric-demand-data"
+name = "demandcast"
 version = "0.1.0"
-description = "Electricity demand data"
+description = "Global hourly electricity demand forecasting"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

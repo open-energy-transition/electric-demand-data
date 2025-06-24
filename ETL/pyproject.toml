@@ -1,7 +1,7 @@
 [project]
 name = "etl"
 version = "0.1.0"
-description = "Extract Transform Load functionality for electric demand data"
+description = "Extract Transform Load (ETL) functionalities for DemandCast"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

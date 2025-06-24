@@ -1,11 +1,11 @@
-<h1 align="center">Electricity Demand Data</h1>
+<h1 align="center">DemandCast</h1>
 
-<h3 align="center">
+<h2 align="center">
     Global hourly electricity demand forecasting
-</h3>
+</h2>
 
 <p align="center">
-    <a href="https://open-energy-transition.github.io/electric-demand-data/">
+    <a href="https://open-energy-transition.github.io/demandcast/">
         <b>Documentation</b>
     </a>
 </p>
@@ -22,13 +22,13 @@
 
 ## About
 
-Electric Demand Data is a Python-based project focused on collecting, processing, and forecasting hourly electricity demand data. The aim of this project is to support energy planning studies by using machine learning models to generate hourly time series of future electricity demand or for countries without available data.
+DemandCast is a Python-based project focused on collecting, processing, and forecasting hourly electricity demand data. The aim of this project is to support energy planning studies by using machine learning models to generate hourly time series of future electricity demand or for countries without available data.
 
 ### Features
 
-- Retrieval of open hourly and sub-hourly electricity demand data from public sources ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
-- Retrieval of weather and socio-economic data ([ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL)).
-- Forecasting using machine learning models ([models](https://github.com/open-energy-transition/electric-demand-data/tree/main/models/)).
+- Retrieval of open hourly and sub-hourly electricity demand data from public sources ([ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL)).
+- Retrieval of weather and socio-economic data ([ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL)).
+- Forecasting using machine learning models ([models](https://github.com/open-energy-transition/demandcast/tree/main/models/)).
 - Modular design for adding new countries or data sources.
 - Support for reproducible, containerized development.
 
@@ -37,7 +37,7 @@ The project is in active development, we are always looking for suggestions and 
 ## Repository structure
 
 ```
-electric-demand-data/
+demandcast/
 ├── docs/                   # Project documentation (MkDocs)
 ├── ETL/                    # Scripts for extracting, transforming, and loading data
 ├── models/                 # Machine learning models for demand forecasting
@@ -62,15 +62,15 @@ electric-demand-data/
   <img alt="Countries and subdivisions for which retrieval scripts of electricity demand data are available" src="ETL/figures/available_entities.png">
 </picture>
 
-Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/electric-demand-data/tree/main/ETL) folder.
+Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL) folder.
 
 ## Getting started
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/open-energy-transition/electric-demand-data.git
-cd electric-demand-data
+git clone https://github.com/open-energy-transition/demandcast.git
+cd demandcast
 ```
 
 ### 2. Set up your environment
@@ -91,6 +91,12 @@ Scripts can be run directly using:
 uv run path/to/script.py
 ```
 
+If you have chosen `conda` as your package manager, you can run scripts with:
+
+```bash
+python path/to/script.py
+```
+
 Jupyter notebooks ([details](https://docs.astral.sh/uv/guides/integration/jupyter/#using-jupyter-within-a-project)) can be launched with:
 
 ```bash
@@ -103,20 +109,21 @@ uv run --with jupyter jupyter lab --allow-root
 
 ```bash
 uv run pytest
-uv run pytest --cov
+uv run pytest --cov --cov-report term-missing
 ```
 
 ### Pre-commit and lint code
 
 ```bash
-uvx pre-commit
 uvx ruff format
+uvx ruff check --fix
 uvx mypy
+uvx pre-commit
 ```
 
 ## Documentation
 
-The [documentation](https://open-energy-transition.github.io/electric-demand-data/) is currently hosted on GitHub pages connected to this repository. It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
+The [documentation](https://open-energy-transition.github.io/demandcast/) is currently hosted on GitHub pages connected to this repository. It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
 
 To run it locally:
 

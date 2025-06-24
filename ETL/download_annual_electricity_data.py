@@ -17,6 +17,7 @@ Description:
 import argparse
 import logging
 import os
+from datetime import datetime
 
 import pandas
 import utils.directories
@@ -134,7 +135,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             # Extract the electricity data for the country and years of
             # interest.
             country_electricity_data = global_electricity_data[
-                (global_electricity_data["Country code"] == iso_alpha_3_code)
+                (global_electricity_data["ISO 3 code"] == iso_alpha_3_code)
                 & (global_electricity_data["Year"].isin(years))
             ]
 
@@ -221,7 +222,9 @@ if __name__ == "__main__":
     args = read_command_line_arguments()
 
     # Set up the logging configuration.
-    log_file_name = "gdp_data.log"
+    log_file_name = (
+        "gdp_data_" + datetime.now().strftime("%Y%m%d_%H%M") + ".log"
+    )
     log_files_directory = utils.directories.read_folders_structure()[
         "log_files_folder"
     ]
