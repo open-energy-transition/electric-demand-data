@@ -1,5 +1,5 @@
 */data*
 
-# Data files that shouldn't be included in the image
+# Data files
 *.csv
 *.parquet
