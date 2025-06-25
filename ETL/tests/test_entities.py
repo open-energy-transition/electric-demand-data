@@ -290,6 +290,33 @@ def test_time_zones_errors(caplog):
         ):
             utils.entities._get_time_zones()
 
+    with (
+        patch("utils.entities._get_data_sources") as mock_get_data_sources,
+        patch("utils.entities._get_time_zones") as mock_get_time_zones,
+    ):
+        # Mock the return value of _get_data_sources and
+        # _get_time_zones.
+        mock_get_data_sources.return_value = ["source1", "source2"]
+        mock_get_time_zones.return_value = None
+
+        # Check if the function raises an error for time zones not
+        # found.
+        with pytest.raises(ValueError):
+            utils.entities.get_time_zone("XX")
+
+        # Define two different time zones.
+        time_zone1 = datetime.timezone.utc
+        time_zone2 = datetime.timezone(datetime.timedelta(hours=-1))
+
+        # Mock the return value of _get_time_zones to return different
+        # time zones for each data source.
+        mock_get_time_zones.side_effect = [time_zone1, time_zone2]
+
+        # Check if the function raises an error for conflicting time
+        # zones in multiple yaml files.
+        with pytest.raises(ValueError):
+            utils.entities.get_time_zone("YY")
+
 
 def test_date_ranges():
     """
