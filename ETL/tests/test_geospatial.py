@@ -8,10 +8,16 @@ Description:
     utility package.
 """
 
+import tempfile
+from pathlib import Path
+
+import geopandas
 import numpy
 import pytest
+import utils.directories
 import utils.geospatial
 import xarray
+from shapely.geometry import box
 
 
 def test_harmonize_coords():
@@ -90,3 +96,55 @@ def test_clean_raster():
     assert "spatial_ref" not in cleaned.coords
     assert cleaned.attrs == {}
     assert cleaned.shape == (5, 5)
+
+
+def test_get_fraction_of_grid_cells_in_shape(monkeypatch):
+    """
+    Test the calculation of the fraction of grid cells in a shape.
+
+    This function tests the get_fraction_of_grid_cells_in_shape utility
+    function to ensure it correctly calculates the fraction of grid
+    cells that fall within a specified shape and generates a plot.
+
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+        A pytest fixture that allows us to modify the behavior of the
+        utils.directories.read_folders_structure function to return a
+        temporary directory.
+    """
+    # Create a temporary directory for figure output.
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Patch the utils.directories.read_folders_structure to return
+        # the temp path.
+        monkeypatch.setattr(
+            utils.directories,
+            "read_folders_structure",
+            lambda: {"figures_folder": tmpdir},
+        )
+
+        # Create a simple square geometry over lat/lon coordinates.
+        entity_shape = geopandas.GeoDataFrame(
+            geometry=[box(0, 0, 1, 1)], crs="EPSG:4326", index=["test"]
+        )
+
+        # Run the function.
+        fraction = utils.geospatial.get_fraction_of_grid_cells_in_shape(
+            entity_shape, resolution=0.5, make_plot=True
+        )
+
+        # Validate the output.
+        assert isinstance(fraction, xarray.DataArray)
+        assert "x" in fraction.coords
+        assert "y" in fraction.coords
+        assert fraction.ndim == 2
+        assert numpy.all(fraction.values >= 0.0)
+        assert numpy.all(fraction.values <= 1.0)
+        assert numpy.any(fraction.values > 0.0)
+
+        # Assert that the figure was created.
+        expected_path = (
+            Path(tmpdir) / "fraction_of_grid_cells_in_shape_test.png"
+        )
+        assert expected_path.exists()
+        assert expected_path.stat().st_size > 0
