@@ -13,7 +13,6 @@ from unittest.mock import mock_open, patch
 
 import pytest
 import pytz
-import utils.directories
 import utils.entities
 
 
@@ -26,23 +25,29 @@ def test_read_codes():
     source, and if they handle errors correctly.
     """
     # Define a sample yaml file content.
-    sample_yaml = """
-    entities:
-      - country_name: France
-        country_code: FR
-        start_date: 2014-12-15
-        end_date: today
-      - subdivision_name: Texas
-        subdivision_code: TEX
-        country_name: United States
-        country_code: US
-        start_date: 2020-01-01
-        end_date: today
-        time_zone: America/Chicago
-    """
+    entities = [
+        {
+            "country_name": "France",
+            "country_code": "FR",
+            "start_date": "2014-12-15",
+            "end_date": "today",
+        },
+        {
+            "subdivision_name": "Texas",
+            "subdivision_code": "TEX",
+            "country_name": "United States",
+            "country_code": "US",
+            "start_date": "2020-01-01",
+            "end_date": "today",
+            "time_zone": "America/Chicago",
+        },
+    ]
 
     # Read the codes from the sample yaml file and check them.
-    with patch("builtins.open", mock_open(read_data=sample_yaml)):
+    with patch(
+        "utils.entities._read_entities_info",
+        return_value=entities,
+    ):
         sample_codes = utils.entities.read_codes(file_path="dummy.yaml")
     assert sample_codes == ["FR", "US_TEX"]
 
@@ -200,28 +205,32 @@ def test_time_zones():
         "America/Los_Angeles"
     )
 
-    with (
-        patch("utils.directories.list_yaml_files"),
-        patch("utils.entities._get_time_zones"),
+    # Define sample yaml file content with invalid time zone.
+    entities = [
+        {
+            "country_name": "France",
+            "country_code": "FR",
+            "start_date": "2014-12-15",
+            "end_date": "today",
+        }
+    ]
+
+    # Check if the function retrieves time zones from a yaml file
+    # correctly.
+    with patch(
+        "utils.entities._read_entities_info",
+        return_value=entities,
     ):
-        # Mock the return value of list_yaml_files to return sample
-        # yaml file paths.
-        utils.directories.list_yaml_files.return_value = [
-            "file1.yaml",
-            "file2.yaml",
-        ]
+        time_zones = utils.entities._get_time_zones(file_path="dummy.yaml")
 
-        # Mock return values from _get_time_zones.
-        utils.entities._get_time_zones.side_effect = [
-            {"US": pytz.timezone("America/New_York")},
-            {"US": pytz.timezone("America/Los_Angeles")},
-        ]
-
-        with pytest.raises(ValueError):
-            utils.entities.get_all_time_zones()
+        # Check if the function returns a dictionary with correct time
+        # zones.
+        assert isinstance(time_zones, dict)
+        assert "FR" in time_zones
+        assert time_zones["FR"] == pytz.timezone("Europe/Paris")
 
 
-def test_time_zones_errors():
+def test_time_zones_errors(caplog):
     """
     Test if the time zone functions handle errors correctly.
 
@@ -237,42 +246,49 @@ def test_time_zones_errors():
     with pytest.raises(ValueError):
         utils.entities._get_country_time_zone("INVALIDCODE")
 
+    # Test not fully recognized countries.
+    assert utils.entities._get_country_time_zone("XK") == pytz.timezone(
+        "Europe/Belgrade"
+    )
+
     # Define sample yaml file content with invalid time zone.
-    sample_yaml_with_invalid_time_zone = """
-    entities:
-      - country_name: France
-        country_code: FR
-        start_date: 2014-12-15
-        end_date: today
-        time_zone: America/Chicago
-    """
+    entity_with_invalid_time_zone = [
+        {
+            "country_name": "France",
+            "country_code": "FR",
+            "start_date": "2014-12-15",
+            "end_date": "today",
+            "time_zone": "America/Chicago",
+        }
+    ]
 
     # Check if the function raises errors for invalid time zones.
     with pytest.raises(ValueError):
         with patch(
-            "builtins.open",
-            mock_open(read_data=sample_yaml_with_invalid_time_zone),
+            "utils.entities._read_entities_info",
+            return_value=entity_with_invalid_time_zone,
         ):
-            utils.entities._get_time_zones("dummy.yaml")
+            utils.entities._get_time_zones()
 
     # Define sample yaml file content with missing time zone.
-    sample_yaml_with_missing_time_zone = """
-    entities:
-      - subdivision_name: Texas
-        subdivision_code: TEX
-        country_name: United States
-        country_code: US
-        start_date: 2020-01-01
-        end_date: today
-    """
+    entity_with_missing_time_zone = [
+        {
+            "subdivision_name": "Texas",
+            "subdivision_code": "TEX",
+            "country_name": "United States",
+            "country_code": "US",
+            "start_date": "2020-01-01",
+            "end_date": "today",
+        }
+    ]
 
     # Check if the function raises errors for missing time zones.
     with pytest.raises(ValueError):
         with patch(
-            "builtins.open",
-            mock_open(read_data=sample_yaml_with_missing_time_zone),
+            "utils.entities._read_entities_info",
+            return_value=entity_with_missing_time_zone,
         ):
-            utils.entities._get_time_zones("dummy.yaml")
+            utils.entities._get_time_zones()
 
 
 def test_date_ranges():
