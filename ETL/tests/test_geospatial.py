@@ -182,3 +182,36 @@ def test_get_largest_values_in_shape():
     assert isinstance(result, xarray.DataArray)
     assert result.dims == ("z",)
     assert numpy.all(result.values == numpy.array([22, 23, 24]))
+
+
+def test_coarsen_function():
+    """
+    Test the coarsening of geospatial data.
+
+    This function tests the coarsen utility function to ensure it
+    correctly reduces the resolution of an xarray DataArray within a
+    specified bounding box and target resolution.
+    """
+    # Create fine-resolution sample data (0.1° x 0.1°).
+    lon = numpy.arange(-1.0, 1.1, 0.1)
+    lat = numpy.arange(-1.0, 1.1, 0.1)
+    data = numpy.ones((len(lat), len(lon)))
+    da = xarray.DataArray(
+        data, coords={"y": lat, "x": lon}, dims=["y", "x"], name="test_var"
+    )
+
+    # Set bounds and target resolution for coarsening.
+    bounds = [-0.75, -0.8, 0.75, 0.8]  # West, South, East, North
+    target_resolution = 0.25
+
+    # Apply the coarsening function.
+    result = utils.geospatial.coarsen(da, bounds, target_resolution)
+
+    # Check the result.
+    assert isinstance(result, xarray.DataArray)
+    assert "x" in result.coords and "y" in result.coords
+    assert result.ndim == 2
+    assert result.shape[0] < da.shape[0]
+    assert result.shape[1] < da.shape[1]
+    assert numpy.allclose(numpy.diff(result["x"].values), 0.25)
+    assert numpy.allclose(numpy.diff(result["y"].values), 0.25)
