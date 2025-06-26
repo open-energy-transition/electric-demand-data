@@ -17,7 +17,7 @@ import pytest
 import utils.directories
 import utils.geospatial
 import xarray
-from shapely.geometry import box
+from shapely import box
 
 
 def test_harmonize_coords():
@@ -148,3 +148,37 @@ def test_get_fraction_of_grid_cells_in_shape(monkeypatch):
         )
         assert expected_path.exists()
         assert expected_path.stat().st_size > 0
+
+
+def test_get_largest_values_in_shape():
+    """
+    Test the extraction of the largest values in a shape.
+
+    This function tests the get_largest_values_in_shape utility function
+    to ensure it correctly extracts the largest grid cells within a
+    specified shape from an xarray DataArray.
+    """
+    # Create a simple GeoDataFrame (1x1 degree box over lat/lon).
+    shape = geopandas.GeoDataFrame(geometry=[box(0, 0, 1, 1)], crs="EPSG:4326")
+
+    # Create a small xarray.DataArray with made-up data.
+    lat = numpy.array([0.0, 0.25, 0.5, 0.75, 1.0])
+    lon = numpy.array([0.0, 0.25, 0.5, 0.75, 1.0])
+    values = numpy.arange(25).reshape((5, 5))
+    data = xarray.DataArray(
+        data=values,
+        coords={"y": lat, "x": lon},
+        dims=["y", "x"],
+        name="test_data",
+    )
+
+    # Call the function to extract largest grid cells inside the shape.
+    number_of_cells = 3
+    result = utils.geospatial.get_largest_values_in_shape(
+        shape, data, number_of_cells
+    )
+
+    # Check the result.
+    assert isinstance(result, xarray.DataArray)
+    assert result.dims == ("z",)
+    assert numpy.all(result.values == numpy.array([22, 23, 24]))

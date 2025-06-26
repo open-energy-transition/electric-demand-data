@@ -14,7 +14,7 @@ from pathlib import Path
 import geopandas
 import utils.directories
 import utils.figures
-from shapely.geometry import Point
+from shapely import Point
 
 
 def test_simple_plot(monkeypatch):
