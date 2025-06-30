@@ -38,7 +38,7 @@ def get_url() -> str:
     -------
     str
         The URL of the electricity demand data.
-    """/home/priya/Downloads/VSCode_U_files/niti.py /home/priya/Downloads/VSCode_U_files/niti.yaml
+    """
     # Return the URL of the electricity demand data.
     return "https://www.eskom.co.za/dataportal/cf-api/CF600011bdba174"
 
