@@ -337,6 +337,11 @@ def save_data(
             publish=publish_to_zenodo,
             testing=True,
         )
+    elif upload_to_zenodo and not retrieval_module[data_source].redistribute():
+        logging.warning(
+            f"The data source {data_source} does not support redistribution "
+            "to Zenodo. The data will not be uploaded to Zenodo."
+        )
 
 
 def run_data_retrieval(args: argparse.Namespace) -> None:
