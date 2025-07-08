@@ -328,7 +328,7 @@ def save_data(
             "upload_" + date_of_retrieval + "/" + identifier + ".parquet",
         )
 
-    if upload_to_zenodo:
+    if upload_to_zenodo and retrieval_module[data_source].redistribute():
         # Upload the parquet file of the electricity demand time series
         # to Zenodo.
         utils.uploader.upload_to_zenodo(
