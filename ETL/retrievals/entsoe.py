@@ -24,6 +24,22 @@ import utils.fetcher
 from dotenv import load_dotenv
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("CC-BY 4.0 license. Use for any purpose with attribution.")
+    logging.debug(
+        "Source: https://transparency.entsoe.eu/content/static_content/download?path=/Static%20content/terms%20and%20conditions/230309_ENTSOE_Transparency_Terms_Conditions_MC_APPROVED.pdf"  # noqa: W505
+    )
+    return True
+
+
 def _check_input_parameters(
     code: str,
     start_date: pandas.Timestamp | None = None,

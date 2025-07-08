@@ -20,6 +20,20 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("CC-BY license. Use for any purpose with attribution.")
+    logging.debug("Source: https://dados.ons.org.br/dataset/curva-carga")
+    return True
+
+
 def _check_input_parameters(
     year: int | None = None, code: str = "BR_N"
 ) -> None:

@@ -10,13 +10,30 @@ Description:
     The data is retrieved from the available Excel files on the AESO
     website.
 
-    Source: https://www.aeso.ca/market/market-and-system-reporting/data-requests/hourly-load-by-area-and-subdivision
+    Source: https://www.aeso.ca/market/market-and-system-reporting/data-requests/hourly-load-by-area-and-region
 """  # noqa: W505
 
 import logging
 
 import pandas
 import utils.fetcher
+
+
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug(
+        "Use for non-commercial, personal or educational purposes with "
+        "attribution to AESO."
+    )
+    logging.debug("Source: https://www.aeso.ca/legal")
+    return True
 
 
 def _check_input_parameters(file_number: int) -> None:

@@ -22,6 +22,20 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("All rights reserved by TSOC.")
+    logging.debug("Source: https://tsoc.org.cy")
+    return False
+
+
 def _check_input_parameters(start_date: pandas.Timestamp) -> None:
     """
     Check if the input parameters are valid.

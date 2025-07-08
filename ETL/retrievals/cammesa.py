@@ -34,6 +34,23 @@ province_id = {
 }
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug(
+        "Reproduction, modification, distribution and / or "
+        "transmission of the information is strictly prohibited."
+    )
+    logging.debug("https://cammesaweb.cammesa.com/politicas-de-acceso/")
+    return False
+
+
 def _check_input_parameters(date: str) -> None:
     """
     Check if the input parameters are valid.

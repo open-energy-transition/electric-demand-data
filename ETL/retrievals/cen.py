@@ -19,6 +19,20 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("Open data.")
+    logging.debug("Source: http://energiaabierta.cl")
+    return True
+
+
 def _check_input_parameters(
     start_date: pandas.Timestamp, end_date: pandas.Timestamp
 ) -> None:

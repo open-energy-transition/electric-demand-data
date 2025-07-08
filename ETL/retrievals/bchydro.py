@@ -21,6 +21,20 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("Informational and noncommercial uses offline only.")
+    logging.debug("Source: https://www.bchydro.com/siteinfo/legal.html")
+    return False
+
+
 def _check_input_parameters(year: int) -> None:
     """
     Check if the input parameters are valid.
