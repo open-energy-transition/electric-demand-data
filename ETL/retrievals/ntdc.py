@@ -18,7 +18,7 @@ import logging
 import os
 
 import pandas
-import utils.fetcher
+import utils.directories
 
 
 def get_available_requests() -> None:
@@ -28,7 +28,7 @@ def get_available_requests() -> None:
     This function retrieves the available requests for the electricity
     demand data for Pakistan.
     """
-    logging.debug("The data is retrieved all at once.")
+    logging.debug("The data is retrieved manually.")
 
 
 def get_url() -> str:
