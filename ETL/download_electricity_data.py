@@ -154,6 +154,13 @@ def read_command_line_arguments() -> argparse.Namespace:
         action="store_true",
         required=False,
     )
+    parser.add_argument(
+        "-m",
+        "--made_by_oet",
+        type=bool,
+        help="Whether the data was made by Open Energy Transition.",
+        required=True,
+    )
 
     # Read the arguments from the command line.
     args = parser.parse_args()
@@ -272,6 +279,7 @@ def save_data(
     upload_to_gcs: str | None,
     upload_to_zenodo: bool,
     publish_to_zenodo: bool,
+    made_by_oet: bool,
 ) -> None:
     """
     Save the electricity demand time series.
@@ -296,6 +304,8 @@ def save_data(
         Whether to upload the data to Zenodo.
     publish_to_zenodo : bool
         Whether to publish the data to Zenodo.
+    made_by_oet : bool
+        Whether the data was made by Open Energy Transition.
     """
     # Get the date of retrieval.
     date_of_retrieval = pandas.Timestamp.today().strftime("%Y-%m-%d")
@@ -334,7 +344,7 @@ def save_data(
         utils.uploader.upload_to_zenodo(
             file_path + ".parquet",
             data_type="actual",
-            made_by_oet=True,
+            made_by_oet=made_by_oet,
             publish=publish_to_zenodo,
             testing=True,
         )
@@ -385,6 +395,7 @@ def run_data_retrieval(args: argparse.Namespace) -> None:
             args.upload_to_gcs,
             args.upload_to_zenodo,
             args.publish_to_zenodo,
+            args.made_by_oet,
         )
 
     logging.info(
