@@ -19,6 +19,20 @@ import pandas
 import utils.directories
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("Open data.")
+    logging.debug("Source: https://iced.niti.gov.in/about-us")
+    return True
+
+
 def get_available_requests() -> None:
     """
     Get the available requests.

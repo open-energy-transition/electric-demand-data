@@ -21,6 +21,20 @@ import pandas
 import utils.directories
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("Use for any purpose with attribution to EPIAS.")
+    logging.debug("Source: https://seffaflik.epias.com.tr/about/about")
+    return True
+
+
 def get_available_requests() -> None:
     """
     Get the available requests.

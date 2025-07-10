@@ -22,6 +22,24 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug(
+        "Reproducing, copying, or distributing this data is not allowed."
+    )
+    logging.debug(
+        "Source: https://www.xm.com.co/legales/terminos-legales-del-sitio-web"
+    )
+    return False
+
+
 def _check_input_parameters(
     start_date: pandas.Timestamp, end_date: pandas.Timestamp
 ) -> None:

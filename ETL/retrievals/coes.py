@@ -19,6 +19,25 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug(
+        "Prohibited any use for commercial or distribution purposes."
+    )
+    logging.debug(
+        "Source: "
+        "https://www.coes.org.pe/Portal/Organizacion/TerminosyCondiciones"
+    )
+    return False
+
+
 def _check_input_parameters(year: int) -> None:
     """
     Check if the input parameters are valid.
