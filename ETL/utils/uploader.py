@@ -69,7 +69,11 @@ def upload_to_gcs(
 
 
 def upload_to_zenodo(
-    file_path: str, data_type: str, publish: bool = False, testing: bool = True
+    file_path: str,
+    data_type: str,
+    made_by_oet: bool,
+    publish: bool = False,
+    testing: bool = True,
 ) -> None:
     """
     Upload a file to Zenodo.
@@ -89,6 +93,9 @@ def upload_to_zenodo(
     testing : bool, optional
         If True, the function will use the testing environment for
         Zenodo. If False, it will use the production environment.
+    made_by_oet : bool
+        If True, the function will indicate that the deposition was made
+        by Open Energy Transition.
 
     Raises
     ------
@@ -159,6 +166,51 @@ def upload_to_zenodo(
             "Invalid data_type. Expected 'actual' or 'synthetic'."
         )
 
+    # Define the creators based on whether the data is made by OET.
+    if made_by_oet:
+        creators = [
+            {
+                "name": "Antonini, Enrico G. A.",
+                "affiliation": "Open Energy Transition",
+                "orcid": "0000-0002-5573-0954",
+            },
+            {
+                "name": "Vamsi Priya, Goli",
+                "affiliation": "Open Energy Transition",
+            },
+            {
+                "name": "Steijn, Kevin",
+            },
+        ]
+        contributors = [
+            {
+                "name": "Open Energy Transition",
+                "type": "HostingInstitution",
+            },
+            {
+                "name": "Breakthrough Energy",
+                "type": "Sponsor",
+            },
+        ]
+    else:
+        creators = [
+            {
+                "name": "Your Name",
+                "affiliation": "Your Affiliation",
+                "orcid": "0000-0000-0000-0000",
+            },
+        ]
+        contributors = [
+            {
+                "name": "Your Institution",
+                "type": "HostingInstitution",
+            },
+            {
+                "name": "Your Sponsor",
+                "type": "Sponsor",
+            },
+        ]
+
     # Define the deposition metadata for the dataset.
     data = {
         "metadata": {
@@ -166,30 +218,8 @@ def upload_to_zenodo(
             "upload_type": "dataset",
             "publication_date": pandas.Timestamp.now().strftime("%Y-%m-%d"),
             "description": description,
-            "creators": [
-                {
-                    "name": "Antonini, Enrico G. A.",
-                    "affiliation": "Open Energy Transition",
-                    "orcid": "0000-0002-5573-0954",
-                },
-                {
-                    "name": "Vamsi Priya, Goli",
-                    "affiliation": "Open Energy Transition",
-                },
-                {
-                    "name": "Steijn, Kevin",
-                },
-            ],
-            "contributors": [
-                {
-                    "name": "Open Energy Transition",
-                    "type": "HostingInstitution",
-                },
-                {
-                    "name": "Breakthrough Energy",
-                    "type": "Sponsor",
-                },
-            ],
+            "creators": creators,
+            "contributors": contributors,
             "access_right": "open",
             "license": license,
             "keywords": [

@@ -334,6 +334,7 @@ def save_data(
         utils.uploader.upload_to_zenodo(
             file_path + ".parquet",
             data_type="actual",
+            made_by_oet=True,
             publish=publish_to_zenodo,
             testing=True,
         )
