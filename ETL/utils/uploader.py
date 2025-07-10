@@ -113,33 +113,47 @@ def upload_to_zenodo(
         sandbox_url = ""
 
     if data_type == "actual":
-        # Define the deposition title and description for the actual
-        # dataset.
+        # Define the deposition title, description and license for the
+        # actual dataset.
         title = (
             "Global Dataset of Hourly or Sub-Hourly Historical Electricity "
             "Demand"
         )
         description = (
-            "This dataset contains historical electricity demand data "
+            "<p>This dataset contains historical electricity demand data "
             "at hourly or sub-hourly resolution for various countries and "
-            "subdivisions. The data is retrieved from various sources, and "
-            "the retrieval scripts are available in the GitHub "
-            "repository "
-            "https://github.com/open-energy-transition/demandcast."
+            "subdivisions.</p>\n"
+            "<p>The Python code to retrieve the data is available in the "
+            "GitHub repository "
+            '<a href="https://github.com/open-energy-transition/demandcast">'
+            "https://github.com/open-energy-transition/demandcast</a>.</p>\n"
+            "<p>This dataset includes only electricity demand data that is "
+            "permissible to redistribute, based on the licensing terms of the "
+            "original data sources. At a minimum, the data shared here may be "
+            "redistributed for non-commercial purposes, while some other data "
+            "is available under more permissive, open licenses. A complete "
+            "list of original data sources and their associated license terms "
+            "is available in the GitHub repository "
+            '<a href="https://github.com/open-energy-transition/Awesome-Electric-Demand">'
+            "https://github.com/open-energy-transition/Awesome-Electric-Demand</a>.</p>"
         )
+        license = "other-pd"
     elif data_type == "synthetic":
-        # Define the deposition title and description for the synthetic
-        # dataset.
+        # Define the deposition title, description and license for the
+        # synthetic dataset.
         title = "Global Dataset of Hourly Synthetic Electricity Demand"
         description = (
-            "This dataset contains synthetic electricity demand data at "
-            "hourly resolution for various countries. The data is "
-            "generated using machine learning models trained on "
-            "historical demand data, weather data, and socioeconomic "
-            "indicators. Details on the generation process and the models "
+            "<p>This dataset contains synthetic electricity demand data at "
+            "hourly resolution for various countries.</p>\n"
+            "<p>The data is generated using machine learning models trained "
+            "on historical demand data, weather data, and socioeconomic "
+            "indicators.</p>\n"
+            "<p>Details on the generation process and the models "
             "used can be found in the GitHub repository "
-            "https://github.com/open-energy-transition/demandcast."
+            '<a href="https://github.com/open-energy-transition/demandcast">'
+            "https://github.com/open-energy-transition/demandcast</a>.</p>"
         )
+        license = "CC-BY-4.0"
     else:
         raise ValueError(
             "Invalid data_type. Expected 'actual' or 'synthetic'."
@@ -177,7 +191,7 @@ def upload_to_zenodo(
                 },
             ],
             "access_right": "open",
-            "license": "agpl-1.0-or-later",
+            "license": license,
             "keywords": [
                 "electricity demand",
                 "synthetic data",
@@ -323,6 +337,14 @@ def upload_to_zenodo(
             params={"access_token": access_token},
             data=json.dumps(data),
         )
+
+        # Check if the response is successful.
+        if response.status_code != 200:
+            logging.error(
+                f"Failed to update metadata for draft deposition in Zenodo: "
+                f"{response.text}"
+            )
+            raise Exception(f"Zenodo metadata update failed: {response.text}")
     else:
         # Create a new deposition in Zenodo.
         response = requests.post(
