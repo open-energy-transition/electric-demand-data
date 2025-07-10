@@ -22,6 +22,23 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug(
+        "User must not modify, reproduce or publicly or commercially display "
+        "the material."
+    )
+    logging.debug("Source: https://www.gob.mx/terminos")
+    return False
+
+
 def _check_input_parameters(
     code: str,
     start_date: pandas.Timestamp | None = None,

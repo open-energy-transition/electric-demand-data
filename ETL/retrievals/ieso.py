@@ -21,6 +21,23 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug(
+        "Limited, non-exclusive, non-sublicensable, non-transferrable licence "
+        "to use and reproduce."
+    )
+    logging.debug("Source: https://www.ieso.ca/Terms-of-Use")
+    return False
+
+
 def _check_input_parameters(year: int | None, before_Apr_2002: bool) -> None:
     """
     Check if the input parameters are valid.

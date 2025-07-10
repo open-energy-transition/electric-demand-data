@@ -20,6 +20,24 @@ import pandas
 import utils.directories
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug(
+        "Content may not be used for any commercial and non-private purposes."
+    )
+    logging.debug(
+        "Source: https://www.eskom.co.za/wp-content/uploads/2021/10/WEBSITE-TERMS-AND-CONDITIONS_Sep2021.pdf"  # noqa: W505
+    )
+    return False
+
+
 def get_available_requests() -> None:
     """
     Get the available requests.

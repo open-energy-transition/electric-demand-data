@@ -21,6 +21,20 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("CC-BY 4.0 license. Use for any purpose with attribution.")
+    logging.debug("Source: https://www.emi.ea.govt.nz/LegalInformation")
+    return True
+
+
 def _check_input_parameters(
     start_date: pandas.Timestamp,
     end_date: pandas.Timestamp,

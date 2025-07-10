@@ -21,6 +21,23 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("Use for any purpose with attribution to AEMO.")
+    logging.debug(
+        "Source: "
+        "https://aemo.com.au/privacy-and-legal-notices/copyright-permissions"
+    )
+    return True
+
+
 def _check_input_parameters(
     code: str,
     year: int | None = None,

@@ -22,6 +22,20 @@ import utils.fetcher
 from dotenv import load_dotenv
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("Use for any purpose with attribution to EIA.")
+    logging.debug("Source: https://www.eia.gov/about/copyrights_reuse.php")
+    return True
+
+
 def _check_input_parameters(
     code: str,
     start_date: pandas.Timestamp | None = None,
