@@ -26,6 +26,35 @@ import utils.time_series
 import utils.uploader
 
 
+def _str_to_bool(argument: bool | str):
+    """
+    Convert a string or boolean argument to a boolean value.
+
+    Parameters
+    ----------
+    argument : bool or str
+        The argument to convert.
+
+    Returns
+    -------
+    bool
+        The converted boolean value.
+
+    Raises
+    ------
+    argparse.ArgumentTypeError
+        If the argument is not a valid boolean value.
+    """
+    if isinstance(argument, bool):
+        return argument
+    elif argument.lower() in ("yes", "true", "t", "y", "1"):
+        return True
+    elif argument.lower() in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
+
 def read_command_line_arguments() -> argparse.Namespace:
     """
     Create a parser for the command line arguments and read them.
@@ -103,7 +132,7 @@ def read_command_line_arguments() -> argparse.Namespace:
     parser.add_argument(
         "-m",
         "--made_by_oet",
-        type=bool,
+        type=_str_to_bool,
         help=(
             "Whether the data was retrieved or created by Open Energy "
             "Transition."
