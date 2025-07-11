@@ -19,6 +19,20 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("All rights reserved by NB Power.")
+    logging.debug("Source: https://www.nbpower.com/en/terms-of-use")
+    return False
+
+
 def _check_input_parameters(year: int, month: int) -> None:
     """
     Check if the input parameters are valid.

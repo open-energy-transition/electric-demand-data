@@ -20,6 +20,20 @@ import utils.entities
 import utils.fetcher
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("Personal use only. Redistribution is not allowed.")
+    logging.debug("Source: https://www4.tepco.co.jp/en/pg/legal/index-e.html")
+    return False
+
+
 def _check_input_parameters(year: int) -> None:
     """
     Check if the input parameters are valid.
