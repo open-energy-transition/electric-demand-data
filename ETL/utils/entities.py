@@ -46,10 +46,14 @@ def read_data_sources() -> list[str]:
     file_paths = utils.directories.list_yaml_files("retrieval_scripts_folder")
 
     # Read the data sources from the file names.
-    return [
-        os.path.basename(file_path).split(".")[0].upper()
-        for file_path in file_paths
+    data_sources = [
+        os.path.basename(file_path).split(".")[0] for file_path in file_paths
     ]
+
+    # Sort the data sources alphabetically.
+    data_sources.sort()
+
+    return data_sources
 
 
 def _read_entities_info(
@@ -86,10 +90,6 @@ def _read_entities_info(
         file_path and data_source are provided, or if neither is
         provided.
     """
-    if data_source != "":
-        # Make sure the data source is in uppercase.
-        data_source = data_source.upper()
-
     if file_path == "" and data_source != "":
         # Check if the data source is valid.
         if data_source not in read_data_sources():
