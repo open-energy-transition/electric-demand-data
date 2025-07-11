@@ -28,7 +28,7 @@ pycountry.countries.add_entry(
 )
 
 
-def _read_data_sources() -> list[str]:
+def read_data_sources() -> list[str]:
     """
     Read the the names of the data sources.
 
@@ -92,10 +92,10 @@ def _read_entities_info(
 
     if file_path == "" and data_source != "":
         # Check if the data source is valid.
-        if data_source not in _read_data_sources():
+        if data_source not in read_data_sources():
             raise ValueError(
                 f"Invalid data source: {data_source}. Available data "
-                f"sources are: {', '.join(_read_data_sources())}"
+                f"sources are: {', '.join(read_data_sources())}"
             )
 
         # Get the path to the yaml file of the data source.
