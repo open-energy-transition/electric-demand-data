@@ -31,7 +31,9 @@ def redistribute() -> bool:
         True if the data can be redistributed, False otherwise.
     """
     logging.debug("CC0.")
-    logging.debug("Source: https://www.kaggle.com/datasets/tentative/ntdc-dataset")
+    logging.debug(
+        "Source: https://www.kaggle.com/datasets/tentative/ntdc-dataset"
+    )
     return True
 
 
