@@ -21,6 +21,20 @@ import pandas
 import utils.directories
 
 
+def redistribute() -> bool:
+    """
+    Return a boolean indicating if the data can be redistributed.
+
+    Returns
+    -------
+    bool
+        True if the data can be redistributed, False otherwise.
+    """
+    logging.debug("CC0.")
+    logging.debug("Source: https://www.kaggle.com/datasets/tentative/ntdc-dataset")
+    return True
+
+
 def get_available_requests() -> None:
     """
     Get the available requests.
