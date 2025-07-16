@@ -47,6 +47,3 @@ repos:
     rev: 0.8.1
     hooks:
       - id: nbstripout # Strip output from Jupyter notebooks before commit
-
-# Automatically update hook versions every quarter
-autoupdate_schedule: "quarterly"
