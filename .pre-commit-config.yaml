@@ -4,7 +4,7 @@
 
 ci:
   # Automatically run pre-commit hooks on CI
-  autoupdate_schedule: weekly
+  autoupdate_schedule: quarterly
 
 repos:
   # Basic file hygiene checks
