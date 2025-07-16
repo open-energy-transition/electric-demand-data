@@ -54,7 +54,11 @@ demandcast/
 └── uv.lock                 # Lockfile for project's dependencies
 ```
 
-## Data collection progress
+## DemandCast structure
+
+![DemandCast](figures/demancast_illustration.png)
+
+## Historical electricity demand collection progress
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="ETL/figures/available_entities_dark_mode.png">
