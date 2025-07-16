@@ -5,6 +5,16 @@
 </h2>
 
 <h3 align="center">
+    <b>A project developed by</b>
+</h3>
+
+<p align="center">
+    <a href="https://www.openenergytransition.org/">
+        <img src="docs/oet_standard.png" alt="OET Logo" width="512"/>
+    </a>
+</p>
+
+<h3 align="center">
     <p>Supported by</p>
 </h3>
 
@@ -48,7 +58,11 @@ demandcast/
 └── uv.lock                 # Lockfile for project's dependencies
 ```
 
-## Data collection progress
+## DemandCast structure
+
+![DemandCast](docs/demancast_illustration.png)
+
+## Historical electricity demand collection progress
 
 ![Countries and subdivisions for which retrieval scripts of electricity demand data are available](ETL/available_entities_light_mode.png#only-light)
 ![Countries and subdivisions for which retrieval scripts of electricity demand data are available](ETL/available_entities_dark_mode.png#only-dark)

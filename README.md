@@ -11,6 +11,16 @@
 </p>
 
 <h3 align="center">
+    <b>A project developed by</b>
+</h3>
+
+<p align="center">
+    <a href="https://www.openenergytransition.org/">
+        <img src="docs/oet_standard.png" alt="OET Logo" width="512"/>
+    </a>
+</p>
+
+<h3 align="center">
     <b>Supported by</b>
 </h3>
 
@@ -56,7 +66,7 @@ demandcast/
 
 ## DemandCast structure
 
-![DemandCast](figures/demancast_illustration.png)
+![DemandCast](docs/demancast_illustration.png)
 
 ## Historical electricity demand collection progress
 
