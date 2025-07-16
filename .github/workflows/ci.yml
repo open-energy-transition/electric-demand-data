@@ -22,15 +22,6 @@ jobs:
       - name: "Install uv"
         uses: astral-sh/setup-uv@v5
 
-      - name: "Python format"
-        run: uvx ruff format --diff .
-
-      - name: "Python lint"
-        run: uvx ruff check .
-
-      - name: "Python type check"
-        run: uvx mypy
-
       - uses: pre-commit/action@v3.0.1
 
   pytest:
