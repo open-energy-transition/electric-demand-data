@@ -11,9 +11,9 @@ repos:
         args: ["--maxkb=5000"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.6
+    rev: v0.12.3
     hooks:
-      - id: ruff
+      - id: ruff-check
         types_or: [python, pyi, jupyter]
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
@@ -24,9 +24,15 @@ repos:
       - id: prettier
         types_or: [yaml, json5]
 
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports, "--disable-error-code=import-untyped"]
+
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:
       - id: nbstripout
 
-autoupdate_schedule: "quaterly"
+autoupdate_schedule: "quarterly"
