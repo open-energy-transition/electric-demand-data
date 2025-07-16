@@ -122,12 +122,12 @@ def test_check_code():
     """
     # Check if the function correctly identifies valid and invalid
     # codes.
-    utils.entities.check_code("FR", data_source="ENTSOE")
-    utils.entities.check_code("US_TEX", data_source="EIA")
+    utils.entities.check_code("FR", data_source="entsoe")
+    utils.entities.check_code("US_TEX", data_source="eia")
     with pytest.raises(AssertionError):
-        utils.entities.check_code("INVALID_CODE", data_source="ENTSOE")
+        utils.entities.check_code("invalid_code", data_source="entsoe")
     with pytest.raises(ValueError):
-        utils.entities.check_code("FR", data_source="INVALID_DATA_SOURCE")
+        utils.entities.check_code("FR", data_source="invalid_source")
 
 
 def test_get_time_zone():
