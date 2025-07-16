@@ -15,7 +15,7 @@
 </h3>
 
 <p align="center">
-    <a href="https://www.openenergytransition.org/">
+    <a href="https://openenergytransition.org/">
         <img src="docs/oet_standard.png" alt="OET Logo" width="256"/>
     </a>
 </p>
@@ -147,7 +147,7 @@ uv run mkdocs serve
 
 ## Mantainers
 
-The project is maintained by the [Open Energy Transition](https://www.openenergytransition.org/) team. The team members currently involved in this project are:
+The project is maintained by the [Open Energy Transition](https://openenergytransition.org/) team. The team members currently involved in this project are:
 
 - [Kevin Steijn](https://github.com/ElectricMountains)
 - [Vamsi Priya Goli](https://github.com/Vamsipriya22)
