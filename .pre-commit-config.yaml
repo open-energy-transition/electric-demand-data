@@ -1,6 +1,6 @@
 # Pre-commit configuration file
-# Run `pre-commit run --all-files` to check all files
-# Run `pre-commit autoupdate` to update hook versions
+# Run `uv run pre-commit run --all-files` to check all files
+# Run `uv run pre-commit autoupdate` to update hook versions
 
 ci:
   # Automatically update pre-commit hooks on CI
