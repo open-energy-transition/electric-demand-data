@@ -47,14 +47,19 @@ demandcast/
 ├── models/                 # Machine learning models for demand forecasting
 ├── .devcontainer/          # Development container configuration
 ├── .github/                # Github specifics such as actions
+├── .dockerignore           # File lists that Docker ignores
+├── .gitattributes          # Git attributes for handling line endings
 ├── .gitignore              # File lists that git ignores
 ├── .pre-commit-config.yaml # Pre-commit configuration
 ├── .python-version         # Python version
 ├── CONTRIBUTING.md         # Guide to contributing
 ├── Dockerfile              # Docker setup for containerized runs
+├── LICENSE                 # License file
+├── README.md               # Project overview and instructions
 ├── mkdocs.yml              # Documentation configuration file
 ├── pyproject.toml          # Project metadata and dependencies
 ├── ruff.toml               # Ruff configuration
+├── security.md             # Security policy
 └── uv.lock                 # Lockfile for project's dependencies
 ```
 
