@@ -3,15 +3,13 @@
 License: AGPL-3.0.
 
 Description:
-    This module provides functions to retrieve the electricity demand
-    data from a publicly available repository with data provided by the
-    National Transmission & Despatch Company (NTDC) in Pakistan. The
-    data is retrieved by registering on the website and downloading
-    the data manually. The user needs to create an account on the
-    Kaggle website, which is free of charge. After registration,
-    the user can log in to the website and download the data.
 
-    Source: https://www.kaggle.com/datasets/tentative/ntdc-dataset
+    This script provides functions to retrieve the electricity demand
+    data from the website of National Institution for Transforming India
+    (NITI) Aayog in India. The data is retrieved by submitting a request
+    to the NITI Aayog website. The user then able to download the data.
+
+    Source: https://iced.niti.gov.in
 """
 
 import logging
@@ -30,10 +28,8 @@ def redistribute() -> bool:
     bool
         True if the data can be redistributed, False otherwise.
     """
-    logging.debug("CC0.")
-    logging.debug(
-        "Source: https://www.kaggle.com/datasets/tentative/ntdc-dataset"
-    )
+    logging.debug("Open data.")
+    logging.debug("Source: https://iced.niti.gov.in/about-us")
     return True
 
 
@@ -42,14 +38,14 @@ def get_available_requests() -> None:
     Get the available requests.
 
     This function retrieves the available requests for the electricity
-    demand data for Pakistan.
+    demand data from the NITI Aayog website.
     """
     logging.debug("The data is retrieved manually.")
 
 
 def get_url() -> str:
     """
-    Get the URL of the electricity demand data for Pakistan.
+    Get the URL of the electricity demand data from NITI Aayog website.
 
     Returns
     -------
@@ -57,74 +53,57 @@ def get_url() -> str:
         The URL of the electricity demand data.
     """
     # Return the URL of the electricity demand data.
-    return "https://www.kaggle.com/datasets/tentative/ntdc-dataset"
+    return "https://iced.niti.gov.in/energy/electricity/distribution/national-level-consumption/load-curve"
 
 
 def download_and_extract_data() -> pandas.Series:
     """
     Extract electricity demand data.
 
-    This function extracts the electricity demand data for
-    Pakistan. This function assumes that the data has
+    This function extracts the electricity demand data from the
+    NITI Aayog website. This function assumes that the data has
     been downloaded and is available in the specified folder.
 
     Returns
     -------
     electricity_demand_time_series : pandas.Series
         The electricity demand time series in MW.
-
-    Raises
-    ------
-    ValueError
-        If the extracted data is not a pandas DataFrame.
     """
     # Get the data folder.
     data_directory = utils.directories.read_folders_structure()[
         "manually_downloaded_data_folder"
     ]
 
-    # Get the paths of the downloaded files that start with "NTD".
+    # Get the paths of the downloaded files that start with "NIT".
     downloaded_file_paths = [
         os.path.join(data_directory, file)
         for file in os.listdir(data_directory)
-        if file.startswith("NTD")
+        if file.startswith("NIT")
     ]
 
     # Load the data from the downloaded files into a pandas DataFrame.
     dataset = pandas.concat(
-        [pandas.read_csv(file_path) for file_path in downloaded_file_paths]
+        [pandas.read_excel(file_path) for file_path in downloaded_file_paths]
     )
 
-    # Make sure the dataset is a pandas DataFrame.
-    if not isinstance(dataset, pandas.DataFrame):
-        raise ValueError(
-            f"The extracted data is a {type(dataset)} object, "
-            "expected a pandas DataFrame."
-        )
-    else:
-        # Define the new index.
-        index = pandas.to_datetime(
-            dataset.iloc[:, 0].astype(str)
-            + " "
-            + (dataset.iloc[:, 1].astype(str).astype(int) - 1).astype(str),
-            format="%d/%m/%Y %H",
-        ) + pandas.Timedelta(hours=1)
+    # Extract the electricity demand time series.
+    electricity_demand_time_series = pandas.Series(
+        dataset["Hourly Demand Met (in MW)"].values,
+        index=pandas.to_datetime(
+            dataset["Year"].astype(str) + " " + dataset["Date"],
+            format="%Y %d-%b %I%p",
+        ),
+    )
 
-        # Remove commas and convert SYSLOAD to numeric.
-        dataset["SYSLOAD"] = pandas.to_numeric(
-            dataset["SYSLOAD"].astype(str).str.replace(",", ""),
-            errors="coerce",
-        )
+    # Add one hour to the index because the electricity demand seems to
+    # be provided at the beginning of the hour.
+    electricity_demand_time_series.index = (
+        electricity_demand_time_series.index + pandas.Timedelta(hours=1)
+    )
 
-        # Define the electricity demand time series.
-        electricity_demand_time_series = pandas.Series(
-            dataset["SYSLOAD"].values,
-            index=index,
-        )
+    # Add the timezone information to the index.
+    electricity_demand_time_series.index = (
+        electricity_demand_time_series.index.tz_localize("Asia/Kolkata")
+    )
 
-        # Add the timezone information.
-        electricity_demand_time_series.index = (
-            electricity_demand_time_series.index.tz_localize("Asia/Karachi")
-        )
-
-        return electricity_demand_time_series
+    return electricity_demand_time_series
