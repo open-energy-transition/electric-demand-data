@@ -3,7 +3,7 @@
 # Run `pre-commit autoupdate` to update hook versions
 
 ci:
-  # Automatically run pre-commit hooks on CI
+  # Automatically update pre-commit hooks on CI
   autoupdate_schedule: quarterly
 
 repos:
