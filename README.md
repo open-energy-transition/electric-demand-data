@@ -149,9 +149,9 @@ uv run mkdocs serve
 
 The project is maintained by the [Open Energy Transition](https://openenergytransition.org/) team. The team members currently involved in this project are:
 
-- [Kevin Steijn](https://github.com/ElectricMountains) (kevin.steijn@openenergytransition.org)
-- [Vamsi Priya Goli](https://github.com/Vamsipriya22) (goli.vamsi@openenergytransition.org)
-- [Enrico Antonini](https://github.com/eantonini) (enrico.antonini@openenergytransition.org)
+- [Kevin Steijn](https://github.com/ElectricMountains) (kevin.steijn at openenergytransition dot org)
+- [Vamsi Priya Goli](https://github.com/Vamsipriya22) (goli.vamsi at openenergytransition dot org)
+- [Enrico Antonini](https://github.com/eantonini) (enrico.antonini at openenergytransition dot org)
 
 ## Contributing
 
