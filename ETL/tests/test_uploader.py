@@ -193,7 +193,11 @@ def test_upload_file_to_new_deposition_on_zenodo():
 
         # Call the function to upload a file to a new deposition.
         utils.uploader.upload_to_zenodo(
-            "/fake/root/file1.csv", "actual", publish=True, testing=True
+            "/fake/root/file1.csv",
+            "actual",
+            publish=True,
+            testing=True,
+            made_by_oet=False,
         )
 
 
@@ -228,7 +232,11 @@ def test_upload_file_to_draft_version_on_zenodo():
 
         # Call the function to upload a file to a draft version.
         utils.uploader.upload_to_zenodo(
-            "/fake/root/file1.csv", "actual", publish=False, testing=True
+            "/fake/root/file1.csv",
+            "actual",
+            publish=False,
+            testing=True,
+            made_by_oet=True,
         )
 
 
@@ -282,7 +290,11 @@ def test_upload_file_to_new_version_on_zenodo():
 
         # Call the function to upload a file to a new version.
         utils.uploader.upload_to_zenodo(
-            "/fake/root/file1.csv", "synthetic", publish=False, testing=False
+            "/fake/root/file1.csv",
+            "synthetic",
+            publish=False,
+            testing=False,
+            made_by_oet=True,
         )
 
 
@@ -299,6 +311,7 @@ def test_zenodo_error_invalid_input():
             "invalid_type",
             publish=False,
             testing=False,
+            made_by_oet=True,
         )
 
 
@@ -321,7 +334,11 @@ def test_zenodo_error_get_depositions():
 
         with pytest.raises(Exception):
             utils.uploader.upload_to_zenodo(
-                "/fake/root/file1.csv", "actual", publish=False, testing=True
+                "/fake/root/file1.csv",
+                "actual",
+                publish=False,
+                testing=True,
+                made_by_oet=True,
             )
 
 
@@ -353,6 +370,7 @@ def test_zenodo_error_new_version_of_deposition():
                 "synthetic",
                 publish=False,
                 testing=True,
+                made_by_oet=True,
             )
 
 
@@ -391,6 +409,7 @@ def test_zenodo_error_upating_new_version_of_deposition():
                 "synthetic",
                 publish=False,
                 testing=True,
+                made_by_oet=True,
             )
 
 
@@ -435,6 +454,7 @@ def test_zenodo_error_getting_files_in_draft():
                 "synthetic",
                 publish=False,
                 testing=True,
+                made_by_oet=True,
             )
 
 
@@ -483,6 +503,7 @@ def test_zenodo_error_deleting_files_in_draft():
                 "synthetic",
                 publish=False,
                 testing=True,
+                made_by_oet=True,
             )
 
 
@@ -515,6 +536,7 @@ def test_zenodo_error_update_draft_metadata():
                 "synthetic",
                 publish=False,
                 testing=True,
+                made_by_oet=True,
             )
 
 
@@ -542,7 +564,11 @@ def test_zenodo_error_creating_new_deposition():
 
         with pytest.raises(Exception):
             utils.uploader.upload_to_zenodo(
-                "/fake/root/file1.csv", "actual", publish=True, testing=True
+                "/fake/root/file1.csv",
+                "actual",
+                publish=True,
+                testing=True,
+                made_by_oet=True,
             )
 
 
@@ -580,7 +606,11 @@ def test_zenodo_error_uploading_file_to_deposition():
 
         with pytest.raises(Exception):
             utils.uploader.upload_to_zenodo(
-                "/fake/root/file1.csv", "actual", publish=True, testing=True
+                "/fake/root/file1.csv",
+                "actual",
+                publish=True,
+                testing=True,
+                made_by_oet=True,
             )
 
 
@@ -622,5 +652,9 @@ def test_zenodo_error_publishing_deposition():
 
         with pytest.raises(Exception):
             utils.uploader.upload_to_zenodo(
-                "/fake/root/file1.csv", "actual", publish=True, testing=True
+                "/fake/root/file1.csv",
+                "actual",
+                publish=True,
+                testing=True,
+                made_by_oet=True,
             )
