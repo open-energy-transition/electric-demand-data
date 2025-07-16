@@ -7,8 +7,3 @@ requires-python = ">=3.12"
 dependencies = [
     "pytest>=8.3.4",
 ]
-
-[tool.pytest.ini_options]
-pythonpath = [
-  "ETL",
-]
