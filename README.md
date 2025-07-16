@@ -16,7 +16,7 @@
 
 <p align="center">
     <a href="https://openenergytransition.org/">
-        <img src="docs/oet_standard.png" alt="OET Logo" width="256"/>
+        <img src="webpage/docs/figures/oet_logo.png" alt="OET Logo" width="256"/>
     </a>
 </p>
 
@@ -26,7 +26,7 @@
 
 <p align="center">
     <a href="https://www.breakthroughenergy.org/">
-        <img src="docs/BE_logo.png" alt="Breakthrough Energy Logo" width="512"/>
+        <img src="webpage/docs/figures/be_logo.png" alt="Breakthrough Energy Logo" width="512"/>
     </a>
 </p>
 

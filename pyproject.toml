@@ -5,7 +5,6 @@ description = "Global hourly electricity demand forecasting"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "mkdocs-material>=9.5.50",
     "pytest>=8.3.4",
 ]
 

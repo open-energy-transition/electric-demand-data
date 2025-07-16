@@ -10,7 +10,7 @@
 
 <p align="center">
     <a href="https://openenergytransition.org/">
-        <img src="docs/oet_standard.png" alt="OET Logo" width="256"/>
+        <img src="figures/oet_logo.png" alt="OET Logo" width="256"/>
     </a>
 </p>
 
@@ -20,7 +20,7 @@
 
 <p align="center">
     <a href="https://www.breakthroughenergy.org/">
-        <img src="BE_logo.png" alt="Breakthrough Energy Logo" width="512"/>
+        <img src="figures/be_logo.png" alt="Breakthrough Energy Logo" width="512"/>
     </a>
 </p>
 
@@ -65,12 +65,12 @@ demandcast/
 
 ## DemandCast structure
 
-![DemandCast](docs/demancast_illustration.png)
+![DemandCast](figures/demancast_illustration.png)
 
 ## Historical electricity demand collection progress
 
-![Countries and subdivisions for which retrieval scripts of electricity demand data are available](ETL/available_entities_light_mode.png#only-light)
-![Countries and subdivisions for which retrieval scripts of electricity demand data are available](ETL/available_entities_dark_mode.png#only-dark)
+![Countries and subdivisions for which retrieval scripts of electricity demand data are available](figures/available_entities_light_mode.png#only-light)
+![Countries and subdivisions for which retrieval scripts of electricity demand data are available](figures/available_entities_dark_mode.png#only-dark)
 
 Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL) folder.
 
