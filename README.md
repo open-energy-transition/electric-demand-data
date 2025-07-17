@@ -48,11 +48,11 @@ The project is in active development, we are always looking for suggestions and 
 
 ```
 demandcast/
-├── docs/                   # Project documentation (MkDocs)
-├── ETL/                    # Scripts for extracting, transforming, and loading data
-├── models/                 # Machine learning models for demand forecasting
 ├── .devcontainer/          # Development container configuration
 ├── .github/                # Github specifics such as actions
+├── ETL/                    # Scripts for extracting, transforming, and loading data
+├── models/                 # Machine learning models for demand forecasting
+├── webpage/                # Website and documentation files (MkDocs)
 ├── .dockerignore           # File lists that Docker ignores
 ├── .gitattributes          # Git attributes for handling line endings
 ├── .gitignore              # File lists that git ignores
@@ -62,23 +62,20 @@ demandcast/
 ├── Dockerfile              # Docker setup for containerized runs
 ├── LICENSE                 # License file
 ├── README.md               # Project overview and instructions
-├── mkdocs.yml              # Documentation configuration file
-├── pyproject.toml          # Project metadata and dependencies
 ├── ruff.toml               # Ruff configuration
-├── security.md             # Security policy
-└── uv.lock                 # Lockfile for project's dependencies
+└── security.md             # Security policy
 ```
 
 ## DemandCast structure
 
-![DemandCast](docs/demancast_illustration.png)
+![DemandCast](webpage/docs/figures/demancast_illustration.png)
 
 ## Historical electricity demand collection progress
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="ETL/figures/available_entities_dark_mode.png">
-  <source media="(prefers-color-scheme: light)" srcset="ETL/figures/available_entities_light_mode.png">
-  <img alt="Countries and subdivisions for which retrieval scripts of electricity demand data are available" src="ETL/figures/available_entities.png">
+  <source media="(prefers-color-scheme: dark)" srcset="webpage/docs/figures/available_entities_dark_mode.png">
+  <source media="(prefers-color-scheme: light)" srcset="webpage/docs/figures/available_entities_light_mode.png">
+  <img alt="Countries and subdivisions for which retrieval scripts of electricity demand data are available" src="webpage/docs/figures/available_entities.png">
 </picture>
 
 Find the code that we used to retrieve the data in their respective files inside the [ETL](https://github.com/open-energy-transition/demandcast/tree/main/ETL) folder.

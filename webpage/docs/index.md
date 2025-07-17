@@ -42,11 +42,11 @@ The project is in active development, we are always looking for suggestions and 
 
 ```
 demandcast/
-├── docs/                   # Project documentation (MkDocs)
-├── ETL/                    # Scripts for extracting, transforming, and loading data
-├── models/                 # Machine learning models for demand forecasting
 ├── .devcontainer/          # Development container configuration
 ├── .github/                # Github specifics such as actions
+├── ETL/                    # Scripts for extracting, transforming, and loading data
+├── models/                 # Machine learning models for demand forecasting
+├── webpage/                # Website and documentation files (MkDocs)
 ├── .dockerignore           # File lists that Docker ignores
 ├── .gitattributes          # Git attributes for handling line endings
 ├── .gitignore              # File lists that git ignores
@@ -56,11 +56,8 @@ demandcast/
 ├── Dockerfile              # Docker setup for containerized runs
 ├── LICENSE                 # License file
 ├── README.md               # Project overview and instructions
-├── mkdocs.yml              # Documentation configuration file
-├── pyproject.toml          # Project metadata and dependencies
 ├── ruff.toml               # Ruff configuration
-├── security.md             # Security policy
-└── uv.lock                 # Lockfile for project's dependencies
+└── security.md             # Security policy
 ```
 
 ## DemandCast structure
