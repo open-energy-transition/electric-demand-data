@@ -51,9 +51,7 @@ demandcast/
 ├── .gitattributes          # Git attributes for handling line endings
 ├── .gitignore              # File lists that git ignores
 ├── .pre-commit-config.yaml # Pre-commit configuration
-├── .python-version         # Python version
 ├── CONTRIBUTING.md         # Guide to contributing
-├── Dockerfile              # Docker setup for containerized runs
 ├── LICENSE                 # License file
 ├── README.md               # Project overview and instructions
 ├── ruff.toml               # Ruff configuration
