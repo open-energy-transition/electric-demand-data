@@ -10,9 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
+  pre-commit:
     timeout-minutes: 10
-    name: "lint"
+    name: "pre-commit"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
