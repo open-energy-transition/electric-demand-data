@@ -79,31 +79,40 @@ cd demandcast
 
 ### 2. Set up your environment
 
-This project uses [`uv`](https://github.com/astral-sh/uv) as a pacakge manager. It can be used within the provided Dockerfile or installed standalone (see [installing uv](https://docs.astral.sh/uv/getting-started/installation/))
+This project uses [`uv`](https://github.com/astral-sh/uv) as a pacakge manager to install the required dependencies and create an environment stored in `.venv`.
 
+`uv` can be used within the provided Dockerfile or installed standalone (see [installing uv](https://docs.astral.sh/uv/getting-started/installation/)).
+
+The `ETL` folder and each subfolder in the `models` directory—each representing a separate model—contain their own `pyproject.toml` files that define the dependencies for that module.
+
+To set up the environment, run:
 ```bash
+cd path/to/folder
 uv sync
 ```
 
-Alternatively, you may use `conda` to install the packages listed in `pyproject.toml`.
+Alternatively, you may use `conda` to install the packages listed in the respective `pyproject.toml`.
 
 ### 3. Run scripts
 
 Scripts can be run directly using:
 
 ```bash
-uv run path/to/script.py
+cd path/to/folder
+uv run script.py
 ```
 
 If you have chosen `conda` as your package manager, you can run scripts with:
 
 ```bash
-python path/to/script.py
+cd path/to/folder
+python script.py
 ```
 
 Jupyter notebooks ([details](https://docs.astral.sh/uv/guides/integration/jupyter/#using-jupyter-within-a-project)) can be launched with:
 
 ```bash
+cd path/to/folder
 uv run --with jupyter jupyter lab --allow-root
 ```
 
@@ -112,26 +121,28 @@ uv run --with jupyter jupyter lab --allow-root
 ### Run tests and check test coverage
 
 ```bash
+cd path/to/folder
 uv run pytest
 uv run pytest --cov --cov-report term-missing
 ```
 
 ### Pre-commit and lint code
 
+To ensure code quality, we use [pre-commit](https://pre-commit.com/) hooks. These hooks automatically run checks on your code before committing changes. Among the pre-commit hooks, we also use [ruff](https://docs.astral.sh/ruff/) to enforce code style and linting. All the pre-commit hooks are defined in the `.pre-commit-config.yaml` file.
+
+To run pre-commit hooks, you can use:
 ```bash
-uvx ruff format
-uvx ruff check --fix
-uvx mypy
 uvx pre-commit
 ```
 
 ## Documentation
 
-The documentation is currently hosted on GitHub pages. It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
+The [documentation](https://open-energy-transition.github.io/demandcast/) is currently hosted on GitHub pages connected to this repository. It is built with [mkdocs](https://github.com/squidfunk/mkdocs-material).
 
 To run it locally:
 
 ```bash
+cd webpage
 uv run mkdocs serve
 ```
 
