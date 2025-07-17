@@ -47,7 +47,6 @@ demandcast/
 ├── ETL/                    # Scripts for extracting, transforming, and loading data
 ├── models/                 # Machine learning models for demand forecasting
 ├── webpage/                # Website and documentation files (MkDocs)
-├── .dockerignore           # File lists that Docker ignores
 ├── .gitattributes          # Git attributes for handling line endings
 ├── .gitignore              # File lists that git ignores
 ├── .pre-commit-config.yaml # Pre-commit configuration
