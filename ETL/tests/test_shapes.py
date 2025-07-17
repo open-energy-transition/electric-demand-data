@@ -317,5 +317,14 @@ def test_get_entity_bounds(dummy_geodf):
         A dummy GeoDataFrame to use for testing.
     """
     bounds = utils.shapes.get_entity_bounds(dummy_geodf)
+
+    # Check if the bounds are in the expected format.
     assert isinstance(bounds, list)
     assert len(bounds) == 4
+
+    # Check if the bounds are calculated correctly based on the dummy
+    # GeoDataFrame.
+    assert bounds[0] == dummy_geodf.bounds.minx[0] - 1
+    assert bounds[1] == dummy_geodf.bounds.miny[0] - 1
+    assert bounds[2] == dummy_geodf.bounds.maxx[0] + 1
+    assert bounds[3] == dummy_geodf.bounds.maxy[0] + 1
