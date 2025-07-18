@@ -29,7 +29,9 @@ def redistribute() -> bool:
         True if the data can be redistributed, False otherwise.
     """
     logging.debug("All rights reserved by KROGD.")
-    logging.debug("Source: https://www.data.go.kr/en/ugs/selectPublicDataUseGuideView.do")
+    logging.debug(
+        "Source: https://www.data.go.kr/en/ugs/selectPublicDataUseGuideView.do"
+    )
     return False
 
 
